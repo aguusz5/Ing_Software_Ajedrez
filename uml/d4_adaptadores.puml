@@ -1,0 +1,43 @@
+@startuml d4_adaptadores
+!include common.iuml
+top to bottom direction
+package "ajedrez-nucleo :: juego (solo el puerto)" #EAF6EA {
+  interface JuegoDeAjedrez <<puerto de entrada>>
+  class Partida
+}
+package "ajedrez-consola (adaptador)" #E8F1FA {
+  class AdaptadorConsola {
+    +AdaptadorConsola(juego, traductor, dibujante, entrada : Scanner, salida : PrintStream)
+    +ejecutar()
+  }
+  class TraductorDeNotacion {
+    +leer(texto : String, t : Tablero) : Posicion
+  }
+  class DibujanteAscii {
+    +dibujar(t : Tablero) : String
+  }
+}
+package "ajedrez-gui-swing (adaptador)" #E8F1FA {
+  class VentanaSwing {
+    +VentanaSwing(juego : JuegoDeAjedrez, glifos : GlifosDePieza)
+    +mostrar()
+  }
+  class GlifosDePieza {
+    +glifoDe(p : Pieza) : String
+  }
+}
+package "ajedrez-app (raíz de composición)" #FFF4E0 {
+  class Principal {
+    +{static} main(args : String[])
+  }
+}
+Partida ..|> JuegoDeAjedrez
+AdaptadorConsola --> JuegoDeAjedrez
+AdaptadorConsola --> TraductorDeNotacion
+AdaptadorConsola --> DibujanteAscii
+VentanaSwing --> JuegoDeAjedrez
+VentanaSwing --> GlifosDePieza
+Principal ..> Partida : new + inyecta
+Principal ..> AdaptadorConsola : new + inyecta
+Principal ..> VentanaSwing : new + inyecta
+@enduml

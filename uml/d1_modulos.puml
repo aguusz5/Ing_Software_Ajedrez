@@ -1,0 +1,32 @@
+@startuml d1_modulos
+!include common.iuml
+skinparam componentStyle rectangle
+top to bottom direction
+package "ajedrez-app\n(raíz de composición)" as app #FFF4E0 {
+  [Principal]
+}
+package "ajedrez-consola\n(adaptador)" as con #E8F1FA {
+  [AdaptadorConsola]
+}
+package "ajedrez-gui-swing\n(adaptador)" as gui #E8F1FA {
+  [VentanaSwing]
+}
+package "ajedrez-nucleo  (NÚCLEO — Java puro, sin dependencias)" as core #EAF6EA {
+  interface "JuegoDeAjedrez\n(puerto de entrada)" as IN
+  [Partida + reglas + piezas + tablero] as G
+}
+Principal ..> AdaptadorConsola : crea e inyecta
+Principal ..> VentanaSwing : crea e inyecta
+Principal ..> G : crea e inyecta
+AdaptadorConsola --> IN : usa
+VentanaSwing --> IN : usa
+G ..|> IN
+note bottom of core
+  Las flechas de dependencia apuntan SIEMPRE hacia el núcleo.
+  ajedrez-nucleo no tiene en su pom.xml ninguna dependencia
+  (salvo JUnit en scope test): el compilador impide que
+  el núcleo importe Swing, consola o IO.
+  El núcleo no necesita nada del exterior, así que no hay
+  puerto de salida: jugar() devuelve un ResultadoJugada y listo.
+end note
+@enduml

@@ -1,0 +1,9 @@
+skinparam classAttributeIconSize 0
+skinparam packageStyle rectangle
+skinparam shadowing false
+skinparam defaultFontName DejaVu Sans
+skinparam classFontSize 12
+skinparam ArrowColor #444444
+skinparam ClassBorderColor #555555
+skinparam ClassBackgroundColor #FAFAFA
+skinparam PackageBorderColor #2E5E8C

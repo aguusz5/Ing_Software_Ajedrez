@@ -1,0 +1,98 @@
+@startuml d2_modelo
+!include common.iuml
+top to bottom direction
+package "ajedrez-nucleo :: modelo" #EAF6EA {
+  class Posicion <<record>> {
+    +columna : int
+    +fila : int
+    +desplazar(d : Direccion) : Posicion
+  }
+  class Direccion <<record>> {
+    +dx : int
+    +dy : int
+    +{static} ORTOGONALES : List<Direccion>
+    +{static} DIAGONALES : List<Direccion>
+    +{static} TODAS : List<Direccion>
+    +{static} SALTOS_DE_CABALLO : List<Direccion>
+  }
+  enum Color {
+    BLANCO
+    NEGRO
+    +contrario() : Color
+    +sentidoDeAvance() : int
+  }
+  class Tablero <<inmutable>> {
+    +Tablero(ancho : int, alto : int)
+    +ancho() : int
+    +alto() : int
+    +estaDentro(p : Posicion) : boolean
+    +piezaEn(p : Posicion) : Optional<Pieza>
+    +buscarRey(c : Color) : Posicion
+    +con(p : Posicion, pieza : Pieza) : Tablero
+    +sin(p : Posicion) : Tablero
+  }
+  class Pieza <<record>> {
+    +color : Color
+    +tipo : TipoDePieza
+    +yaSeMovio : boolean
+    +Pieza(color : Color, tipo : TipoDePieza)
+    +movida() : Pieza
+    +jugadasCandidatas(t : Tablero, desde : Posicion) : List<Jugada>
+  }
+  class TipoDePieza {
+    +nombre : String
+    +esRey : boolean
+    +TipoDePieza(nombre, esRey, reglas : List<ReglaDeMovimiento>)
+    +reglas() : List<ReglaDeMovimiento>
+  }
+}
+package "ajedrez-nucleo :: movimiento" #EAF6EA {
+  interface ReglaDeMovimiento <<Strategy>> {
+    +jugadasCandidatas(t : Tablero, desde : Posicion, p : Pieza) : List<Jugada>
+  }
+  class ReglaDeslizante {
+    +{static} SIN_LIMITE : int
+    +ReglaDeslizante(direcciones : List<Direccion>, pasosMaximos : int)
+  }
+  class ReglaDeSalto {
+    +ReglaDeSalto(saltos : List<Direccion>)
+  }
+  class ReglaAvanceDePeon
+  class ReglaCapturaDePeon
+  interface Jugada {
+    +desde() : Posicion
+    +hasta() : Posicion
+    +aplicarEn(t : Tablero) : Tablero
+  }
+  class JugadaSimple <<record>> {
+    +desde : Posicion
+    +hasta : Posicion
+  }
+}
+package "ajedrez-nucleo :: configuracion" #EAF6EA {
+  class TiposDePiezaEstandar <<factory estático>> {
+    +{static} peon() / torre() / caballo()
+    +{static} alfil() / dama() / rey()
+  }
+  class TableroEstandar {
+    +crearTablero() : Tablero
+  }
+}
+Tablero o-- "0..*" Pieza
+Pieza --> Color
+Pieza --> TipoDePieza
+TipoDePieza o-- "1..*" ReglaDeMovimiento
+ReglaDeslizante ..|> ReglaDeMovimiento
+ReglaDeSalto ..|> ReglaDeMovimiento
+ReglaAvanceDePeon ..|> ReglaDeMovimiento
+ReglaCapturaDePeon ..|> ReglaDeMovimiento
+ReglaDeMovimiento ..> Jugada : crea
+JugadaSimple ..|> Jugada
+TableroEstandar ..> TiposDePiezaEstandar
+TiposDePiezaEstandar ..> TipoDePieza : crea
+Posicion ..> Direccion
+note bottom of Tablero
+  Sin interfaz de solo lectura: Tablero es inmutable,
+  nadie puede modificarlo aunque lo reciba.
+end note
+@enduml

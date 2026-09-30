@@ -1,0 +1,58 @@
+@startuml d3_juego
+!include common.iuml
+top to bottom direction
+package "ajedrez-nucleo :: juego" #EAF6EA {
+  interface JuegoDeAjedrez <<puerto de entrada>> {
+    +jugar(desde : Posicion, hasta : Posicion) : ResultadoJugada
+    +tablero() : Tablero
+    +turnoActual() : Color
+    +estaEnJaque(c : Color) : boolean
+  }
+  class Partida {
+    +Partida(tablero : Tablero, validador : ValidadorDeJugadas, detector : DetectorDeJaque)
+  }
+  class ResultadoJugada <<record>> {
+    +valida : boolean
+    +motivo : String
+    +colorEnJaque : Optional<Color>
+    +{static} ok() : ResultadoJugada
+    +{static} okConJaque(c : Color) : ResultadoJugada
+    +{static} rechazada(motivo : String) : ResultadoJugada
+  }
+}
+package "ajedrez-nucleo :: reglas" #EAF6EA {
+  class DetectorDeJaque {
+    +estaEnJaque(t : Tablero, c : Color) : boolean
+  }
+  interface ReglaDeValidacion {
+    +validar(t : Tablero, j : Jugada, turno : Color) : ResultadoValidacion
+  }
+  class ReglaPiezaPropia
+  class ReglaNoDejarReyEnJaque {
+    +ReglaNoDejarReyEnJaque(d : DetectorDeJaque)
+  }
+  class ValidadorDeJugadas {
+    +ValidadorDeJugadas(reglas : List<ReglaDeValidacion>)
+    +validar(t : Tablero, j : Jugada, turno : Color) : ResultadoValidacion
+  }
+  class ResultadoValidacion <<record>> {
+    +valida : boolean
+    +motivo : String
+    +{static} ok() : ResultadoValidacion
+    +{static} rechazada(motivo : String) : ResultadoValidacion
+  }
+}
+Partida ..|> JuegoDeAjedrez
+Partida ..> ResultadoJugada : devuelve
+Partida -down--> ValidadorDeJugadas
+Partida -down---> DetectorDeJaque
+ReglaPiezaPropia ..|> ReglaDeValidacion
+ReglaNoDejarReyEnJaque ..|> ReglaDeValidacion
+ReglaNoDejarReyEnJaque --> DetectorDeJaque
+ValidadorDeJugadas o-- "1..*" ReglaDeValidacion
+ReglaDeValidacion ..> ResultadoValidacion : devuelve
+JuegoDeAjedrez -[hidden]down-> ReglaPiezaPropia
+JuegoDeAjedrez -[hidden]down-> ValidadorDeJugadas
+ResultadoJugada -[hidden]down-> ReglaNoDejarReyEnJaque
+ResultadoJugada -[hidden]down-> DetectorDeJaque
+@enduml
