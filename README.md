@@ -100,4 +100,5 @@ Todavía no está hecho el alcance opcional: jaque mate, enroque, captura al pas
 6. [Principal](ajedrez-app/src/main/java/app/Principal.java): cómo se conecta todo.
 7. Tests: [PartidaTest](ajedrez-nucleo/src/test/java/juego/PartidaTest.java) y [ExtensibilidadTest](ajedrez-nucleo/src/test/java/extensibilidad/ExtensibilidadTest.java), que muestra una pieza nueva y un tablero de 10x10 sin tocar el núcleo.
 
-Los diagramas de clases están en [uml/](uml/).
+Los diagramas de clases están en [uml/](uml/). Hay un resumen visual del TPO en [docs/resumen.html](docs/resumen.html):
+abrilo con el navegador desde el repo clonado, porque GitHub muestra los `.html` como código.

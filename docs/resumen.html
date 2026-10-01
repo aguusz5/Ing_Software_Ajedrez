@@ -1,0 +1,366 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ajedrez TPO</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Familjen+Grotesk:wght@500;700&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+  /* Layout: una columna de lectura; los bloques "texto + evidencia" van en dos columnas y se apilan en el celular. */
+  :root {
+    --bg: #f4f6f1;
+    --surface: #ffffff;
+    --ink: #17201a;
+    --muted: #56625a;
+    --line: #d6ddd3;
+    --accent: #2c6a43;
+    --accent-soft: #e3efe5;
+    --code-bg: #e9eee6;
+    --term-bg: #15201a;
+    --term-fg: #d5e1d7;
+    --term-dim: #7e9486;
+    --term-hi: #a6e3b0;
+    --font-display: "Familjen Grotesk", "Segoe UI", system-ui, sans-serif;
+    --font-body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+    --font-mono: "IBM Plex Mono", ui-monospace, "Cascadia Mono", Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #101512;
+      --surface: #171e19;
+      --ink: #e3eae4;
+      --muted: #9ba89f;
+      --line: #2a342d;
+      --accent: #8cc79f;
+      --accent-soft: #1c3024;
+      --code-bg: #212a24;
+      --term-bg: #0a0e0b;
+      --term-fg: #d5e1d7;
+      --term-dim: #7e9486;
+      --term-hi: #a6e3b0;
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #101512;
+    --surface: #171e19;
+    --ink: #e3eae4;
+    --muted: #9ba89f;
+    --line: #2a342d;
+    --accent: #8cc79f;
+    --accent-soft: #1c3024;
+    --code-bg: #212a24;
+    --term-bg: #0a0e0b;
+    --term-fg: #d5e1d7;
+    --term-dim: #7e9486;
+    --term-hi: #a6e3b0;
+    color-scheme: dark;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font: 400 1rem/1.6 var(--font-body);
+  }
+  .pagina {
+    max-width: 60rem;
+    margin: 0 auto;
+    padding-inline: 24px;
+    padding-block: 48px 72px;
+    display: grid;
+    gap: 56px;
+  }
+  section { display: grid; gap: 18px; }
+  h1, h2 { font-family: var(--font-display); font-weight: 700; text-wrap: balance; margin: 0; }
+  h1 { font-size: clamp(2.1rem, 5.5vw, 3rem); line-height: 1.05; letter-spacing: -0.015em; }
+  h2 { font-size: 1.45rem; line-height: 1.2; }
+  p { margin: 0; max-width: 68ch; }
+  code, kbd, pre { font-family: var(--font-mono); }
+  code { font-size: 0.88em; background: var(--code-bg); padding: 0.08em 0.35em; border-radius: 4px; overflow-wrap: anywhere; }
+  kbd {
+    font-size: 0.85em;
+    border: 1px solid var(--line);
+    border-bottom-width: 2px;
+    border-radius: 5px;
+    padding: 0.05em 0.4em;
+    background: var(--surface);
+    white-space: nowrap;
+  }
+  h2 kbd { font-size: 0.8em; }
+
+  /* Cabecera */
+  .cabecera { display: grid; gap: 16px; }
+  .eyebrow {
+    font-size: 0.78rem;
+    font-weight: 600;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    color: var(--accent);
+  }
+  .bajada { font-size: 1.12rem; color: var(--muted); }
+  .estado { list-style: none; margin: 4px 0 0; padding: 0; display: flex; flex-wrap: wrap; gap: 8px; }
+  .estado li {
+    display: inline-flex; align-items: center; gap: 8px;
+    font-size: 0.88rem; font-weight: 500;
+    padding: 4px 12px;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    background: var(--surface);
+  }
+  .estado li::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--accent); }
+
+  /* Diagrama de capas */
+  .capas { display: grid; gap: 8px; }
+  .capa {
+    display: grid; gap: 2px;
+    padding: 14px 16px;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    background: var(--surface);
+    min-width: 0;
+  }
+  .modulo { font-family: var(--font-mono); font-weight: 500; font-size: 0.95rem; }
+  .rol { color: var(--muted); font-size: 0.93rem; }
+  .par { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+  .flecha { color: var(--muted); font-size: 0.85rem; padding-left: 18px; }
+  .flecha::before { content: "↓"; color: var(--accent); font-weight: 700; margin-right: 8px; }
+  .nucleo { border: 2px solid var(--accent); background: var(--accent-soft); gap: 12px; }
+  .nucleo-cabeza { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 12px; }
+  .paquetes { margin: 0; display: grid; gap: 6px; }
+  .paquetes div { display: grid; grid-template-columns: 9.5rem minmax(0, 1fr); gap: 12px; align-items: baseline; }
+  .paquetes dt { font-family: var(--font-mono); font-size: 0.88rem; font-weight: 500; color: var(--accent); }
+  .paquetes dd { margin: 0; font-size: 0.93rem; }
+  .nota { font-size: 0.93rem; color: var(--muted); }
+
+  /* Tabla de piezas */
+  .tabla { overflow-x: auto; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); }
+  table { width: 100%; border-collapse: collapse; font-size: 0.95rem; }
+  th, td { text-align: left; padding: 10px 16px; border-bottom: 1px solid var(--line); vertical-align: baseline; }
+  tbody tr:last-child th, tbody tr:last-child td { border-bottom: 0; }
+  thead th {
+    font-size: 0.75rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase;
+    color: var(--muted);
+  }
+  tbody th { font-weight: 600; white-space: nowrap; }
+  .glifo { display: inline-block; width: 1.6em; font-size: 1.25em; line-height: 1; color: var(--ink); }
+  .destacada td { color: var(--accent); font-weight: 600; }
+
+  /* Bloques de dos columnas */
+  .dos { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 32px; align-items: start; }
+  .dos > * { min-width: 0; }
+
+  /* Pasos de una jugada */
+  .pasos { list-style: none; counter-reset: paso; margin: 0; padding: 0; display: grid; gap: 14px; }
+  .pasos li { counter-increment: paso; display: grid; grid-template-columns: 2rem minmax(0, 1fr); gap: 4px; }
+  .pasos li::before {
+    content: counter(paso);
+    font-family: var(--font-display); font-weight: 700; font-size: 1.15rem; line-height: 1.4;
+    color: var(--accent);
+  }
+
+  /* Terminal */
+  figure { margin: 0; display: grid; gap: 8px; }
+  figcaption { font-size: 0.85rem; color: var(--muted); }
+  .terminal pre {
+    margin: 0;
+    padding: 16px 18px;
+    border-radius: 10px;
+    background: var(--term-bg);
+    color: var(--term-fg);
+    font-size: 0.8rem;
+    line-height: 1.55;
+    overflow-x: auto;
+  }
+  .terminal .dim { color: var(--term-dim); }
+  .terminal .entrada { color: var(--term-hi); font-weight: 500; }
+  .terminal .hi { color: var(--term-bg); background: var(--term-hi); border-radius: 2px; font-weight: 500; }
+
+  /* Comprobaciones */
+  .checks { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+  .checks li { display: grid; grid-template-columns: 1.5rem minmax(0, 1fr); max-width: 72ch; }
+  .checks li::before { content: "✓"; color: var(--accent); font-weight: 700; }
+  .capturas { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; align-items: start; }
+  .capturas img {
+    display: block; width: 100%; max-width: 100%; height: auto;
+    border: 1px solid var(--line); border-radius: 8px;
+  }
+
+  /* Pendientes y comandos */
+  .chips { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 8px; }
+  .chips li {
+    font-size: 0.88rem;
+    padding: 4px 12px;
+    border: 1px dashed var(--muted);
+    border-radius: 999px;
+    color: var(--muted);
+  }
+  .bloque { display: grid; gap: 14px; }
+  .comandos {
+    margin: 0;
+    padding: 14px 16px;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    background: var(--surface);
+    font-size: 0.85rem;
+    line-height: 1.7;
+    overflow-x: auto;
+  }
+  .comandos code { background: none; padding: 0; font-size: 1em; overflow-wrap: normal; }
+
+  @media (max-width: 760px) {
+    .pagina { padding-inline: 18px; padding-block: 32px 56px; gap: 44px; }
+    .dos { grid-template-columns: 1fr; gap: 24px; }
+  }
+  @media (max-width: 540px) {
+    .par, .capturas { grid-template-columns: 1fr; }
+    .paquetes div { grid-template-columns: 1fr; gap: 0; }
+    th, td { padding: 9px 12px; }
+  }
+</style>
+</head>
+<body>
+<main class="pagina">
+  <header class="cabecera">
+    <p class="eyebrow">Ingeniería de Software · TPO</p>
+    <h1>Así quedó nuestro ajedrez</h1>
+    <p class="bajada">Quedó implementado todo lo que piden los diagramas UML: el núcleo con las reglas, dos formas de jugar (consola y ventana) y los tests. Esta página resume cómo está armado y cómo funciona.</p>
+    <ul class="estado">
+      <li>Alcance obligatorio completo</li>
+      <li>92 tests en verde</li>
+      <li>UML al día con el código</li>
+    </ul>
+  </header>
+
+  <section aria-labelledby="t-arquitectura">
+    <h2 id="t-arquitectura">Núcleo + adaptadores</h2>
+    <p>Las reglas del ajedrez viven en un solo módulo que no sabe nada de pantallas. La consola y la ventana solo traducen: leen lo que hace el usuario, se lo pasan al núcleo por la interfaz <code>JuegoDeAjedrez</code> y muestran la respuesta.</p>
+    <div class="capas">
+      <div class="capa">
+        <span class="modulo">ajedrez-app</span>
+        <span class="rol"><code>Principal</code> crea todas las piezas del sistema y las conecta. Es el único que hace <code>new</code>.</span>
+      </div>
+      <div class="flecha">crea e inyecta</div>
+      <div class="par">
+        <div class="capa">
+          <span class="modulo">ajedrez-consola</span>
+          <span class="rol">Escribís <kbd>e2 e4</kbd> y dibuja el tablero en texto.</span>
+        </div>
+        <div class="capa">
+          <span class="modulo">ajedrez-gui-swing</span>
+          <span class="rol">Un clic en la pieza y otro en el destino.</span>
+        </div>
+      </div>
+      <div class="flecha">usan solo <code>JuegoDeAjedrez</code></div>
+      <div class="capa nucleo">
+        <div class="nucleo-cabeza">
+          <span class="modulo">ajedrez-nucleo</span>
+          <span class="rol">Java puro, sin dependencias</span>
+        </div>
+        <dl class="paquetes">
+          <div><dt>juego</dt><dd>El puerto <code>JuegoDeAjedrez</code> y la <code>Partida</code>, que guarda el tablero y el turno</dd></div>
+          <div><dt>reglas</dt><dd>Validador con dos reglas (turno y no dejar al rey en jaque) y el detector de jaque</dd></div>
+          <div><dt>movimiento</dt><dd>Cómo se mueve cada pieza y la jugada como objeto</dd></div>
+          <div><dt>modelo</dt><dd>Tablero inmutable, piezas, posiciones y colores</dd></div>
+          <div><dt>configuracion</dt><dd>Las seis piezas clásicas y la posición inicial</dd></div>
+        </dl>
+      </div>
+    </div>
+    <p class="nota">Las flechas apuntan siempre hacia el núcleo. Como su <code>pom.xml</code> no tiene dependencias, el compilador no le deja importar Swing ni la consola.</p>
+  </section>
+
+  <section aria-labelledby="t-piezas">
+    <h2 id="t-piezas">No hay una clase por pieza</h2>
+    <p>Cada pieza es un <code>TipoDePieza</code> con un nombre y una lista de reglas de movimiento. Para agregar una pieza nueva se arma otra lista, sin tocar código existente.</p>
+    <div class="tabla">
+      <table>
+        <thead>
+          <tr><th scope="col">Pieza</th><th scope="col">Reglas que la forman</th></tr>
+        </thead>
+        <tbody>
+          <tr><th scope="row"><span class="glifo" aria-hidden="true">&#x2656;&#xFE0E;</span>Torre</th><td><code>ReglaDeslizante(ORTOGONALES, SIN_LIMITE)</code></td></tr>
+          <tr><th scope="row"><span class="glifo" aria-hidden="true">&#x2657;&#xFE0E;</span>Alfil</th><td><code>ReglaDeslizante(DIAGONALES, SIN_LIMITE)</code></td></tr>
+          <tr class="destacada"><th scope="row"><span class="glifo" aria-hidden="true">&#x2655;&#xFE0E;</span>Dama</th><td>Las reglas de la torre y las del alfil, juntas</td></tr>
+          <tr><th scope="row"><span class="glifo" aria-hidden="true">&#x2654;&#xFE0E;</span>Rey</th><td><code>ReglaDeslizante(TODAS, 1)</code></td></tr>
+          <tr><th scope="row"><span class="glifo" aria-hidden="true">&#x2658;&#xFE0E;</span>Caballo</th><td><code>ReglaDeSalto(SALTOS_DE_CABALLO)</code></td></tr>
+          <tr><th scope="row"><span class="glifo" aria-hidden="true">&#x2659;&#xFE0E;</span>Peón</th><td><code>ReglaAvanceDePeon</code> + <code>ReglaCapturaDePeon</code></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section aria-labelledby="t-jugada">
+    <h2 id="t-jugada">Qué pasa cuando alguien juega <kbd>e2 e4</kbd></h2>
+    <div class="dos">
+      <ol class="pasos">
+        <li><span><strong>Consola.</strong> Traduce <code>e2</code> y <code>e4</code> a <code>Posicion(4, 1)</code> y <code>Posicion(4, 3)</code> y llama a <code>juego.jugar(desde, hasta)</code>.</span></li>
+        <li><span><strong>Partida.</strong> Le pide a la pieza de e2 sus jugadas candidatas. Si ninguna llega a e4, la jugada se rechaza.</span></li>
+        <li><span><strong>Validador.</strong> Revisa que la pieza sea del jugador de turno y que la jugada no deje a su rey en jaque. Para eso la prueba en un tablero nuevo, sin tocar el original.</span></li>
+        <li><span><strong>Jugada.</strong> Se aplica, cambia el turno y el detector avisa si el rival quedó en jaque.</span></li>
+        <li><span><strong>Respuesta.</strong> Vuelve un <code>ResultadoJugada</code> y la consola redibuja el tablero.</span></li>
+      </ol>
+      <figure class="terminal">
+<pre aria-label="Salida de la consola después de jugar e2 e4"><span class="dim">Turno de BLANCO (ejemplo: e2 e4, o 'salir'):</span> <span class="entrada">e2 e4</span>
+ 8  t c a d r a c t
+ 7  p p p p p p p p
+ 6  . . . . . . . .
+ 5  . . . . . . . .
+ 4  . . . . <span class="hi">P</span> . . .
+ 3  . . . . . . . .
+ 2  P P P P . P P P
+ 1  T C A D R A C T
+    a b c d e f g h
+
+<span class="dim">Turno de NEGRO (ejemplo: e2 e4, o 'salir'):</span></pre>
+        <figcaption>Salida real de la consola. Mayúsculas son blancas y minúsculas negras: P peón, T torre, C caballo, A alfil, D dama, R rey.</figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <section aria-labelledby="t-comprobado">
+    <h2 id="t-comprobado">Cómo se comprobó</h2>
+    <ul class="checks">
+      <li><span><strong>92 tests automáticos en verde</strong> (74 del núcleo y 18 de la consola), sin abrir ninguna interfaz.</span></li>
+      <li><span><strong>Extensibilidad:</strong> un test crea una pieza nueva (torre + caballo) y otro juega en un tablero de 10x10. Ninguno toca el núcleo.</span></li>
+      <li><span><strong>Partida real por consola:</strong> el juego no deja que el rey capture una dama defendida.</span></li>
+      <li><span><strong>Ventana Swing</strong> probada con clics simulados, abajo.</span></li>
+      <li><span><strong>Reglas del roadmap:</strong> el núcleo no usa consola, Swing ni archivos, no hay <code>switch</code> sobre piezas y el único <code>8</code> está en <code>TableroEstandar</code>.</span></li>
+    </ul>
+    <div class="capturas">
+      <figure>
+        <img src="gui-jaque.png" width="576" height="592" alt="Ventana Swing del ajedrez: la dama negra en h4 da jaque al rey blanco y la barra inferior dice Turno de BLANCO, ¡Jaque al rey BLANCO!">
+        <figcaption>Mate del loco jugado con clics: la dama negra en h4 y el aviso de jaque.</figcaption>
+      </figure>
+      <figure>
+        <img src="gui-10x10.png" width="720" height="736" alt="Ventana Swing con un tablero de 10 por 10: dos reyes, un peón y dos piezas nuevas dibujadas con la letra C">
+        <figcaption>Tablero de 10x10 con una pieza nueva, el canciller (C). La ventana no se modificó.</figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <section class="dos" aria-label="Pendientes y cómo correrlo">
+    <div class="bloque">
+      <h2>Lo que falta (opcional)</h2>
+      <ul class="chips">
+        <li>Jaque mate</li>
+        <li>Enroque</li>
+        <li>Captura al paso</li>
+        <li>Promoción</li>
+        <li>Tablas</li>
+      </ul>
+      <p>Hoy, después de un mate, la partida no termina: rechaza todas las jugadas. El jaque mate es el primer opcional para sumar, porque reutiliza el validador.</p>
+    </div>
+    <div class="bloque">
+      <h2>Cómo correrlo</h2>
+      <pre class="comandos"><code>mvn package
+java -jar ajedrez-app/target/ajedrez.jar
+java -jar ajedrez-app/target/ajedrez.jar --gui</code></pre>
+      <p>El detalle está en el README del repo y en los diagramas de la carpeta <code>uml/</code>.</p>
+    </div>
+  </section>
+</main>
+</body>
+</html>
