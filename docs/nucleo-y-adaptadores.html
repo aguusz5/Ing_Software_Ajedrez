@@ -1,0 +1,436 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Núcleo y adaptadores</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Familjen+Grotesk:wght@500;700&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+  /* Mismos tokens que resumen.html. Verde = núcleo, azul = adaptadores, ámbar = arranque (igual que en uml/). */
+  :root {
+    --bg: #f4f6f1;
+    --surface: #ffffff;
+    --ink: #17201a;
+    --muted: #56625a;
+    --line: #d6ddd3;
+    --code-bg: #e9eee6;
+    --nucleo: #2c6a43;
+    --nucleo-soft: #e3efe5;
+    --adapt: #2b5d8f;
+    --adapt-soft: #e4edf7;
+    --app: #8a5a12;
+    --app-soft: #fbf0dc;
+    --font-display: "Familjen Grotesk", "Segoe UI", system-ui, sans-serif;
+    --font-body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+    --font-mono: "IBM Plex Mono", ui-monospace, "Cascadia Mono", Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #101512;
+      --surface: #171e19;
+      --ink: #e3eae4;
+      --muted: #9ba89f;
+      --line: #2a342d;
+      --code-bg: #212a24;
+      --nucleo: #8cc79f;
+      --nucleo-soft: #1c3024;
+      --adapt: #8fb8e3;
+      --adapt-soft: #1a2635;
+      --app: #e2b46a;
+      --app-soft: #2e2416;
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #101512;
+    --surface: #171e19;
+    --ink: #e3eae4;
+    --muted: #9ba89f;
+    --line: #2a342d;
+    --code-bg: #212a24;
+    --nucleo: #8cc79f;
+    --nucleo-soft: #1c3024;
+    --adapt: #8fb8e3;
+    --adapt-soft: #1a2635;
+    --app: #e2b46a;
+    --app-soft: #2e2416;
+    color-scheme: dark;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font: 400 1rem/1.6 var(--font-body);
+  }
+  .pagina {
+    max-width: 60rem;
+    margin: 0 auto;
+    padding-inline: 24px;
+    padding-block: 48px 72px;
+    display: grid;
+    gap: 56px;
+  }
+  section { display: grid; gap: 18px; }
+  .pagina > *, section > * { min-width: 0; }
+  h1, h2, h3 { font-family: var(--font-display); font-weight: 700; text-wrap: balance; margin: 0; }
+  h1 { font-size: clamp(2.1rem, 5.5vw, 3rem); line-height: 1.05; letter-spacing: -0.015em; }
+  h2 { font-size: 1.45rem; line-height: 1.2; }
+  h3 { font-size: 1.08rem; line-height: 1.25; }
+  p { margin: 0; max-width: 68ch; }
+  code, kbd { font-family: var(--font-mono); }
+  code { font-size: 0.88em; background: var(--code-bg); padding: 0.08em 0.35em; border-radius: 4px; overflow-wrap: anywhere; }
+  kbd {
+    font-size: 0.85em;
+    border: 1px solid var(--line);
+    border-bottom-width: 2px;
+    border-radius: 5px;
+    padding: 0.05em 0.4em;
+    background: var(--surface);
+    white-space: nowrap;
+  }
+
+  .cabecera { display: grid; gap: 16px; }
+  .eyebrow {
+    font-size: 0.78rem; font-weight: 600; letter-spacing: 0.09em; text-transform: uppercase;
+    color: var(--nucleo);
+  }
+  .bajada { font-size: 1.12rem; color: var(--muted); }
+
+  /* Leyenda de colores */
+  .leyenda { list-style: none; margin: 4px 0 0; padding: 0; display: flex; flex-wrap: wrap; gap: 8px; }
+  .leyenda li {
+    display: inline-flex; align-items: center; gap: 8px;
+    font-size: 0.88rem; font-weight: 500;
+    padding: 4px 12px;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    background: var(--surface);
+  }
+  .leyenda li::before { content: ""; width: 10px; height: 10px; border-radius: 3px; background: var(--c); }
+  .c-nucleo { --c: var(--nucleo); }
+  .c-adapt { --c: var(--adapt); }
+  .c-app { --c: var(--app); }
+
+  /* Diagrama: adaptadores a los costados, núcleo al centro, el puerto como su borde */
+  .mapa {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.5fr) minmax(0, 1fr);
+    gap: 12px;
+    align-items: stretch;
+  }
+  .caja {
+    display: grid; gap: 8px; align-content: start;
+    padding: 16px;
+    border-radius: 12px;
+    border: 1px solid var(--line);
+    background: var(--surface);
+    min-width: 0;
+  }
+  .caja .modulo { font-family: var(--font-mono); font-weight: 500; font-size: 0.92rem; }
+  .caja .rol { font-size: 0.9rem; color: var(--muted); }
+  .caja ul { margin: 0; padding: 0; list-style: none; display: grid; gap: 4px; font-size: 0.88rem; }
+  .caja li code { font-size: 0.86em; }
+  .etiqueta {
+    font-size: 0.72rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase;
+  }
+  .adapt { border-color: var(--adapt); background: var(--adapt-soft); }
+  .adapt .etiqueta { color: var(--adapt); }
+  .nucleo { border: 2px solid var(--nucleo); background: var(--nucleo-soft); position: relative; }
+  .nucleo .etiqueta { color: var(--nucleo); }
+  .app { border-color: var(--app); background: var(--app-soft); }
+  .app .etiqueta { color: var(--app); }
+  .puerto {
+    display: grid; gap: 2px;
+    padding: 10px 12px;
+    border: 1px dashed var(--nucleo);
+    border-radius: 8px;
+    background: var(--surface);
+  }
+  .puerto strong { font-family: var(--font-mono); font-weight: 500; font-size: 0.9rem; }
+  .puerto span { font-size: 0.82rem; color: var(--muted); }
+  .paquetes { display: grid; gap: 6px; margin: 0; }
+  .paquetes div { display: grid; grid-template-columns: 7.2rem minmax(0, 1fr); gap: 8px; align-items: baseline; }
+  .paquetes dt { font-family: var(--font-mono); font-size: 0.84rem; font-weight: 500; color: var(--nucleo); }
+  .paquetes dd { margin: 0; font-size: 0.86rem; }
+  .flecha-lado {
+    font-size: 0.8rem; color: var(--adapt); font-weight: 600; margin-top: auto;
+  }
+  .mapa-app { grid-column: 1 / -1; }
+  .nota { font-size: 0.93rem; color: var(--muted); }
+
+  /* Tablas */
+  .tabla { overflow-x: auto; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); }
+  table { width: 100%; border-collapse: collapse; font-size: 0.93rem; }
+  th, td { text-align: left; padding: 9px 14px; border-bottom: 1px solid var(--line); vertical-align: baseline; }
+  tbody tr:last-child th, tbody tr:last-child td { border-bottom: 0; }
+  thead th {
+    font-size: 0.72rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase;
+    color: var(--muted);
+  }
+  tbody th { font-weight: 500; font-family: var(--font-mono); font-size: 0.88rem; }
+  .grupo th {
+    font-family: var(--font-body); font-size: 0.78rem; font-weight: 600; letter-spacing: 0.08em;
+    text-transform: uppercase; padding-top: 14px;
+    border-left: 4px solid var(--c);
+    color: var(--c);
+    background: var(--bg);
+  }
+  .lado { font-size: 0.8rem; font-weight: 600; color: var(--c); white-space: nowrap; }
+
+  /* Dos columnas */
+  .dos { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; align-items: stretch; }
+  .dos > * { min-width: 0; }
+  .tarjeta {
+    display: grid; gap: 10px; align-content: start;
+    padding: 18px;
+    border-radius: 12px;
+    border: 1px solid var(--line);
+    border-top: 4px solid var(--c);
+    background: var(--surface);
+  }
+  .tarjeta h3 { color: var(--c); }
+  .tarjeta ul { margin: 0; padding-left: 1.1rem; display: grid; gap: 6px; font-size: 0.94rem; }
+
+  /* Preguntas para clasificar */
+  .preguntas { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+  .preguntas li {
+    display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 16px; align-items: center;
+    padding: 12px 16px;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    background: var(--surface);
+  }
+  .preguntas .lado {
+    padding: 3px 10px; border-radius: 999px; border: 1px solid var(--c);
+  }
+
+  /* Recorrido de una jugada, separado por lado */
+  .recorrido { list-style: none; counter-reset: paso; margin: 0; padding: 0; display: grid; gap: 10px; }
+  .recorrido li {
+    counter-increment: paso;
+    display: grid; grid-template-columns: 2rem 7.5rem minmax(0, 1fr); gap: 10px; align-items: baseline;
+    padding: 10px 14px;
+    border-radius: 10px;
+    border-left: 4px solid var(--c);
+    background: var(--surface);
+  }
+  .recorrido li::before {
+    content: counter(paso);
+    font-family: var(--font-display); font-weight: 700; font-size: 1.1rem; color: var(--c);
+  }
+
+  /* Bloque "regla de oro" */
+  .regla {
+    padding: 18px 20px;
+    border-radius: 12px;
+    border: 2px solid var(--nucleo);
+    background: var(--nucleo-soft);
+    display: grid; gap: 8px;
+  }
+  .regla strong { font-family: var(--font-display); font-size: 1.15rem; }
+
+  @media (max-width: 760px) {
+    .pagina { padding-inline: 16px; padding-block: 32px 56px; gap: 44px; }
+    .mapa { grid-template-columns: 1fr; }
+    .nucleo { order: -1; }
+    .dos { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 540px) {
+    .paquetes div { grid-template-columns: 1fr; gap: 0; }
+    .recorrido li { grid-template-columns: 1.6rem minmax(0, 1fr); }
+    .recorrido li .lado { grid-column: 2; }
+    .recorrido li > span:last-child { grid-column: 2; }
+    .preguntas li { grid-template-columns: 1fr; gap: 6px; }
+    .preguntas .lado { justify-self: start; }
+    th, td { padding: 8px 10px; }
+    /* En el celular el lado ya lo dice el encabezado de cada grupo */
+    .tabla thead th:nth-child(2), .tabla td.lado { display: none; }
+  }
+</style>
+</head>
+<body>
+<main class="pagina">
+  <header class="cabecera">
+    <p class="eyebrow">Ingeniería de Software · TPO Ajedrez</p>
+    <h1>Qué es núcleo y qué es adaptador</h1>
+    <p class="bajada">El proyecto tiene cuatro módulos de Maven. Uno es el núcleo, dos son adaptadores y el cuarto es el arranque que los conecta. Esta página muestra qué va en cada lado y cómo darse cuenta.</p>
+    <ul class="leyenda" aria-label="Colores usados en la página">
+      <li class="c-nucleo">Núcleo: las reglas del ajedrez</li>
+      <li class="c-adapt">Adaptadores: cómo juega el usuario</li>
+      <li class="c-app">Arranque: conecta todo</li>
+    </ul>
+  </header>
+
+  <section aria-labelledby="t-idea">
+    <h2 id="t-idea">La idea en una frase</h2>
+    <div class="regla">
+      <strong>El núcleo sabe jugar al ajedrez pero no sabe cómo se ve. Los adaptadores saben cómo se ve, pero no saben jugar.</strong>
+      <p>El núcleo decide si una jugada vale, de quién es el turno y si hay jaque. Un adaptador solo traduce: convierte lo que hace la persona (escribir <kbd>e2 e4</kbd>, hacer clic) en una llamada al núcleo y muestra la respuesta. Hablan por una sola puerta, la interfaz <code>JuegoDeAjedrez</code>, que es el <strong>puerto</strong>.</p>
+    </div>
+  </section>
+
+  <section aria-labelledby="t-mapa">
+    <h2 id="t-mapa">El mapa</h2>
+    <div class="mapa">
+      <div class="caja adapt">
+        <span class="etiqueta">Adaptador</span>
+        <span class="modulo">ajedrez-consola</span>
+        <span class="rol">Jugar escribiendo en la terminal.</span>
+        <ul>
+          <li><code>AdaptadorConsola</code></li>
+          <li><code>TraductorDeNotacion</code></li>
+          <li><code>DibujanteAscii</code></li>
+        </ul>
+        <span class="flecha-lado">usa el puerto →</span>
+      </div>
+
+      <div class="caja nucleo">
+        <span class="etiqueta">Núcleo</span>
+        <span class="modulo">ajedrez-nucleo</span>
+        <span class="rol">Java puro. Su <code>pom.xml</code> no tiene dependencias, salvo JUnit para los tests.</span>
+        <div class="puerto">
+          <strong>JuegoDeAjedrez</strong>
+          <span>El puerto. Lo implementa <code>Partida</code>. Es la única puerta de entrada.</span>
+        </div>
+        <dl class="paquetes">
+          <div><dt>juego</dt><dd><code>Partida</code>, <code>ResultadoJugada</code></dd></div>
+          <div><dt>reglas</dt><dd>Validador, turno, no dejar al rey en jaque, detector de jaque</dd></div>
+          <div><dt>movimiento</dt><dd>Cómo se mueve cada pieza, la jugada</dd></div>
+          <div><dt>modelo</dt><dd>Tablero, pieza, posición, color</dd></div>
+          <div><dt>configuracion</dt><dd>Las seis piezas clásicas y la posición inicial</dd></div>
+        </dl>
+      </div>
+
+      <div class="caja adapt">
+        <span class="etiqueta">Adaptador</span>
+        <span class="modulo">ajedrez-gui-swing</span>
+        <span class="rol">Jugar con clics en una ventana.</span>
+        <ul>
+          <li><code>VentanaSwing</code></li>
+          <li><code>GlifosDePieza</code></li>
+        </ul>
+        <span class="flecha-lado">← usa el puerto</span>
+      </div>
+
+      <div class="caja app mapa-app">
+        <span class="etiqueta">Ni núcleo ni adaptador: arranque</span>
+        <span class="modulo">ajedrez-app · Principal</span>
+        <span class="rol">Es la <strong>raíz de composición</strong>: el único lugar que conoce todas las clases concretas. Crea la <code>Partida</code> con sus reglas, crea el adaptador que corresponda (consola, o ventana con <code>--gui</code>) y le pasa la partida. No tiene lógica de ajedrez ni de pantalla.</span>
+      </div>
+    </div>
+    <p class="nota">Las dependencias apuntan siempre hacia el núcleo. La consola y la ventana dependen de él, y él no depende de nadie. Por eso el compilador no lo deja importar Swing ni <code>Scanner</code>.</p>
+  </section>
+
+  <section aria-labelledby="t-clases">
+    <h2 id="t-clases">Clase por clase</h2>
+    <div class="tabla">
+      <table>
+        <thead>
+          <tr><th scope="col">Clase</th><th scope="col">Lado</th><th scope="col">Qué hace</th></tr>
+        </thead>
+        <tbody>
+          <tr class="grupo c-nucleo"><th colspan="3" scope="rowgroup">Núcleo · ajedrez-nucleo</th></tr>
+          <tr class="c-nucleo"><th scope="row">JuegoDeAjedrez</th><td class="lado">Puerto</td><td>La interfaz que ven los adaptadores: <code>jugar</code>, <code>tablero</code>, <code>turnoActual</code>, <code>estaEnJaque</code>.</td></tr>
+          <tr class="c-nucleo"><th scope="row">Partida</th><td class="lado">Núcleo</td><td>Implementa el puerto. Guarda el tablero y el turno, y coordina cada jugada.</td></tr>
+          <tr class="c-nucleo"><th scope="row">ResultadoJugada</th><td class="lado">Núcleo</td><td>La respuesta de <code>jugar()</code>: si valió, el motivo si no, y si hay jaque.</td></tr>
+          <tr class="c-nucleo"><th scope="row">ValidadorDeJugadas</th><td class="lado">Núcleo</td><td>Pasa la jugada por una lista de reglas.</td></tr>
+          <tr class="c-nucleo"><th scope="row">ReglaPiezaPropia</th><td class="lado">Núcleo</td><td>Solo podés mover tus piezas.</td></tr>
+          <tr class="c-nucleo"><th scope="row">ReglaNoDejarReyEnJaque</th><td class="lado">Núcleo</td><td>No podés dejar a tu rey en jaque.</td></tr>
+          <tr class="c-nucleo"><th scope="row">DetectorDeJaque</th><td class="lado">Núcleo</td><td>Dice si un rey está atacado.</td></tr>
+          <tr class="c-nucleo"><th scope="row">ReglaDeslizante, ReglaDeSalto, ReglaAvanceDePeon, ReglaCapturaDePeon</th><td class="lado">Núcleo</td><td>Cómo se mueve cada pieza (patrón Strategy).</td></tr>
+          <tr class="c-nucleo"><th scope="row">Jugada, JugadaSimple</th><td class="lado">Núcleo</td><td>Una jugada como objeto, que se aplica sobre un tablero y devuelve uno nuevo.</td></tr>
+          <tr class="c-nucleo"><th scope="row">Tablero, Pieza, TipoDePieza, Posicion, Direccion, Color</th><td class="lado">Núcleo</td><td>Las cosas del juego.</td></tr>
+          <tr class="c-nucleo"><th scope="row">TiposDePiezaEstandar, TableroEstandar</th><td class="lado">Núcleo</td><td>Arman el ajedrez clásico: las seis piezas y la posición inicial.</td></tr>
+
+          <tr class="grupo c-adapt"><th colspan="3" scope="rowgroup">Adaptador de consola · ajedrez-consola</th></tr>
+          <tr class="c-adapt"><th scope="row">AdaptadorConsola</th><td class="lado">Adaptador</td><td>El bucle: lee una línea, llama a <code>juego.jugar()</code> e imprime el resultado.</td></tr>
+          <tr class="c-adapt"><th scope="row">TraductorDeNotacion</th><td class="lado">Adaptador</td><td>Convierte <code>"e2"</code> en <code>Posicion(4, 1)</code>.</td></tr>
+          <tr class="c-adapt"><th scope="row">DibujanteAscii</th><td class="lado">Adaptador</td><td>Dibuja el tablero con letras (<code>P</code>, <code>t</code>, <code>.</code>).</td></tr>
+
+          <tr class="grupo c-adapt"><th colspan="3" scope="rowgroup">Adaptador gráfico · ajedrez-gui-swing</th></tr>
+          <tr class="c-adapt"><th scope="row">VentanaSwing</th><td class="lado">Adaptador</td><td>Grilla de botones: primer clic elige la pieza y el segundo, el destino.</td></tr>
+          <tr class="c-adapt"><th scope="row">GlifosDePieza</th><td class="lado">Adaptador</td><td>Elige el símbolo de cada pieza (♔, ♕…).</td></tr>
+
+          <tr class="grupo c-app"><th colspan="3" scope="rowgroup">Arranque · ajedrez-app</th></tr>
+          <tr class="c-app"><th scope="row">Principal</th><td class="lado">Arranque</td><td>Hace todos los <code>new</code> y conecta las piezas. Elige consola o ventana.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section aria-labelledby="t-frontera">
+    <h2 id="t-frontera">Qué cruza la frontera</h2>
+    <p>Así quedan los <code>import</code> del código actual:</p>
+    <div class="dos">
+      <div class="tarjeta c-adapt">
+        <h3>Lo que los adaptadores toman del núcleo</h3>
+        <ul>
+          <li><code>JuegoDeAjedrez</code>: el puerto, para pedir jugadas.</li>
+          <li><code>ResultadoJugada</code>: la respuesta.</li>
+          <li><code>Tablero</code>, <code>Pieza</code>, <code>Posicion</code> y <code>Color</code>: los datos que el puerto devuelve o recibe, para dibujar y para indicar casillas.</li>
+        </ul>
+        <p class="nota">Nunca importan <code>reglas</code>, <code>movimiento</code> ni <code>configuracion</code>. No pueden saltearse la validación ni mover una pieza por su cuenta. Además, el <code>Tablero</code> es inmutable, así que un adaptador puede leerlo pero no modificarlo.</p>
+      </div>
+      <div class="tarjeta c-nucleo">
+        <h3>Lo que el núcleo toma de afuera</h3>
+        <ul>
+          <li>Solo <code>java.util</code>: listas, mapas, <code>Optional</code>.</li>
+          <li>Ningún import de <code>consola</code>, <code>gui</code>, <code>javax.swing</code>, <code>java.awt</code> ni <code>java.io</code>.</li>
+        </ul>
+        <p class="nota">El núcleo no necesita pedirle nada al exterior, así que no tiene puerto de salida. <code>jugar()</code> devuelve un <code>ResultadoJugada</code> y el adaptador decide cómo mostrarlo.</p>
+      </div>
+    </div>
+  </section>
+
+  <section aria-labelledby="t-jugada">
+    <h2 id="t-jugada">Una jugada, separada por lado</h2>
+    <p>Esto pasa cuando alguien escribe <kbd>e2 e4</kbd> en la consola:</p>
+    <ol class="recorrido">
+      <li class="c-adapt"><span class="lado">Adaptador</span><span><code>AdaptadorConsola</code> lee la línea <code>"e2 e4"</code>.</span></li>
+      <li class="c-adapt"><span class="lado">Adaptador</span><span><code>TraductorDeNotacion</code> convierte cada casilla en una <code>Posicion</code>.</span></li>
+      <li class="c-nucleo"><span class="lado">Puerto</span><span>Se llama a <code>juego.jugar(desde, hasta)</code>. Aquí se cruza la frontera.</span></li>
+      <li class="c-nucleo"><span class="lado">Núcleo</span><span><code>Partida</code> pide las jugadas posibles de la pieza, el validador revisa el turno y el jaque, y se aplica la jugada.</span></li>
+      <li class="c-nucleo"><span class="lado">Núcleo</span><span>Devuelve un <code>ResultadoJugada</code>: válida o no, el motivo y si hay jaque.</span></li>
+      <li class="c-adapt"><span class="lado">Adaptador</span><span><code>DibujanteAscii</code> redibuja el tablero, o la consola imprime <code>Jugada inválida: …</code> con el motivo que dio el núcleo.</span></li>
+    </ol>
+    <p class="nota">En la ventana Swing cambian los pasos 1, 2 y 6 (clics en vez de texto, botones en vez de letras). Los pasos 3, 4 y 5 son exactamente los mismos.</p>
+  </section>
+
+  <section aria-labelledby="t-clasificar">
+    <h2 id="t-clasificar">Cómo saber de qué lado va algo</h2>
+    <ul class="preguntas">
+      <li><span>¿Decide si una jugada vale, de quién es el turno o si hay jaque?</span><span class="lado c-nucleo">Núcleo</span></li>
+      <li><span>¿Sabe cómo se mueve una pieza o cómo arranca el tablero?</span><span class="lado c-nucleo">Núcleo</span></li>
+      <li><span>¿Lee teclado o clics, o usa <code>Scanner</code>, <code>System.out</code>, Swing o colores de pantalla?</span><span class="lado c-adapt">Adaptador</span></li>
+      <li><span>¿Traduce entre lo que ve la persona (<code>"e2"</code>, ♔) y los objetos del núcleo?</span><span class="lado c-adapt">Adaptador</span></li>
+      <li><span>¿Crea los objetos concretos y los conecta entre sí?</span><span class="lado c-app">Arranque</span></li>
+    </ul>
+  </section>
+
+  <section aria-labelledby="t-cambios">
+    <h2 id="t-cambios">Por qué conviene separarlo así</h2>
+    <div class="dos">
+      <div class="tarjeta c-adapt">
+        <h3>Si mañana quieren una interfaz web</h3>
+        <ul>
+          <li>Se crea un módulo nuevo, <code>ajedrez-web</code>, que usa <code>JuegoDeAjedrez</code>.</li>
+          <li>El núcleo no se toca y las reglas siguen siendo las mismas.</li>
+        </ul>
+      </div>
+      <div class="tarjeta c-nucleo">
+        <h3>Si mañana agregan el enroque</h3>
+        <ul>
+          <li>Se cambia solo el núcleo: una regla o jugada nueva.</li>
+          <li>La consola y la ventana lo soportan sin cambios, porque solo llaman a <code>jugar()</code>.</li>
+        </ul>
+      </div>
+    </div>
+    <p class="nota">Por la misma razón, todos los tests del núcleo corren sin abrir ninguna ventana ni escribir en la terminal.</p>
+  </section>
+</main>
+</body>
+</html>
