@@ -1,0 +1,478 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Estado del Ajedrez</title>
+<!--
+  CÓMO ACTUALIZAR ESTA PÁGINA
+  1. Cambiá la fecha de "Última actualización" (el texto y el atributo datetime="AAAA-MM-DD").
+  2. Cambiá el estado de lo que avanzó: la clase del span (hecho / parcial / pendiente) y su texto.
+  3. Agregá una entrada ARRIBA DE TODO en "Historial", con la fecha y qué cambió.
+  No borres entradas viejas del historial: son el registro de cómo avanzó el proyecto.
+-->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Familjen+Grotesk:wght@500;700&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+  /* Mismos tokens que explicaciones/resumen.html. Una columna de lectura; las tablas scrollean dentro de su caja. */
+  :root {
+    --bg: #f4f6f1;
+    --surface: #ffffff;
+    --ink: #17201a;
+    --muted: #56625a;
+    --line: #d6ddd3;
+    --accent: #2c6a43;
+    --accent-soft: #e3efe5;
+    --code-bg: #e9eee6;
+    --hecho: #2c6a43;
+    --parcial: #9a6a12;
+    --parcial-soft: #fbf0dc;
+    --pendiente: #6b756e;
+    --font-display: "Familjen Grotesk", "Segoe UI", system-ui, sans-serif;
+    --font-body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+    --font-mono: "IBM Plex Mono", ui-monospace, "Cascadia Mono", Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #101512;
+      --surface: #171e19;
+      --ink: #e3eae4;
+      --muted: #9ba89f;
+      --line: #2a342d;
+      --accent: #8cc79f;
+      --accent-soft: #1c3024;
+      --code-bg: #212a24;
+      --hecho: #8cc79f;
+      --parcial: #e2b46a;
+      --parcial-soft: #2e2416;
+      --pendiente: #8f9b93;
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #101512;
+    --surface: #171e19;
+    --ink: #e3eae4;
+    --muted: #9ba89f;
+    --line: #2a342d;
+    --accent: #8cc79f;
+    --accent-soft: #1c3024;
+    --code-bg: #212a24;
+    --hecho: #8cc79f;
+    --parcial: #e2b46a;
+    --parcial-soft: #2e2416;
+    --pendiente: #8f9b93;
+    color-scheme: dark;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font: 400 1rem/1.6 var(--font-body);
+  }
+  .pagina {
+    max-width: 60rem;
+    margin: 0 auto;
+    padding-inline: 24px;
+    padding-block: 48px 72px;
+    display: grid;
+    gap: 56px;
+  }
+  section { display: grid; gap: 16px; }
+  .pagina > *, section > * { min-width: 0; }
+  h1, h2 { font-family: var(--font-display); font-weight: 700; text-wrap: balance; margin: 0; }
+  h1 { font-size: clamp(2.1rem, 5.5vw, 3rem); line-height: 1.05; letter-spacing: -0.015em; }
+  h2 { font-size: 1.45rem; line-height: 1.2; }
+  p { margin: 0; max-width: 68ch; }
+  a { color: var(--accent); text-underline-offset: 2px; }
+  a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 2px; }
+  code { font-family: var(--font-mono); font-size: 0.86em; background: var(--code-bg); padding: 0.08em 0.35em; border-radius: 4px; overflow-wrap: anywhere; }
+  .nota { font-size: 0.93rem; color: var(--muted); }
+
+  /* Cabecera */
+  .cabecera { display: grid; gap: 16px; }
+  .eyebrow {
+    font-size: 0.78rem; font-weight: 600; letter-spacing: 0.09em; text-transform: uppercase;
+    color: var(--accent);
+  }
+  .sello {
+    justify-self: start;
+    display: inline-flex; flex-wrap: wrap; align-items: baseline; gap: 4px 10px;
+    padding: 6px 14px;
+    border: 1px solid var(--accent);
+    border-radius: 8px;
+    background: var(--accent-soft);
+    font-size: 0.9rem;
+  }
+  .sello span { color: var(--muted); }
+  .sello time { font-family: var(--font-mono); font-weight: 500; font-variant-numeric: tabular-nums; }
+  .bajada { font-size: 1.12rem; color: var(--muted); }
+  .siguiente {
+    display: grid; gap: 6px;
+    padding: 16px 18px;
+    border-radius: 12px;
+    border: 2px solid var(--accent);
+    background: var(--surface);
+  }
+  .siguiente .eyebrow { font-size: 0.72rem; }
+
+  /* Pastillas de estado: el punto cambia de forma, no solo de color */
+  .estado {
+    display: inline-flex; align-items: center; gap: 7px;
+    font-size: 0.84rem; font-weight: 500; white-space: nowrap;
+  }
+  .estado::before {
+    content: ""; width: 10px; height: 10px; border-radius: 50%; flex: none;
+    border: 2px solid var(--c);
+  }
+  .hecho { --c: var(--hecho); color: var(--hecho); }
+  .hecho::before { background: var(--c); }
+  .parcial { --c: var(--parcial); color: var(--parcial); }
+  .parcial::before { background: linear-gradient(90deg, var(--c) 50%, transparent 50%); }
+  .pendiente { --c: var(--pendiente); color: var(--pendiente); }
+
+  .leyenda { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 8px 18px; }
+
+  /* Tablas */
+  .tabla { overflow-x: auto; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); }
+  table { width: 100%; border-collapse: collapse; font-size: 0.93rem; }
+  th, td { text-align: left; padding: 10px 14px; border-bottom: 1px solid var(--line); vertical-align: baseline; }
+  tbody tr:last-child th, tbody tr:last-child td { border-bottom: 0; }
+  thead th {
+    font-size: 0.72rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase;
+    color: var(--muted); white-space: nowrap;
+  }
+  tbody th { font-weight: 600; }
+  .fechas { font-family: var(--font-mono); font-size: 0.84rem; font-variant-numeric: tabular-nums; white-space: nowrap; color: var(--muted); }
+  tr.actual { background: var(--accent-soft); }
+  td.detalle { color: var(--muted); font-size: 0.9rem; min-width: 16rem; }
+
+  /* Próximos pasos: es una secuencia real, por eso va numerada */
+  .pasos { margin: 0; padding-left: 1.4rem; display: grid; gap: 10px; max-width: 72ch; }
+  .pasos li::marker { font-family: var(--font-display); font-weight: 700; color: var(--accent); }
+
+  /* Dónde está cada cosa */
+  .mapa { margin: 0; display: grid; gap: 8px; }
+  .mapa div { display: grid; grid-template-columns: 15rem minmax(0, 1fr); gap: 12px; align-items: baseline; }
+  .mapa dt { font-family: var(--font-mono); font-size: 0.88rem; }
+  .mapa dd { margin: 0; color: var(--muted); font-size: 0.94rem; }
+
+  /* Historial: la entrada más nueva arriba */
+  .historial { list-style: none; margin: 0; padding: 0; display: grid; gap: 0; }
+  .historial > li {
+    display: grid; grid-template-columns: 7.5rem minmax(0, 1fr); gap: 16px;
+    padding-block: 16px;
+    border-top: 1px solid var(--line);
+  }
+  .historial > li:first-child { border-top: 0; padding-top: 0; }
+  .historial time { font-family: var(--font-mono); font-weight: 500; font-variant-numeric: tabular-nums; color: var(--accent); }
+  .historial ul { margin: 0; padding-left: 1.1rem; display: grid; gap: 4px; font-size: 0.95rem; }
+
+  @media (max-width: 760px) {
+    .pagina { padding-inline: 16px; padding-block: 32px 56px; gap: 44px; }
+    .mapa div, .historial > li { grid-template-columns: 1fr; gap: 4px; }
+  }
+</style>
+</head>
+<body>
+<main class="pagina">
+
+  <header class="cabecera">
+    <div class="eyebrow">TPO Ajedrez · Ingeniería de Software</div>
+    <h1>Dónde estamos</h1>
+    <p class="sello"><span>Última actualización</span> <time datetime="2026-10-08">8 de octubre de 2026</time></p>
+    <p class="bajada">El alcance obligatorio está completo y probado: las seis piezas, turnos, captura,
+      validación y jaque, jugables por consola y por ventana. Por calendario el roadmap nos ubica en la
+      fase 2, así que vamos adelantados.</p>
+    <div class="siguiente">
+      <span class="eyebrow">Lo próximo</span>
+      <p>Empezar los opcionales por <strong>jaque mate y ahogado</strong>, que reutilizan el validador
+        para saber si al jugador le queda alguna jugada legal.</p>
+    </div>
+  </header>
+
+  <section aria-labelledby="t-fases">
+    <h2 id="t-fases">Fases del roadmap</h2>
+    <ul class="leyenda" aria-label="Qué significa cada estado">
+      <li><span class="estado hecho">Hecha</span></li>
+      <li><span class="estado parcial">En curso</span></li>
+      <li><span class="estado pendiente">Sin empezar</span></li>
+    </ul>
+    <div class="tabla">
+      <table>
+        <thead>
+          <tr><th scope="col">Fase</th><th scope="col">Planificada</th><th scope="col">Estado</th><th scope="col">Detalle</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <th scope="row">F0 · Setup y contratos</th>
+            <td class="fechas">19/09 – 27/09</td>
+            <td><span class="estado hecho">Hecha</span></td>
+            <td class="detalle">Módulos Maven, núcleo sin dependencias, contrato del núcleo. El 08/10 se sumaron el CI, <code>CLAUDE.md</code> y <code>decisiones.md</code>. El CI corre en GitHub a partir del próximo push.</td>
+          </tr>
+          <tr>
+            <th scope="row">F1 · Walking skeleton</th>
+            <td class="fechas">28/09 – 04/10</td>
+            <td><span class="estado hecho">Hecha</span></td>
+            <td class="detalle">Una jugada atraviesa consola → puerto → núcleo y vuelve.</td>
+          </tr>
+          <tr class="actual">
+            <th scope="row">F2 · Piezas y captura</th>
+            <td class="fechas">05/10 – 18/10</td>
+            <td><span class="estado hecho">Hecha</span></td>
+            <td class="detalle">Las seis piezas por composición de reglas, con un test por pieza. Es la fase que marca el calendario hoy.</td>
+          </tr>
+          <tr>
+            <th scope="row">F3 · Turnos, validación y jaque</th>
+            <td class="fechas">19/10 – 25/10</td>
+            <td><span class="estado hecho">Hecha</span></td>
+            <td class="detalle">Hito MVP. Están todos los tests que pide el roadmap: turnos, jaque por cada pieza, pieza clavada, rey que entra en casilla atacada, salir del jaque.</td>
+          </tr>
+          <tr>
+            <th scope="row">F4 · GUI y extensibilidad</th>
+            <td class="fechas">26/10 – 01/11</td>
+            <td><span class="estado hecho">Hecha</span></td>
+            <td class="detalle">Ventana Swing con <code>--gui</code>. Una pieza nueva y un tablero de 10x10 funcionan sin tocar el núcleo.</td>
+          </tr>
+          <tr>
+            <th scope="row">F5 · Opcionales</th>
+            <td class="fechas">02/11 – 12/11</td>
+            <td><span class="estado pendiente">Sin empezar</span></td>
+            <td class="detalle">Ver la tabla de opcionales más abajo.</td>
+          </tr>
+          <tr>
+            <th scope="row">F6 · Cierre y defensa</th>
+            <td class="fechas">13/11 – 20/11</td>
+            <td><span class="estado pendiente">Sin empezar</span></td>
+            <td class="detalle">Documento de justificación, PPTX y simulacro individual.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="nota">La fila resaltada es la fase en la que estaríamos según el calendario del roadmap.</p>
+  </section>
+
+  <section aria-labelledby="t-alcance">
+    <h2 id="t-alcance">Alcance obligatorio de la consigna</h2>
+    <div class="tabla">
+      <table>
+        <thead>
+          <tr><th scope="col">Requisito</th><th scope="col">Estado</th><th scope="col">Dónde se prueba</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <th scope="row">Tablero de 8x8</th>
+            <td><span class="estado hecho">Hecho</span></td>
+            <td class="detalle"><code>TableroEstandarTest</code>, <code>TableroTest</code></td>
+          </tr>
+          <tr>
+            <th scope="row">Las 6 piezas con su movimiento</th>
+            <td><span class="estado hecho">Hecho</span></td>
+            <td class="detalle"><code>PeonTest</code>, <code>TorreTest</code>, <code>CaballoTest</code>, <code>AlfilTest</code>, <code>DamaTest</code>, <code>ReyTest</code></td>
+          </tr>
+          <tr>
+            <th scope="row">Alternancia de turnos</th>
+            <td><span class="estado hecho">Hecho</span></td>
+            <td class="detalle"><code>PartidaTest</code>, <code>ReglaPiezaPropiaTest</code></td>
+          </tr>
+          <tr>
+            <th scope="row">Captura de piezas</th>
+            <td><span class="estado hecho">Hecho</span></td>
+            <td class="detalle"><code>JugadaSimpleTest</code>, <code>PartidaTest</code></td>
+          </tr>
+          <tr>
+            <th scope="row">Validación de movimientos inválidos</th>
+            <td><span class="estado hecho">Hecho</span></td>
+            <td class="detalle"><code>PartidaTest</code>, <code>ValidadorDeJugadasTest</code>, <code>ReglaNoDejarReyEnJaqueTest</code></td>
+          </tr>
+          <tr>
+            <th scope="row">Detección de jaque</th>
+            <td><span class="estado hecho">Hecho</span></td>
+            <td class="detalle"><code>DetectorDeJaqueTest</code>, <code>PartidaTest</code></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section aria-labelledby="t-arq">
+    <h2 id="t-arq">Requisitos de arquitectura</h2>
+    <div class="tabla">
+      <table>
+        <thead>
+          <tr><th scope="col">Requisito</th><th scope="col">Estado</th><th scope="col">Cómo se cumple</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <th scope="row">Núcleo sin frameworks ni infraestructura</th>
+            <td><span class="estado hecho">Cumple</span></td>
+            <td class="detalle">El <code>pom.xml</code> de <code>ajedrez-nucleo</code> solo tiene JUnit. El núcleo solo importa <code>java.util</code>.</td>
+          </tr>
+          <tr>
+            <th scope="row">Núcleo probado sin levantar nada</th>
+            <td><span class="estado hecho">Cumple</span></td>
+            <td class="detalle">74 tests del núcleo con tableros armados a mano. Sin consola ni ventana.</td>
+          </tr>
+          <tr>
+            <th scope="row">Clases nuevas sin modificar las existentes</th>
+            <td><span class="estado hecho">Cumple</span></td>
+            <td class="detalle"><code>ExtensibilidadTest</code>: una pieza nueva (canciller) y una partida en 10x10.</td>
+          </tr>
+          <tr>
+            <th scope="row">UML fiel al código</th>
+            <td><span class="estado hecho">Cumple</span></td>
+            <td class="detalle">Revisado el 08/10: todas las clases y todos los métodos públicos del código están en el UML, y todo lo del UML existe en el código.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section aria-labelledby="t-entregables">
+    <h2 id="t-entregables">Entregables de la consigna</h2>
+    <div class="tabla">
+      <table>
+        <thead>
+          <tr><th scope="col">Entregable</th><th scope="col">Estado</th><th scope="col">Detalle</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <th scope="row">Código fuente</th>
+            <td><span class="estado parcial">En curso</span></td>
+            <td class="detalle">Alcance obligatorio completo. Faltan los opcionales que el grupo decida sumar.</td>
+          </tr>
+          <tr>
+            <th scope="row">Diagrama de clases (UML)</th>
+            <td><span class="estado parcial">En curso</span></td>
+            <td class="detalle">Cuatro diagramas en <code>docs/uml/</code>, al día con el código. Se actualizan con cada firma pública que cambie.</td>
+          </tr>
+          <tr>
+            <th scope="row">Tests unitarios del núcleo</th>
+            <td><span class="estado parcial">En curso</span></td>
+            <td class="detalle">92 tests en verde: 74 del núcleo y 18 de la consola.</td>
+          </tr>
+          <tr>
+            <th scope="row">Documento de justificación</th>
+            <td><span class="estado parcial">En curso</span></td>
+            <td class="detalle">La base está en <code>decisiones.md</code>, con 20 decisiones en formato qué / por qué / cuándo se rompería. Falta redactar el documento.</td>
+          </tr>
+          <tr>
+            <th scope="row">Presentación (PPTX)</th>
+            <td><span class="estado pendiente">Sin empezar</span></td>
+            <td class="detalle">—</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section aria-labelledby="t-opcionales">
+    <h2 id="t-opcionales">Opcionales</h2>
+    <p class="nota">En el orden que sugiere el roadmap. La regla es terminar uno, con tests y UML, antes de empezar el siguiente.</p>
+    <div class="tabla">
+      <table>
+        <thead>
+          <tr><th scope="col">Opcional</th><th scope="col">Estado</th><th scope="col">Detalle</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <th scope="row">Jaque mate y ahogado</th>
+            <td><span class="estado pendiente">Sin empezar</span></td>
+            <td class="detalle">Hoy, después de un mate, la partida no termina: rechaza todas las jugadas.</td>
+          </tr>
+          <tr>
+            <th scope="row">Deshacer / rehacer</th>
+            <td><span class="estado pendiente">Sin empezar</span></td>
+            <td class="detalle">El tablero inmutable lo simplifica: alcanza con guardar los tableros anteriores.</td>
+          </tr>
+          <tr>
+            <th scope="row">Promoción de peón</th>
+            <td><span class="estado pendiente">Sin empezar</span></td>
+            <td class="detalle">Una clase nueva que implemente <code>Jugada</code>.</td>
+          </tr>
+          <tr>
+            <th scope="row">Resaltar jugadas legales en la GUI</th>
+            <td><span class="estado pendiente">Sin empezar</span></td>
+            <td class="detalle">Requiere ampliar el puerto <code>JuegoDeAjedrez</code>.</td>
+          </tr>
+          <tr>
+            <th scope="row">Enroque</th>
+            <td><span class="estado pendiente">Sin empezar</span></td>
+            <td class="detalle">Una clase nueva que implemente <code>Jugada</code> y mueva dos piezas.</td>
+          </tr>
+          <tr>
+            <th scope="row">Captura al paso</th>
+            <td><span class="estado pendiente">Sin empezar</span></td>
+            <td class="detalle">Una clase nueva que implemente <code>Jugada</code>.</td>
+          </tr>
+          <tr>
+            <th scope="row">Oponente con IA</th>
+            <td><span class="estado pendiente">Sin empezar</span></td>
+            <td class="detalle">Sería otro adaptador sobre el mismo puerto.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section aria-labelledby="t-pasos">
+    <h2 id="t-pasos">Próximos pasos</h2>
+    <ol class="pasos">
+      <li>Hacer push de lo del 08/10 y confirmar en la pestaña <strong>Actions</strong> de GitHub que el CI quede en verde.</li>
+      <li>Implementar jaque mate y ahogado, con sus tests y el UML actualizado en el mismo commit.</li>
+      <li>Elegir qué otros opcionales entran antes del congelamiento del 12/11.</li>
+      <li>Que cada integrante lea el código de los otros paquetes: la defensa es individual y puede pedir agregar una pieza o cambiar el tamaño del tablero.</li>
+    </ol>
+  </section>
+
+  <section aria-labelledby="t-mapa">
+    <h2 id="t-mapa">Dónde está cada cosa</h2>
+    <dl class="mapa">
+      <div><dt><a href="decisiones.md">decisiones.md</a></dt><dd>Decisiones de diseño: qué, por qué y cuándo se rompería.</dd></div>
+      <div><dt><a href="uml/">uml/</a></dt><dd>Los cuatro diagramas de clases en PlantUML.</dd></div>
+      <div><dt><a href="explicaciones/resumen.html">explicaciones/resumen.html</a></dt><dd>Resumen visual de cómo está armado el ajedrez.</dd></div>
+      <div><dt><a href="explicaciones/nucleo-y-adaptadores.html">explicaciones/nucleo-y-adaptadores.html</a></dt><dd>Qué es núcleo y qué es adaptador, clase por clase.</dd></div>
+      <div><dt><a href="referencia/TPO_Ingenieria%20de%20Software_Dominio%20Ajedrez.pdf">referencia/ consigna</a></dt><dd>El enunciado del TPO.</dd></div>
+      <div><dt><a href="referencia/Roadmap_TPO_Ajedrez_v2.pdf">referencia/ roadmap</a></dt><dd>El plan por fases con sus fechas.</dd></div>
+      <div><dt><a href="../README.md">README.md</a></dt><dd>Cómo correrlo y la arquitectura en una página.</dd></div>
+    </dl>
+  </section>
+
+  <section aria-labelledby="t-historial">
+    <h2 id="t-historial">Historial</h2>
+    <ol class="historial" reversed>
+      <li>
+        <time datetime="2026-10-08">08/10/2026</time>
+        <ul>
+          <li>CI en GitHub Actions: corre <code>mvn test</code> en cada push.</li>
+          <li><code>docs/decisiones.md</code> con 20 decisiones de diseño.</li>
+          <li><code>CLAUDE.md</code> con las reglas del proyecto, adaptadas del roadmap (nombres en español).</li>
+          <li>Documentación reordenada en <code>docs/</code>: el UML, los HTML explicativos y los PDF.</li>
+          <li>UML revisado contra el código: coincide.</li>
+          <li>Se crea esta página.</li>
+        </ul>
+      </li>
+      <li>
+        <time datetime="2026-10-02">02/10/2026</time>
+        <ul>
+          <li>Página explicativa de la división núcleo / adaptadores.</li>
+        </ul>
+      </li>
+      <li>
+        <time datetime="2026-09-30">30/09/2026</time>
+        <ul>
+          <li>Esqueleto completo: los cuatro módulos, las seis piezas, turnos, captura, validación y jaque.</li>
+          <li>Consola y ventana Swing sobre el mismo puerto.</li>
+          <li>92 tests en verde, incluidos los de extensibilidad (pieza nueva y 10x10).</li>
+          <li>Diagramas UML y resumen visual.</li>
+        </ul>
+      </li>
+    </ol>
+  </section>
+
+</main>
+</body>
+</html>
