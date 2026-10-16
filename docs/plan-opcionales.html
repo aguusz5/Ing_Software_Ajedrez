@@ -1,0 +1,542 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Plan de opcionales</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Familjen+Grotesk:wght@500;700&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+  /* Mismos tokens que estado.html. Una columna de lectura; tablas y código scrollean dentro de su caja. */
+  :root {
+    --bg: #f4f6f1;
+    --surface: #ffffff;
+    --ink: #17201a;
+    --muted: #56625a;
+    --line: #d6ddd3;
+    --accent: #2c6a43;
+    --accent-soft: #e3efe5;
+    --code-bg: #e9eee6;
+    --alerta: #9a6a12;
+    --alerta-soft: #fbf0dc;
+    --font-display: "Familjen Grotesk", "Segoe UI", system-ui, sans-serif;
+    --font-body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+    --font-mono: "IBM Plex Mono", ui-monospace, "Cascadia Mono", Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #101512; --surface: #171e19; --ink: #e3eae4; --muted: #9ba89f; --line: #2a342d;
+      --accent: #8cc79f; --accent-soft: #1c3024; --code-bg: #212a24;
+      --alerta: #e2b46a; --alerta-soft: #2e2416;
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #101512; --surface: #171e19; --ink: #e3eae4; --muted: #9ba89f; --line: #2a342d;
+    --accent: #8cc79f; --accent-soft: #1c3024; --code-bg: #212a24;
+    --alerta: #e2b46a; --alerta-soft: #2e2416;
+    color-scheme: dark;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font: 400 1rem/1.6 var(--font-body); }
+  .pagina { max-width: 60rem; margin: 0 auto; padding-inline: 24px; padding-block: 48px 72px; display: grid; gap: 56px; }
+  section { display: grid; gap: 16px; }
+  .pagina > *, section > * { min-width: 0; }
+  h1, h2, h3 { font-family: var(--font-display); font-weight: 700; text-wrap: balance; margin: 0; }
+  h1 { font-size: clamp(2.1rem, 5.5vw, 3rem); line-height: 1.05; letter-spacing: -0.015em; }
+  h2 { font-size: 1.45rem; line-height: 1.2; }
+  h3 { font-size: 1.12rem; line-height: 1.25; }
+  p { margin: 0; max-width: 70ch; }
+  a { color: var(--accent); text-underline-offset: 2px; }
+  code { font-family: var(--font-mono); font-size: 0.86em; background: var(--code-bg); padding: 0.08em 0.35em; border-radius: 4px; overflow-wrap: anywhere; }
+  pre { margin: 0; padding: 14px 16px; background: var(--code-bg); border-radius: 10px; overflow-x: auto; font: 400 0.84rem/1.55 var(--font-mono); }
+  pre code { background: none; padding: 0; font-size: inherit; overflow-wrap: normal; }
+  .nota { font-size: 0.93rem; color: var(--muted); }
+  ul.lista, ol.lista { margin: 0; padding-left: 1.2rem; display: grid; gap: 6px; max-width: 72ch; }
+
+  .cabecera { display: grid; gap: 16px; }
+  .eyebrow { font-size: 0.78rem; font-weight: 600; letter-spacing: 0.09em; text-transform: uppercase; color: var(--accent); }
+  .sello { justify-self: start; display: inline-flex; flex-wrap: wrap; gap: 4px 10px; padding: 6px 14px; border: 1px solid var(--accent); border-radius: 8px; background: var(--accent-soft); font-size: 0.9rem; }
+  .sello span { color: var(--muted); }
+  .sello time { font-family: var(--font-mono); font-weight: 500; }
+  .bajada { font-size: 1.12rem; color: var(--muted); }
+
+  .caja { display: grid; gap: 8px; padding: 16px 18px; border-radius: 12px; border: 2px solid var(--accent); background: var(--surface); }
+  .caja.alerta { border-color: var(--alerta); background: var(--alerta-soft); }
+  .caja.alerta .eyebrow { color: var(--alerta); }
+  .caja .eyebrow { font-size: 0.72rem; }
+
+  .tabla { overflow-x: auto; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); }
+  table { width: 100%; border-collapse: collapse; font-size: 0.93rem; }
+  th, td { text-align: left; padding: 10px 14px; border-bottom: 1px solid var(--line); vertical-align: baseline; }
+  tbody tr:last-child th, tbody tr:last-child td { border-bottom: 0; }
+  thead th { font-size: 0.72rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); white-space: nowrap; }
+  tbody th { font-weight: 600; }
+  .fechas { font-family: var(--font-mono); font-size: 0.84rem; white-space: nowrap; color: var(--muted); }
+  td.detalle { color: var(--muted); font-size: 0.9rem; min-width: 14rem; }
+  .num { font-family: var(--font-mono); text-align: right; }
+
+  /* Prioridad: además del color, el texto lo dice */
+  .prio { display: inline-block; font-size: 0.76rem; font-weight: 600; padding: 2px 8px; border-radius: 999px; border: 1px solid currentColor; white-space: nowrap; }
+  .p1 { color: var(--alerta); background: var(--alerta-soft); }
+  .p2 { color: var(--accent); background: var(--accent-soft); }
+  .p3 { color: var(--muted); }
+
+  /* Fichas de cada opcional */
+  .fichas { display: grid; gap: 20px; }
+  .ficha { display: grid; gap: 12px; padding: 20px 22px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); }
+  .ficha > * { min-width: 0; }
+  .ficha header { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 12px; }
+  .ficha .meta { font-size: 0.86rem; color: var(--muted); }
+  .ficha dl { margin: 0; display: grid; gap: 10px; }
+  .ficha dl > div { display: grid; grid-template-columns: 8.5rem minmax(0, 1fr); gap: 12px; }
+  .ficha dt { font-size: 0.78rem; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); padding-top: 2px; }
+  .ficha dd { margin: 0; font-size: 0.95rem; }
+  .ficha dd ul { margin: 0; padding-left: 1.1rem; display: grid; gap: 4px; }
+
+  @media (max-width: 760px) {
+    .pagina { padding-inline: 16px; padding-block: 32px 56px; gap: 44px; }
+    .ficha { padding: 16px; }
+    .ficha dl > div { grid-template-columns: 1fr; gap: 2px; }
+  }
+</style>
+</head>
+<body>
+<main class="pagina">
+
+  <header class="cabecera">
+    <div class="eyebrow">TPO Ajedrez · Fase 5 · Opcionales</div>
+    <h1>Plan para implementar los opcionales</h1>
+    <p class="sello"><span>Armado el</span> <time datetime="2026-10-16">16 de octubre de 2026</time> <span>· congelamiento</span> <time datetime="2026-11-12">12/11</time></p>
+    <p class="bajada">El alcance obligatorio está completo, así que la fase 5 puede arrancar ya, tres semanas antes
+      de lo que marca el roadmap. Este plan ordena los opcionales de la consigna más el pedido nuevo del
+      profesor: <strong>el valor de las piezas y ganar por puntos</strong>.</p>
+    <div class="caja">
+      <span class="eyebrow">Lo primero (16/10 – 18/10)</span>
+      <p>Commitear juntos el <a href="#contrato">contrato ampliado del puerto</a>, con los métodos nuevos
+        lanzando <code>UnsupportedOperationException</code>, igual que se hizo en la fase 0. Después cada
+        uno avanza en lo suyo sin pisar a los demás.</p>
+    </div>
+  </header>
+
+  <section aria-labelledby="t-puntos">
+    <h2 id="t-puntos">El pedido del profesor: valor de las piezas</h2>
+    <p>La consigna no lo menciona, pero el profesor lo aclaró: <em>un jugador puede ganar si, al final del
+      juego, tiene más puntos a favor que el otro.</em> Hay que resolver tres cosas: cuánto vale cada pieza,
+      cómo se cuentan los puntos y cuándo "termina el juego" para comparar.</p>
+
+    <h3>1. Cuánto vale cada pieza</h3>
+    <p>Los valores clásicos. El valor es un dato del tipo de pieza, igual que su nombre: se agrega como campo
+      de <code>TipoDePieza</code> y no hace falta ningún <code>switch</code>.</p>
+    <div class="tabla">
+      <table>
+        <thead><tr><th scope="col">Pieza</th><th scope="col" class="num">Valor</th><th scope="col">Nota</th></tr></thead>
+        <tbody>
+          <tr><th scope="row">Peón</th><td class="num">1</td><td class="detalle">—</td></tr>
+          <tr><th scope="row">Caballo</th><td class="num">3</td><td class="detalle">—</td></tr>
+          <tr><th scope="row">Alfil</th><td class="num">3</td><td class="detalle">—</td></tr>
+          <tr><th scope="row">Torre</th><td class="num">5</td><td class="detalle">—</td></tr>
+          <tr><th scope="row">Dama</th><td class="num">9</td><td class="detalle">—</td></tr>
+          <tr><th scope="row">Rey</th><td class="num">0</td><td class="detalle">No se captura nunca, así que no suma.</td></tr>
+          <tr><th scope="row">Canciller (test)</th><td class="num">8</td><td class="detalle">La pieza nueva de <code>ExtensibilidadTest</code> declara su propio valor. Eso prueba que el puntaje también es extensible.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>2. Cómo se cuentan los puntos</h3>
+    <p>Recomendación: <strong>los puntos de un color son la suma del valor de sus piezas que siguen en el
+      tablero</strong> (<code>Tablero.puntosDe(Color)</code>). Gana quien tiene más.</p>
+    <ul class="lista">
+      <li>Es equivalente a "puntos capturados": los dos bandos arrancan con 39, así que la diferencia de
+        material es exactamente la diferencia de lo que capturó cada uno.</li>
+      <li>No guarda estado: se calcula sobre el tablero inmutable. Por eso funciona solo con deshacer/rehacer,
+        y la IA puede usar la misma función para evaluar posiciones.</li>
+      <li>Única diferencia con "contar capturas": si un peón corona, su bando gana 8 puntos (pasa de 1 a 9).
+        Es lo que pasa en el ajedrez real, así que lo tomamos como correcto.</li>
+    </ul>
+
+    <h3>3. Cuándo termina el juego para comparar puntos</h3>
+    <p>Hoy la partida no termina nunca. Proponemos que se decida por puntos toda partida que termine
+      <strong>sin jaque mate</strong>:</p>
+    <div class="tabla">
+      <table>
+        <thead><tr><th scope="col">Cómo termina</th><th scope="col">Quién gana</th></tr></thead>
+        <tbody>
+          <tr><th scope="row">Jaque mate</th><td class="detalle">El que da el mate, sin importar los puntos.</td></tr>
+          <tr><th scope="row">Ahogado</th><td class="detalle">Tablas, sin mirar los puntos (decidido el 16/10).</td></tr>
+          <tr><th scope="row">Los jugadores dan por terminada la partida</th><td class="detalle">Por puntos. En consola es el comando <code>terminar</code>; en la GUI, un botón.</td></tr>
+          <tr><th scope="row">Límite de jugadas (si el profesor lo quiere)</th><td class="detalle">Por puntos, al llegar a N jugadas. N se configura en <code>Principal</code>.</td></tr>
+          <tr><th scope="row">Tablas por 50 jugadas o repetición (si llegamos)</th><td class="detalle">Por puntos, igual que "terminar".</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="caja">
+      <span class="eyebrow">Decidido por el grupo el 16/10</span>
+      <ul class="lista">
+        <li>Los puntos son el material en el tablero, no las piezas capturadas (solo difiere al coronar).</li>
+        <li>El ahogado es tablas, como en el ajedrez real, sin mirar los puntos.</li>
+        <li>Sin mate, la partida termina cuando los jugadores la terminan (se decide por puntos) o cuando uno
+          se rinde (gana el rival). En jaque se ofrece un botón para rendirse. Sin límite de jugadas.</li>
+      </ul>
+    </div>
+  </section>
+
+  <section aria-labelledby="t-prioridades">
+    <h2 id="t-prioridades">Qué entra y en qué orden</h2>
+    <p>Sigue el orden del roadmap, con dos cambios: los <strong>puntos</strong> van primero porque los pidió
+      el profesor, y el <strong>generador de jugadas legales</strong> se hace antes que nada porque lo
+      reutilizan el mate, el ahogado, la GUI y la IA. La regla del roadmap se mantiene: <em>mejor dos
+      opcionales impecables que cinco a medias.</em></p>
+    <div class="tabla">
+      <table>
+        <thead>
+          <tr><th scope="col">#</th><th scope="col">Opcional</th><th scope="col">Prioridad</th><th scope="col">Esfuerzo</th><th scope="col">Depende de</th><th scope="col">Responsable</th></tr>
+        </thead>
+        <tbody>
+          <tr><td class="num">0</td><th scope="row"><a href="#f-base">Base: generador de jugadas legales</a></th><td><span class="prio p1">Imprescindible</span></td><td>Bajo</td><td class="detalle">—</td><td>P3</td></tr>
+          <tr><td class="num">1</td><th scope="row"><a href="#f-puntos">Valor de las piezas y puntos</a></th><td><span class="prio p1">Imprescindible</span></td><td>Bajo</td><td class="detalle">—</td><td>P1</td></tr>
+          <tr><td class="num">2</td><th scope="row"><a href="#f-fin">Fin de partida: jaque mate, ahogado y ganador por puntos</a></th><td><span class="prio p1">Imprescindible</span></td><td>Medio</td><td class="detalle">0, 1</td><td>P4 + P3</td></tr>
+          <tr><td class="num">3</td><th scope="row"><a href="#f-deshacer">Deshacer / rehacer</a></th><td><span class="prio p2">Alta</span></td><td>Bajo</td><td class="detalle">—</td><td>P4</td></tr>
+          <tr><td class="num">4</td><th scope="row"><a href="#f-promocion">Promoción de peón</a></th><td><span class="prio p2">Alta</span></td><td>Medio</td><td class="detalle">—</td><td>P3 + P1</td></tr>
+          <tr><td class="num">5</td><th scope="row"><a href="#f-gui">Interfaz más allá de lo mínimo</a></th><td><span class="prio p2">Alta</span></td><td>Medio</td><td class="detalle">0, 1, 2, 3</td><td>P5</td></tr>
+          <tr><td class="num">6</td><th scope="row"><a href="#f-enroque">Enroque</a></th><td><span class="prio p3">Media</span></td><td>Medio</td><td class="detalle">0</td><td>P2</td></tr>
+          <tr><td class="num">7</td><th scope="row"><a href="#f-ia">Oponente con IA</a></th><td><span class="prio p3">Media</span></td><td>Medio</td><td class="detalle">0, 1, 2 (minimax: 3)</td><td>P2</td></tr>
+          <tr><td class="num">8</td><th scope="row"><a href="#f-tablas">Tablas: 50 jugadas y repetición</a></th><td><span class="prio p3">Si sobra tiempo</span></td><td>Medio</td><td class="detalle">2, 3</td><td>P4</td></tr>
+          <tr><td class="num">9</td><th scope="row"><a href="#f-alpaso">Captura al paso</a></th><td><span class="prio p3">Si sobra tiempo</span></td><td>Alto</td><td class="detalle">—</td><td>P3</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="nota">Responsables según el reparto del roadmap: P1 Modelo, P2 Movimiento, P3 Peón y jaque, P4 Juego, P5 Adaptadores.</p>
+  </section>
+
+  <section aria-labelledby="t-calendario">
+    <h2 id="t-calendario">Calendario</h2>
+    <div class="tabla">
+      <table>
+        <thead><tr><th scope="col">Etapa</th><th scope="col">Fechas</th><th scope="col">Qué queda terminado</th></tr></thead>
+        <tbody>
+          <tr><th scope="row">E0 · Contrato</th><td class="fechas">16/10 – 18/10</td><td class="detalle">Contrato ampliado commiteado. Preguntas al profesor enviadas.</td></tr>
+          <tr><th scope="row">E1 · Puntos y fin de partida</th><td class="fechas">19/10 – 25/10</td><td class="detalle">Opcionales 0, 1, 2 y 3. Desde acá la partida termina y tiene un ganador.</td></tr>
+          <tr><th scope="row">E2 · Jugadas especiales y GUI</th><td class="fechas">26/10 – 01/11</td><td class="detalle">Opcionales 4, 5 y 6. Se ve todo lo anterior en la consola y en la ventana.</td></tr>
+          <tr><th scope="row">E3 · IA</th><td class="fechas">02/11 – 08/11</td><td class="detalle">Opcional 7. Si queda tiempo, el 8.</td></tr>
+          <tr><th scope="row">E4 · Margen y congelamiento</th><td class="fechas">09/11 – 12/11</td><td class="detalle">Solo el 9 si todo lo anterior está en verde. El 12/11 se congela: lo que no esté terminado, no entra.</td></tr>
+          <tr><th scope="row">F6 · Cierre</th><td class="fechas">13/11 – 20/11</td><td class="detalle">UML contra el código, documento de justificación, PPTX y simulacro (sin cambios).</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section aria-labelledby="t-contrato" id="contrato">
+    <h2 id="t-contrato">Contrato ampliado del puerto</h2>
+    <p>Los adaptadores solo pueden usar <code>JuegoDeAjedrez</code> (decisión 2). Todo lo nuevo que necesitan
+      la consola, la GUI y la IA entra por acá. Se commitea primero, con los métodos lanzando
+      <code>UnsupportedOperationException</code>, y el UML se actualiza en el mismo commit.</p>
+<pre><code>public interface JuegoDeAjedrez {
+    // --- lo que ya existe ---
+    ResultadoJugada jugar(Posicion desde, Posicion hasta);
+    Tablero tablero();
+    Color turnoActual();
+    boolean estaEnJaque(Color color);
+
+    // --- nuevo ---
+    /** Jugada con promoción: "dama", "torre", "alfil" o "caballo". */
+    ResultadoJugada jugar(Posicion desde, Posicion hasta, String promocion);
+    /** Casillas a las que la pieza de "desde" puede ir legalmente (GUI e IA). */
+    List&lt;Posicion&gt; destinosLegales(Posicion desde);
+    /** Suma del valor de las piezas de ese color que siguen en el tablero. */
+    int puntos(Color color);
+    /** En curso, o terminada con su ganador (o tablas) y el motivo. */
+    EstadoPartida estado();
+    /** Los jugadores dan la partida por terminada: se decide por puntos. */
+    EstadoPartida terminar();
+    boolean deshacer();
+    boolean rehacer();
+}
+
+/** Nuevo record en el paquete juego. ganador vacío = tablas. */
+public record EstadoPartida(boolean terminada, Optional&lt;Color&gt; ganador, String motivo) { }</code></pre>
+    <p class="nota">Si al final no se hace la promoción, el <code>jugar</code> con tres parámetros no se
+      agrega. Mismo criterio para cada método: entra cuando entra el opcional que lo usa.</p>
+  </section>
+
+  <section aria-labelledby="t-fichas">
+    <h2 id="t-fichas">Cada opcional, paso a paso</h2>
+    <div class="fichas">
+
+      <article class="ficha" id="f-base">
+        <header><h3>0 · Generador de jugadas legales</h3><span class="prio p1">Imprescindible</span><span class="meta">P3 · E1</span></header>
+        <p>No es un opcional de la consigna, pero el mate, el ahogado, el resaltado de la GUI y la IA necesitan
+          la misma pregunta: <em>¿qué jugadas legales tiene este color?</em> Se responde una sola vez.</p>
+        <dl>
+          <div><dt>Dónde</dt><dd>Clase nueva <code>reglas.GeneradorDeJugadasLegales</code>, que recibe el
+            <code>ValidadorDeJugadas</code> por constructor. Recorre las piezas del color, pide sus
+            <code>jugadasCandidatas</code> y se queda con las que el validador acepta. Métodos:
+            <code>jugadasLegales(Tablero, Color)</code> y <code>jugadasLegalesDesde(Tablero, Posicion, Color)</code>.</dd></div>
+          <div><dt>Tests</dt><dd><ul>
+            <li>Posición inicial: 20 jugadas legales para las blancas.</li>
+            <li>Pieza clavada: no aparece ninguna jugada que deje al rey en jaque.</li>
+            <li>Rey en jaque: solo aparecen las jugadas que lo sacan del jaque.</li>
+          </ul></dd></div>
+          <div><dt>Decisión</dt><dd>Entrada nueva en <code>decisiones.md</code>: por qué es una clase concreta sin
+            interfaz (una sola forma de generar jugadas legales) y cuándo se rompería (una IA que necesite un
+            generador más rápido).</dd></div>
+        </dl>
+      </article>
+
+      <article class="ficha" id="f-puntos">
+        <header><h3>1 · Valor de las piezas y puntos</h3><span class="prio p1">Imprescindible</span><span class="meta">P1 · E1</span></header>
+        <dl>
+          <div><dt>Dónde</dt><dd><ul>
+            <li><code>TipoDePieza</code>: campo <code>valor</code> (int) en el constructor y su getter. Se
+              actualizan las dos llamadas que hay: <code>TiposDePiezaEstandar</code> (1, 3, 3, 5, 9, 0) y el
+              canciller de <code>ExtensibilidadTest</code> (8).</li>
+            <li><code>Tablero.puntosDe(Color)</code>: suma el valor de las piezas de ese color.</li>
+            <li><code>Partida.puntos(Color)</code> delega en el tablero.</li>
+          </ul></dd></div>
+          <div><dt>Tests</dt><dd><ul>
+            <li>Posición inicial: 39 puntos cada color.</li>
+            <li>Después de capturar una torre, el bando que la perdió tiene 34.</li>
+            <li>Una pieza nueva con su propio valor suma sin tocar <code>Tablero</code>.</li>
+          </ul></dd></div>
+          <div><dt>Ojo</dt><dd>Nada de <code>switch</code> por nombre de pieza para sacar el valor: el valor viaja
+            con el tipo. Es la misma idea que las reglas de movimiento (composición, abierto/cerrado).</dd></div>
+          <div><dt>Decisión</dt><dd>Puntos = material en el tablero, no contador de capturas: por qué
+            (sin estado, gratis con deshacer, sirve a la IA) y cuándo se rompería (si el profesor quiere que
+            la coronación no sume).</dd></div>
+        </dl>
+      </article>
+
+      <article class="ficha" id="f-fin">
+        <header><h3>2 · Fin de partida: jaque mate, ahogado y ganador por puntos</h3><span class="prio p1">Imprescindible</span><span class="meta">P4 + P3 · E1</span></header>
+        <dl>
+          <div><dt>Dónde</dt><dd><ul>
+            <li>Record <code>juego.EstadoPartida</code> (ver el contrato).</li>
+            <li><code>Partida</code> recibe el <code>GeneradorDeJugadasLegales</code> por constructor y guarda su
+              <code>EstadoPartida</code>. Después de cada jugada: si el que mueve no tiene jugadas legales y está
+              en jaque, es <strong>mate</strong> y gana el otro; si no está en jaque, es <strong>ahogado</strong> y
+              son tablas.</li>
+            <li><code>terminar()</code>: compara <code>puntos(BLANCO)</code> con <code>puntos(NEGRO)</code>.
+              Mayor gana; igual, tablas.</li>
+            <li>Con la partida terminada, <code>jugar</code> rechaza con el motivo "La partida terminó".</li>
+            <li><code>ResultadoJugada</code> suma el <code>EstadoPartida</code> para que el adaptador muestre el
+              final sin tener que preguntar aparte.</li>
+            <li><code>Principal</code>: crea el generador y se lo pasa a <code>Partida</code>.</li>
+          </ul></dd></div>
+          <div><dt>Tests</dt><dd><ul>
+            <li>Mate del pastor: gana blancas, aunque las negras tengan más puntos.</li>
+            <li>Mate del pasillo con torre.</li>
+            <li>Ahogado con más puntos de un lado: tablas igual.</li>
+            <li><code>terminar()</code> con ventaja de material, y con material igual.</li>
+            <li>Después del final, cualquier <code>jugar</code> se rechaza.</li>
+          </ul></dd></div>
+          <div><dt>Ojo</dt><dd>Los ganadores por puntos dependen de lo que conteste el profesor. Dejar la
+            comparación de puntos en un solo método privado de <code>Partida</code>, así cambiar la regla toca
+            una línea.</dd></div>
+          <div><dt>Decisión</dt><dd>Por qué <code>EstadoPartida</code> es un record con datos y no el patrón
+            State: la partida tiene dos estados (en curso / terminada) y el único comportamiento que cambia es
+            rechazar jugadas, que es un <code>if</code>. Se rompería con más estados con comportamiento propio
+            (pausa, esperando promoción, reloj).</dd></div>
+        </dl>
+      </article>
+
+      <article class="ficha" id="f-deshacer">
+        <header><h3>3 · Deshacer / rehacer</h3><span class="prio p2">Alta</span><span class="meta">P4 · E1</span></header>
+        <p>Casi gratis por el tablero inmutable (decisión 7): alcanza con guardar fotos de la partida.</p>
+        <dl>
+          <div><dt>Dónde</dt><dd><ul>
+            <li>En <code>Partida</code>, un record privado <code>Foto(Tablero tablero, Color turno, EstadoPartida estado)</code>
+              y dos pilas (<code>ArrayDeque</code>): pasado y futuro.</li>
+            <li><code>jugar</code> válido: apila la foto actual en el pasado y vacía el futuro.</li>
+            <li><code>deshacer</code>: pasa la foto actual al futuro y restaura la última del pasado. <code>rehacer</code>, al revés.
+              Devuelven <code>false</code> si no hay nada.</li>
+          </ul></dd></div>
+          <div><dt>Tests</dt><dd><ul>
+            <li>Jugar y deshacer deja el mismo tablero y el mismo turno.</li>
+            <li>Deshacer una captura devuelve la pieza (y los puntos).</li>
+            <li>Deshacer y rehacer vuelve a la posición. Una jugada nueva después de deshacer borra el rehacer.</li>
+            <li>Deshacer un mate reabre la partida.</li>
+            <li>Deshacer sin jugadas devuelve <code>false</code>.</li>
+          </ul></dd></div>
+          <div><dt>Decisión</dt><dd>Fotos del estado (Memento) en vez de Command con <code>deshacer()</code> en
+            cada jugada: con tableros inmutables, guardar el anterior es más simple que escribir la inversa de
+            cada jugada especial. Se rompería con tableros mutables (ver decisión 7).</dd></div>
+        </dl>
+      </article>
+
+      <article class="ficha" id="f-promocion">
+        <header><h3>4 · Promoción de peón</h3><span class="prio p2">Alta</span><span class="meta">P3 + P1 · E2</span></header>
+        <dl>
+          <div><dt>Dónde</dt><dd><ul>
+            <li>Clase nueva <code>movimiento.JugadaConPromocion(desde, hasta, TipoDePieza nuevoTipo)</code> que
+              implementa <code>Jugada</code>: deja en el destino una pieza del mismo color con el tipo nuevo.
+              Es justo la extensión que anticipaba la decisión 9.</li>
+            <li><code>ReglaAvanceDePeon</code> y <code>ReglaCapturaDePeon</code> reciben por constructor la lista de
+              tipos a los que se puede coronar. Si el destino es la última fila según el color
+              (<code>alto() - 1</code> o <code>0</code>, nunca un 7), generan una <code>JugadaConPromocion</code>
+              por cada tipo en vez de una <code>JugadaSimple</code>.</li>
+            <li><code>TiposDePiezaEstandar</code>: arma el peón con la lista dama, torre, alfil, caballo.</li>
+            <li><code>Partida.jugar(desde, hasta, promocion)</code> elige la candidata por el nombre del tipo.
+              <code>jugar(desde, hasta)</code> sin promoción toma la primera (dama).</li>
+            <li>Consola: <code>e7 e8 caballo</code>. GUI: un <code>JOptionPane</code> con las cuatro opciones
+              cuando el peón llega al final.</li>
+          </ul></dd></div>
+          <div><dt>Tests</dt><dd><ul>
+            <li>Peón blanco que llega a la última fila corona en dama por defecto, y en caballo si se pide.</li>
+            <li>Lo mismo capturando, y lo mismo para negras.</li>
+            <li>En un tablero de 10x10 corona en la fila 9 (prueba que no hay un 8 escondido).</li>
+            <li>Coronar suma 8 puntos.</li>
+          </ul></dd></div>
+          <div><dt>Ojo</dt><dd>Hoy <code>Partida</code> busca la candidata con <code>findFirst</code> por destino.
+            Con promoción hay cuatro candidatas al mismo destino: hay que filtrar también por el tipo pedido.</dd></div>
+        </dl>
+      </article>
+
+      <article class="ficha" id="f-gui">
+        <header><h3>5 · Interfaz más allá de lo mínimo</h3><span class="prio p2">Alta</span><span class="meta">P5 · E2</span></header>
+        <p>Es el opcional más visible en la exposición. Todo es adaptador: ninguna regla nueva.</p>
+        <dl>
+          <div><dt>GUI</dt><dd><ul>
+            <li>Al elegir una pieza, pintar sus <code>destinosLegales</code> con otro color de casilla.</li>
+            <li>Barra de arriba con los puntos de cada color (<code>puntos</code>).</li>
+            <li>Botones Deshacer, Rehacer y Terminar partida.</li>
+            <li>Cuando <code>estado().terminada()</code>, un diálogo con el ganador y el motivo
+              ("Jaque mate: gana BLANCO", "Ahogado: tablas").</li>
+            <li>Marcar en rojo la casilla del rey en jaque.</li>
+          </ul></dd></div>
+          <div><dt>Consola</dt><dd>Comandos <code>deshacer</code>, <code>rehacer</code>, <code>puntos</code> y
+            <code>terminar</code>; mostrar los puntos debajo del tablero y el mensaje final.</dd></div>
+          <div><dt>Tests</dt><dd>Consola: un test por comando nuevo, con el <code>Scanner</code> sobre un
+            <code>String</code> como los actuales. La GUI no tiene tests automáticos (decisión 20): se prueba a
+            mano con una lista corta antes del congelamiento.</dd></div>
+        </dl>
+      </article>
+
+      <article class="ficha" id="f-enroque">
+        <header><h3>6 · Enroque</h3><span class="prio p3">Media</span><span class="meta">P2 · E2</span></header>
+        <dl>
+          <div><dt>Dónde</dt><dd><ul>
+            <li>Clase nueva <code>movimiento.JugadaDeEnroque</code> (implementa <code>Jugada</code>): mueve el rey
+              dos casillas y la torre al otro lado del rey.</li>
+            <li>Regla nueva <code>movimiento.ReglaDeEnroque</code>, que recibe por constructor el tipo de la pieza
+              compañera (la torre). Propone el enroque si el rey y esa torre no se movieron
+              (<code>yaSeMovio</code>) y las casillas del medio están libres. Se suma a la lista de reglas del
+              rey en <code>TiposDePiezaEstandar</code>: composición, sin tocar las demás reglas.</li>
+            <li>Regla de validación nueva <code>reglas.ReglaEnroqueSeguro</code>: el rey no puede enrocar estando
+              en jaque ni pasar por una casilla atacada. Se agrega a la lista del validador en
+              <code>Principal</code>.</li>
+            <li><code>Jugada</code> gana un método por defecto <code>casillasQueNoPuedenEstarAtacadas()</code>
+              que devuelve una lista vacía; el enroque devuelve origen, paso y destino del rey. Así la regla de
+              validación no usa <code>instanceof</code>.</li>
+          </ul></dd></div>
+          <div><dt>Tests</dt><dd><ul>
+            <li>Enroque corto y largo, de los dos colores.</li>
+            <li>No se puede si el rey o la torre se movieron, si hay piezas en el medio, si el rey está en jaque
+              o si pasa por una casilla atacada.</li>
+          </ul></dd></div>
+          <div><dt>Trampa</dt><dd><strong>No</strong> preguntarle al <code>DetectorDeJaque</code> desde
+            <code>ReglaDeEnroque</code>: el detector pide las jugadas candidatas del rey rival, que llamaría otra
+            vez al detector, y se arma una recursión infinita. Por eso el control de jaque va en la regla de
+            validación y no en la de movimiento.</dd></div>
+        </dl>
+      </article>
+
+      <article class="ficha" id="f-ia">
+        <header><h3>7 · Oponente con IA</h3><span class="prio p3">Media</span><span class="meta">P2 · E3</span></header>
+        <p>La IA es un jugador, no una regla: va afuera del núcleo y juega por el mismo puerto que la consola y
+          la GUI. Eso demuestra en la exposición que el puerto sirve para cualquier interfaz.</p>
+        <dl>
+          <div><dt>Paso 1</dt><dd><code>JugadorAleatorio</code>: recorre las piezas de su color, pide
+            <code>destinosLegales</code> y elige una jugada al azar (con un <code>Random</code> recibido por
+            constructor, para que el test tenga semilla fija).</dd></div>
+          <div><dt>Paso 2</dt><dd><code>JugadorMinimax</code> de profundidad 2, que evalúa con
+            <code>puntos(propio) - puntos(rival)</code>. Prueba cada jugada con <code>jugar</code> y la revierte con
+            <code>deshacer</code>, así no necesita ninguna clase interna del núcleo. Reutiliza los puntos que
+            pidió el profesor.</dd></div>
+          <div><dt>Dónde</dt><dd>Módulo nuevo <code>ajedrez-ia</code> que depende solo del núcleo (igual que la
+            consola). Ahí sí hay dos implementaciones con consumidor polimórfico, así que se justifica una
+            interfaz <code>Jugador</code> con <code>elegirJugada(JuegoDeAjedrez)</code>.
+            <code>Principal --ia</code> elige cuál usar.</dd></div>
+          <div><dt>Tests</dt><dd><ul>
+            <li>El aleatorio siempre devuelve una jugada legal (100 partidas con semillas distintas).</li>
+            <li>El minimax captura una dama colgada y evita perder la suya.</li>
+          </ul></dd></div>
+          <div><dt>Decisión</dt><dd>Revisar la decisión 16 (sin Observer). Con la IA aparecen jugadas que la
+            interfaz no inició, pero si el adaptador llama a la IA justo después de la jugada del humano y
+            redibuja, sigue sin hacer falta un Observer. Anotar esa conclusión.</dd></div>
+        </dl>
+      </article>
+
+      <article class="ficha" id="f-tablas">
+        <header><h3>8 · Tablas: 50 jugadas y repetición</h3><span class="prio p3">Si sobra tiempo</span><span class="meta">P4 · E3</span></header>
+        <dl>
+          <div><dt>Dónde</dt><dd><ul>
+            <li>Con el ahogado, el fin acordado y estas dos, hay varias formas de terminar sin mate. Ahí sí se
+              justifica una interfaz <code>juego.CondicionDeFin</code> con una lista inyectada en
+              <code>Partida</code>, igual que las reglas de validación.</li>
+            <li>Repetición: usa las fotos de deshacer. Requiere <code>equals</code>/<code>hashCode</code> en
+              <code>Tablero</code>.</li>
+            <li>50 jugadas: contador de jugadas sin captura (bajan los puntos o la cantidad de piezas) y sin
+              mover un peón (la condición recibe el tipo peón por constructor).</li>
+            <li>Al cumplirse, se decide por puntos como "terminar".</li>
+          </ul></dd></div>
+          <div><dt>Ojo</dt><dd><code>Pieza</code> incluye <code>yaSeMovio</code>, así que una posición repetida
+            después de mover y volver una torre no sería igual. Para el TPO alcanza; anotarlo como límite
+            conocido.</dd></div>
+        </dl>
+      </article>
+
+      <article class="ficha" id="f-alpaso">
+        <header><h3>9 · Captura al paso</h3><span class="prio p3">Si sobra tiempo</span><span class="meta">P3 · E4</span></header>
+        <dl>
+          <div><dt>Por qué al final</dt><dd>Es el único opcional que obliga a modificar clases existentes: las
+            reglas de movimiento solo ven el tablero, y para capturar al paso hay que saber cuál fue la última
+            jugada.</dd></div>
+          <div><dt>Dónde</dt><dd><ul>
+            <li><code>Tablero</code> guarda una <code>Optional&lt;Posicion&gt; casillaAlPaso</code>.</li>
+            <li>Una <code>JugadaDobleDePeon</code> la marca; las demás jugadas la limpian.</li>
+            <li><code>JugadaCapturaAlPaso</code> saca el peón rival de una casilla distinta al destino.</li>
+            <li><code>ReglaCapturaDePeon</code> la propone si el destino es la <code>casillaAlPaso</code>.</li>
+          </ul></dd></div>
+          <div><dt>Tests</dt><dd>Captura válida justo después del doble paso; inválida una jugada más tarde; suma
+            1 punto; no se permite si deja al rey en jaque.</dd></div>
+        </dl>
+      </article>
+
+    </div>
+  </section>
+
+  <section aria-labelledby="t-riesgos">
+    <h2 id="t-riesgos">Riesgos</h2>
+    <div class="tabla">
+      <table>
+        <thead><tr><th scope="col">Riesgo</th><th scope="col">Qué hacemos</th></tr></thead>
+        <tbody>
+          <tr><th scope="row">El profesor entiende los puntos distinto</th><td class="detalle">Preguntar antes del 19/10. La regla vive en un solo método de <code>Partida</code>.</td></tr>
+          <tr><th scope="row">Cinco personas tocando <code>Partida</code> a la vez</th><td class="detalle">Contrato commiteado primero. P4 es dueño de <code>Partida</code>; los demás le pasan lo que necesitan por PR chica.</td></tr>
+          <tr><th scope="row">El generador de jugadas legales es lento (IA)</th><td class="detalle">Minimax de profundidad 2 como máximo. Si no alcanza, queda el aleatorio.</td></tr>
+          <tr><th scope="row">Recursión infinita con el enroque</th><td class="detalle">El control de casillas atacadas va en una regla de validación, nunca en la de movimiento.</td></tr>
+          <tr><th scope="row">El UML se atrasa</th><td class="detalle">Ningún opcional se da por terminado sin el <code>.puml</code> actualizado en el mismo commit.</td></tr>
+          <tr><th scope="row">No llegar al 12/11</th><td class="detalle">El orden ya pone primero lo imprescindible. Lo que no esté en verde el 12/11 se saca, no se apura.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section aria-labelledby="t-terminado">
+    <h2 id="t-terminado">Un opcional está terminado cuando</h2>
+    <ol class="lista">
+      <li>Compila y <code>mvn test</code> da verde (el CI también).</li>
+      <li>Tiene tests en el núcleo con el formato <code>sujeto_condicion_resultadoEsperado</code> y los bloques Arrange / Act / Assert.</li>
+      <li>Se puede usar desde la consola <strong>y</strong> desde la GUI.</li>
+      <li><code>docs/uml/*.puml</code> se actualizó en el mismo commit que la firma nueva.</li>
+      <li>Tiene su entrada en <code>decisiones.md</code> (qué / por qué / cuándo se rompería).</li>
+      <li>Se actualizó la tabla de opcionales y el historial de <code>estado.html</code>.</li>
+      <li>Otro integrante lo revisó y lo puede explicar: la defensa es individual.</li>
+    </ol>
+  </section>
+
+</main>
+</body>
+</html>

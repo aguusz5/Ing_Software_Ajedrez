@@ -183,14 +183,14 @@
   <header class="cabecera">
     <div class="eyebrow">TPO Ajedrez · Ingeniería de Software</div>
     <h1>Dónde estamos</h1>
-    <p class="sello"><span>Última actualización</span> <time datetime="2026-10-08">8 de octubre de 2026</time></p>
+    <p class="sello"><span>Última actualización</span> <time datetime="2026-10-16">16 de octubre de 2026</time></p>
     <p class="bajada">El alcance obligatorio está completo y probado: las seis piezas, turnos, captura,
       validación y jaque, jugables por consola y por ventana. Por calendario el roadmap nos ubica en la
       fase 2, así que vamos adelantados.</p>
     <div class="siguiente">
       <span class="eyebrow">Lo próximo</span>
-      <p>Empezar los opcionales por <strong>jaque mate y ahogado</strong>, que reutilizan el validador
-        para saber si al jugador le queda alguna jugada legal.</p>
+      <p>La partida ya termina y anuncia al ganador (mate, ahogado, por puntos o porque uno se rinde).
+        Sigue <strong>deshacer / rehacer</strong>.</p>
     </div>
   </header>
 
@@ -379,9 +379,19 @@
         </thead>
         <tbody>
           <tr>
-            <th scope="row">Jaque mate y ahogado</th>
-            <td><span class="estado pendiente">Sin empezar</span></td>
-            <td class="detalle">Hoy, después de un mate, la partida no termina: rechaza todas las jugadas.</td>
+            <th scope="row">Base: generador de jugadas legales</th>
+            <td><span class="estado hecho">Hecho</span></td>
+            <td class="detalle"><code>reglas.GeneradorDeJugadasLegales</code>, con tests. Lo van a usar el mate, el ahogado, la GUI y la IA.</td>
+          </tr>
+          <tr>
+            <th scope="row">Valor de las piezas y puntos</th>
+            <td><span class="estado hecho">Hecho</span></td>
+            <td class="detalle">Cada <code>TipoDePieza</code> tiene su valor; los puntos son el material en el tablero. Se ven en la consola y en la ventana.</td>
+          </tr>
+          <tr>
+            <th scope="row">Jaque mate, ahogado y ganador por puntos</th>
+            <td><span class="estado hecho">Hecho</span></td>
+            <td class="detalle">Mate: gana el que lo da. Ahogado: tablas. "Terminar" (comando en consola, botón en la ventana): gana el que tiene más puntos; si empatan, tablas. Rendirse: gana el rival.</td>
           </tr>
           <tr>
             <th scope="row">Deshacer / rehacer</th>
@@ -395,8 +405,8 @@
           </tr>
           <tr>
             <th scope="row">Resaltar jugadas legales en la GUI</th>
-            <td><span class="estado pendiente">Sin empezar</span></td>
-            <td class="detalle">Requiere ampliar el puerto <code>JuegoDeAjedrez</code>.</td>
+            <td><span class="estado hecho">Hecho</span></td>
+            <td class="detalle">Al elegir una pieza: azul donde puede ir, naranja donde llegaría pero es ilegal. Rojo debajo del rey en jaque. Puerto: <code>destinosLegales</code> y <code>destinosIlegales</code>.</td>
           </tr>
           <tr>
             <th scope="row">Enroque</th>
@@ -422,7 +432,8 @@
     <h2 id="t-pasos">Próximos pasos</h2>
     <ol class="pasos">
       <li>Hacer push de lo del 08/10 y confirmar en la pestaña <strong>Actions</strong> de GitHub que el CI quede en verde.</li>
-      <li>Implementar jaque mate y ahogado, con sus tests y el UML actualizado en el mismo commit.</li>
+      <li>Avisarle al profesor cómo quedaron las reglas de fin: puntos por material, ahogado = tablas, final por "terminar" o rendición.</li>
+      <li>Implementar deshacer / rehacer (opcional 3), con sus tests y el UML actualizado en el mismo commit.</li>
       <li>Elegir qué otros opcionales entran antes del congelamiento del 12/11.</li>
       <li>Que cada integrante lea el código de los otros paquetes: la defensa es individual y puede pedir agregar una pieza o cambiar el tamaño del tablero.</li>
     </ol>
@@ -444,6 +455,19 @@
   <section aria-labelledby="t-historial">
     <h2 id="t-historial">Historial</h2>
     <ol class="historial" reversed>
+      <li>
+        <time datetime="2026-10-16">16/10/2026</time>
+        <ul>
+          <li>Resaltado en la ventana: azul para los destinos legales de la pieza elegida, naranja para los que alcanza pero son ilegales, rojo debajo del rey en jaque. Puerto con <code>destinosLegales</code> y <code>destinosIlegales</code>; 6 tests nuevos en <code>PartidaTest</code> (116 en total).</li>
+          <li>Rendirse (<code>rendirse()</code> en el puerto): botón "Rendirse" en la ventana cuando el que mueve está en jaque, y comando <code>rendirse</code> en la consola. Al terminar, la ventana muestra un diálogo con el ganador y bloquea el tablero; la consola imprime el ganador.</li>
+          <li>Decidido: los puntos son el material en el tablero; el ahogado es tablas sin mirar los puntos; la partida sin mate termina cuando los jugadores la terminan o uno se rinde.</li>
+          <li>Opcional 1: valor de las piezas (<code>TipoDePieza.valor</code>) y puntos por color (<code>Tablero.puntosDe</code>, <code>puntos</code> en el puerto).</li>
+          <li>Opcional 2: <code>EstadoPartida</code>; la partida termina por jaque mate, ahogado (tablas) o <code>terminar()</code> (por puntos). Consola con el comando <code>terminar</code>; ventana con el botón "Terminar partida".</li>
+          <li>Decisiones 22 y 23; UML <code>d2_modelo</code> y <code>d3_juego</code> actualizados. 110 tests en verde.</li>
+          <li>Opcional 0: <code>GeneradorDeJugadasLegales</code> con 4 tests (posición inicial, pieza clavada, rey en jaque, casilla vacía).</li>
+          <li>UML <code>d3_juego.puml</code> y decisión 21 actualizados.</li>
+        </ul>
+      </li>
       <li>
         <time datetime="2026-10-08">08/10/2026</time>
         <ul>

@@ -1,14 +1,20 @@
 package juego;
 
+import static configuracion.TiposDePiezaEstandar.alfil;
+import static configuracion.TiposDePiezaEstandar.dama;
 import static configuracion.TiposDePiezaEstandar.peon;
+import static configuracion.TiposDePiezaEstandar.rey;
+import static configuracion.TiposDePiezaEstandar.torre;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static soporte.Casillas.casilla;
+import static soporte.Casillas.casillas;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -19,6 +25,7 @@ import modelo.Pieza;
 import modelo.Posicion;
 import modelo.Tablero;
 import reglas.DetectorDeJaque;
+import reglas.GeneradorDeJugadasLegales;
 import reglas.ReglaNoDejarReyEnJaque;
 import reglas.ReglaPiezaPropia;
 import reglas.ValidadorDeJugadas;
@@ -29,11 +36,15 @@ class PartidaTest {
 
     @BeforeEach
     void crearPartidaEstandar() {
+        partida = partidaSobre(new TableroEstandar().crearTablero());
+    }
+
+    private static Partida partidaSobre(Tablero tablero) {
         DetectorDeJaque detector = new DetectorDeJaque();
         ValidadorDeJugadas validador = new ValidadorDeJugadas(List.of(
                 new ReglaPiezaPropia(),
                 new ReglaNoDejarReyEnJaque(detector)));
-        partida = new Partida(new TableroEstandar().crearTablero(), validador, detector);
+        return new Partida(tablero, validador, detector, new GeneradorDeJugadasLegales(validador));
     }
 
     private ResultadoJugada jugar(String desde, String hasta) {
@@ -165,14 +176,195 @@ class PartidaTest {
 
     @Test
     void jugar_conElReyEnJaque_rechazaLasJugadasQueNoLoSacan() {
-        // Arrange
-        jugarValidas("f2 f3", "e7 e5", "g2 g4", "d8 h4");
+        // Arrange: Dh5+ con el peón de f7 ya movido; las negras pueden taparse con g6, no es mate.
+        jugarValidas("e2 e4", "f7 f6", "d1 h5");
 
         // Act
-        ResultadoJugada resultado = jugar("a2", "a3");
+        ResultadoJugada resultado = jugar("a7", "a6");
 
         // Assert
         assertFalse(resultado.valida());
         assertEquals("Esa jugada deja a tu rey en jaque", resultado.motivo());
+    }
+
+    // --- Puntos ---
+
+    @Test
+    void puntos_partidaNueva_treintaYNuevePorColor() {
+        // Act & Assert
+        assertEquals(39, partida.puntos(Color.BLANCO));
+        assertEquals(39, partida.puntos(Color.NEGRO));
+    }
+
+    @Test
+    void puntos_despuesDePerderUnaTorre_bajanCinco() {
+        // Act: la torre blanca captura en h5 y la torre negra la captura a ella.
+        jugarValidas("h2 h4", "g7 g5", "h4 g5", "h7 h5", "h1 h5", "h8 h5");
+
+        // Assert
+        assertEquals(34, partida.puntos(Color.BLANCO));
+    }
+
+    // --- Fin de partida ---
+
+    @Test
+    void jugar_mateDelLoco_terminaYGananLasNegras() {
+        // Act
+        jugarValidas("f2 f3", "e7 e5", "g2 g4", "d8 h4");
+
+        // Assert
+        assertEquals(new EstadoPartida(true, Optional.of(Color.NEGRO), "Jaque mate: gana NEGRO"), partida.estado());
+    }
+
+    @Test
+    void jugar_mateDelPasilloConMenosPuntos_ganaElQueDaElMate() {
+        // Arrange: el rey negro está encerrado por sus peones. Negras tienen 11 puntos y blancas 5.
+        Partida partida = partidaSobre(new Tablero(8, 8)
+                .con(casilla("g1"), new Pieza(Color.BLANCO, rey()))
+                .con(casilla("a1"), new Pieza(Color.BLANCO, torre()))
+                .con(casilla("g8"), new Pieza(Color.NEGRO, rey()))
+                .con(casilla("h8"), new Pieza(Color.NEGRO, torre()))
+                .con(casilla("h6"), new Pieza(Color.NEGRO, alfil()))
+                .con(casilla("f7"), new Pieza(Color.NEGRO, peon()))
+                .con(casilla("g7"), new Pieza(Color.NEGRO, peon()))
+                .con(casilla("h7"), new Pieza(Color.NEGRO, peon())));
+
+        // Act
+        partida.jugar(casilla("a1"), casilla("a8"));
+
+        // Assert
+        assertEquals(new EstadoPartida(true, Optional.of(Color.BLANCO), "Jaque mate: gana BLANCO"), partida.estado());
+    }
+
+    @Test
+    void jugar_ahogadoConMasPuntosDeUnLado_esTablasIgual() {
+        // Arrange: la dama va a c7 y el rey negro de a8 se queda sin jugadas, sin estar en jaque.
+        // Blancas tienen 9 puntos y negras 0, pero el ahogado no mira los puntos.
+        Partida partida = partidaSobre(new Tablero(8, 8)
+                .con(casilla("h1"), new Pieza(Color.BLANCO, rey()))
+                .con(casilla("c1"), new Pieza(Color.BLANCO, dama()))
+                .con(casilla("a8"), new Pieza(Color.NEGRO, rey())));
+
+        // Act
+        partida.jugar(casilla("c1"), casilla("c7"));
+
+        // Assert
+        assertEquals(new EstadoPartida(true, Optional.empty(), "Ahogado: tablas"), partida.estado());
+    }
+
+    @Test
+    void terminar_conVentajaDeMaterial_ganaElQueTieneMasPuntos() {
+        // Arrange: blancas pierden torre y peón (34), negras dos peones (37).
+        jugarValidas("h2 h4", "g7 g5", "h4 g5", "h7 h5", "h1 h5", "h8 h5");
+
+        // Act
+        EstadoPartida estado = partida.terminar();
+
+        // Assert
+        assertEquals(new EstadoPartida(true, Optional.of(Color.NEGRO),
+                "Partida terminada por los jugadores: gana NEGRO por 37 a 34 puntos"), estado);
+    }
+
+    @Test
+    void terminar_conMaterialIgual_esTablas() {
+        // Act
+        EstadoPartida estado = partida.terminar();
+
+        // Assert
+        assertTrue(estado.terminada());
+        assertEquals(Optional.empty(), estado.ganador());
+    }
+
+    @Test
+    void rendirse_conMasPuntos_ganaElRivalIgual() {
+        // Arrange: negras van ganando 37 a 34 y les toca mover.
+        jugarValidas("h2 h4", "g7 g5", "h4 g5", "h7 h5", "h1 h5", "h8 h5", "a2 a3");
+
+        // Act
+        EstadoPartida estado = partida.rendirse();
+
+        // Assert
+        assertEquals(new EstadoPartida(true, Optional.of(Color.BLANCO), "NEGRO se rinde: gana BLANCO"), estado);
+    }
+
+    @Test
+    void rendirse_conLaPartidaYaTerminada_noCambiaElResultado() {
+        // Arrange
+        EstadoPartida antes = partida.terminar();
+
+        // Act & Assert
+        assertEquals(antes, partida.rendirse());
+    }
+
+    // --- Destinos para resaltar en la interfaz ---
+
+    @Test
+    void destinosLegales_peonInicial_avanzaUnaODosCasillas() {
+        // Act & Assert
+        assertEquals(casillas("e3", "e4"), Set.copyOf(partida.destinosLegales(casilla("e2"))));
+    }
+
+    @Test
+    void destinosLegales_caballoInicial_saltaAa3YC3() {
+        // Act & Assert
+        assertEquals(casillas("a3", "c3"), Set.copyOf(partida.destinosLegales(casilla("b1"))));
+    }
+
+    @Test
+    void destinosLegales_piezaDelRival_vacio() {
+        // Act & Assert
+        assertTrue(partida.destinosLegales(casilla("e7")).isEmpty());
+        assertTrue(partida.destinosIlegales(casilla("e7")).isEmpty());
+    }
+
+    @Test
+    void destinosIlegales_piezaClavada_marcaSusDiagonales() {
+        // Arrange: el alfil de e2 tapa a la torre negra de e8.
+        Partida partida = partidaSobre(new Tablero(8, 8)
+                .con(casilla("e1"), new Pieza(Color.BLANCO, rey()))
+                .con(casilla("h8"), new Pieza(Color.NEGRO, rey()))
+                .con(casilla("e2"), new Pieza(Color.BLANCO, alfil()))
+                .con(casilla("e8"), new Pieza(Color.NEGRO, torre())));
+
+        // Act & Assert
+        assertTrue(partida.destinosLegales(casilla("e2")).isEmpty());
+        assertEquals(casillas("d1", "f1", "d3", "c4", "b5", "a6", "f3", "g4", "h5"),
+                Set.copyOf(partida.destinosIlegales(casilla("e2"))));
+    }
+
+    @Test
+    void destinosIlegales_reyQueSeMeteEnJaque_marcaEsaCasilla() {
+        // Arrange: la torre negra de d8 controla toda la columna d.
+        Partida partida = partidaSobre(new Tablero(8, 8)
+                .con(casilla("e1"), new Pieza(Color.BLANCO, rey()))
+                .con(casilla("h8"), new Pieza(Color.NEGRO, rey()))
+                .con(casilla("d8"), new Pieza(Color.NEGRO, torre())));
+
+        // Act & Assert
+        assertEquals(casillas("e2", "f1", "f2"), Set.copyOf(partida.destinosLegales(casilla("e1"))));
+        assertEquals(casillas("d1", "d2"), Set.copyOf(partida.destinosIlegales(casilla("e1"))));
+    }
+
+    @Test
+    void destinosLegales_partidaTerminada_vacio() {
+        // Arrange
+        partida.terminar();
+
+        // Act & Assert
+        assertTrue(partida.destinosLegales(casilla("e2")).isEmpty());
+        assertTrue(partida.destinosIlegales(casilla("e2")).isEmpty());
+    }
+
+    @Test
+    void jugar_conLaPartidaTerminada_esRechazada() {
+        // Arrange
+        partida.terminar();
+
+        // Act
+        ResultadoJugada resultado = jugar("e2", "e4");
+
+        // Assert
+        assertFalse(resultado.valida());
+        assertEquals("La partida terminó", resultado.motivo());
     }
 }

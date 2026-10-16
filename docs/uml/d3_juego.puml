@@ -7,9 +7,21 @@ package "ajedrez-nucleo :: juego" #EAF6EA {
     +tablero() : Tablero
     +turnoActual() : Color
     +estaEnJaque(c : Color) : boolean
+    +puntos(c : Color) : int
+    +estado() : EstadoPartida
+    +terminar() : EstadoPartida
+    +rendirse() : EstadoPartida
+    +destinosLegales(desde : Posicion) : List<Posicion>
+    +destinosIlegales(desde : Posicion) : List<Posicion>
   }
   class Partida {
-    +Partida(tablero : Tablero, validador : ValidadorDeJugadas, detector : DetectorDeJaque)
+    +Partida(tablero : Tablero, validador : ValidadorDeJugadas, detector : DetectorDeJaque, generador : GeneradorDeJugadasLegales)
+  }
+  class EstadoPartida <<record>> {
+    +terminada : boolean
+    +ganador : Optional<Color>
+    +motivo : String
+    +{static} enCurso() : EstadoPartida
   }
   class ResultadoJugada <<record>> {
     +valida : boolean
@@ -35,6 +47,11 @@ package "ajedrez-nucleo :: reglas" #EAF6EA {
     +ValidadorDeJugadas(reglas : List<ReglaDeValidacion>)
     +validar(t : Tablero, j : Jugada, turno : Color) : ResultadoValidacion
   }
+  class GeneradorDeJugadasLegales {
+    +GeneradorDeJugadasLegales(v : ValidadorDeJugadas)
+    +jugadasLegales(t : Tablero, c : Color) : List<Jugada>
+    +jugadasLegalesDesde(t : Tablero, desde : Posicion, turno : Color) : List<Jugada>
+  }
   class ResultadoValidacion <<record>> {
     +valida : boolean
     +motivo : String
@@ -46,10 +63,13 @@ Partida ..|> JuegoDeAjedrez
 Partida ..> ResultadoJugada : devuelve
 Partida -down--> ValidadorDeJugadas
 Partida -down---> DetectorDeJaque
+Partida -down--> GeneradorDeJugadasLegales
+Partida --> EstadoPartida
 ReglaPiezaPropia ..|> ReglaDeValidacion
 ReglaNoDejarReyEnJaque ..|> ReglaDeValidacion
 ReglaNoDejarReyEnJaque --> DetectorDeJaque
 ValidadorDeJugadas o-- "1..*" ReglaDeValidacion
+GeneradorDeJugadasLegales --> ValidadorDeJugadas
 ReglaDeValidacion ..> ResultadoValidacion : devuelve
 JuegoDeAjedrez -[hidden]down-> ReglaPiezaPropia
 JuegoDeAjedrez -[hidden]down-> ValidadorDeJugadas

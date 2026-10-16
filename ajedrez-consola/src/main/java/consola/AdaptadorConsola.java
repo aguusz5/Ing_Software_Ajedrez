@@ -5,6 +5,7 @@ import java.util.Scanner;
 
 import juego.JuegoDeAjedrez;
 import juego.ResultadoJugada;
+import modelo.Color;
 import modelo.Posicion;
 
 /**
@@ -15,6 +16,8 @@ import modelo.Posicion;
 public final class AdaptadorConsola {
 
     private static final String COMANDO_SALIR = "salir";
+    private static final String COMANDO_TERMINAR = "terminar";
+    private static final String COMANDO_RENDIRSE = "rendirse";
 
     private final JuegoDeAjedrez juego;
     private final TraductorDeNotacion traductor;
@@ -32,9 +35,12 @@ public final class AdaptadorConsola {
     }
 
     public void ejecutar() {
-        salida.println(dibujante.dibujar(juego.tablero()));
-        while (true) {
-            salida.print("Turno de " + juego.turnoActual() + " (ejemplo: e2 e4, o '" + COMANDO_SALIR + "'): ");
+        dibujar();
+        while (!juego.estado().terminada()) {
+            // En jaque se ofrece rendirse; el comando igual funciona en cualquier momento.
+            String rendirse = juego.estaEnJaque(juego.turnoActual()) ? "'" + COMANDO_RENDIRSE + "', " : "";
+            salida.print("Turno de " + juego.turnoActual() + " (ejemplo: e2 e4, " + rendirse
+                    + "'" + COMANDO_TERMINAR + "' o '" + COMANDO_SALIR + "'): ");
             if (!entrada.hasNextLine()) {
                 return;
             }
@@ -42,8 +48,28 @@ public final class AdaptadorConsola {
             if (linea.equalsIgnoreCase(COMANDO_SALIR)) {
                 return;
             }
-            procesar(linea);
+            if (linea.equalsIgnoreCase(COMANDO_TERMINAR)) {
+                juego.terminar();
+            } else if (linea.equalsIgnoreCase(COMANDO_RENDIRSE)) {
+                juego.rendirse();
+            } else {
+                procesar(linea);
+            }
         }
+        anunciarFin();
+    }
+
+    private void anunciarFin() {
+        salida.println();
+        salida.println("===== FIN DE LA PARTIDA =====");
+        salida.println(juego.estado().ganador().map(color -> "Ganador: " + color).orElse("Resultado: tablas"));
+        salida.println("Fin de la partida. " + juego.estado().motivo());
+    }
+
+    private void dibujar() {
+        salida.println(dibujante.dibujar(juego.tablero()));
+        salida.println("Puntos: BLANCO " + juego.puntos(Color.BLANCO)
+                + " · NEGRO " + juego.puntos(Color.NEGRO));
     }
 
     private void procesar(String linea) {
@@ -69,7 +95,7 @@ public final class AdaptadorConsola {
             salida.println("Jugada inválida: " + resultado.motivo());
             return;
         }
-        salida.println(dibujante.dibujar(juego.tablero()));
+        dibujar();
         resultado.colorEnJaque().ifPresent(color -> salida.println("¡Jaque al rey " + color + "!"));
     }
 }

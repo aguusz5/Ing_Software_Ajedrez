@@ -216,3 +216,42 @@ se revierte, no se borra: se marca como reemplazada y se dice por cuál.
   exactamente la posición que verifica.
 - **Cuándo se rompería:** no se rompería para el núcleo. Para la GUI, si se quisieran tests automáticos
   de la ventana, haría falta otra estrategia, porque hoy no tiene tests.
+
+---
+
+## Opcionales
+
+### 21. `GeneradorDeJugadasLegales` es una clase concreta
+
+- **Qué:** `reglas.GeneradorDeJugadasLegales` recibe el `ValidadorDeJugadas` por constructor, pide las
+  `jugadasCandidatas` de cada pieza y se queda con las que el validador acepta. No tiene interfaz.
+- **Por qué:** el mate, el ahogado, la GUI y la IA hacen la misma pregunta, así que se responde en un solo
+  lugar y reutiliza las reglas de validación que ya existen. Hay una sola forma de generar jugadas legales
+  y nadie la consume de forma polimórfica (mismo criterio que la decisión 14).
+- **Cuándo se rompería:** si la IA necesitara un generador más rápido que no pase por el validador
+  completo. Ahí se extrae la interfaz y conviven las dos implementaciones.
+
+### 22. Los puntos son el material que queda en el tablero
+
+- **Qué:** cada `TipoDePieza` trae su `valor` (peón 1, caballo y alfil 3, torre 5, dama 9, rey 0) y
+  `Tablero.puntosDe(Color)` suma el valor de las piezas de ese color. No hay contador de capturas.
+  El grupo lo eligió frente a "contar capturas" el 16/10.
+- **Por qué:** los dos bandos arrancan con 39, así que la diferencia de material es la diferencia de lo
+  capturado. No guarda estado: sale gratis con deshacer y la IA puede usarlo para evaluar. El valor viaja
+  con el tipo (sin `switch`), así que una pieza nueva declara el suyo sin tocar `Tablero`.
+- **Cuándo se rompería:** si el profesor quiere que solo cuenten las capturas. La única diferencia es la
+  coronación, que con material suma 8 puntos.
+
+### 23. `EstadoPartida` es un record, no el patrón State
+
+- **Qué:** `Partida` guarda un `EstadoPartida(terminada, ganador, motivo)`. Después de cada jugada, si el
+  que mueve no tiene jugadas legales, es mate (gana el otro) o ahogado (tablas, sin mirar los puntos,
+  como en el ajedrez real: el grupo lo decidió el 16/10 para no quitarle al que va perdiendo el recurso de
+  buscar el ahogado).
+  `terminar()` también decide por puntos. `rendirse()` le da la partida al rival sin mirar los puntos
+  (en la ventana el botón aparece cuando el que mueve está en jaque; en la consola se ofrece en el
+  mismo caso). La comparación de puntos vive en un solo método privado, `decidirPorPuntos`.
+- **Por qué:** hay dos estados (en curso / terminada) y lo único que cambia es que `jugar` rechaza
+  jugadas, que es un `if`. Una jerarquía de estados sería indirección sin comportamiento.
+- **Cuándo se rompería:** con más estados que tengan comportamiento propio (pausa, esperando promoción,
+  reloj). Ahí sí conviene State.

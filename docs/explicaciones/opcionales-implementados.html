@@ -1,0 +1,356 @@
+<title>Opcionales 0, 1 y 2</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Familjen+Grotesk:wght@500;700&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+  /* Mismos tokens que estado.html y plan-opcionales.html. Una columna de lectura; tablas y código scrollean dentro de su caja. */
+  :root {
+    --bg: #f4f6f1;
+    --surface: #ffffff;
+    --ink: #17201a;
+    --muted: #56625a;
+    --line: #d6ddd3;
+    --accent: #2c6a43;
+    --accent-soft: #e3efe5;
+    --code-bg: #e9eee6;
+    --alerta: #9a6a12;
+    --alerta-soft: #fbf0dc;
+    --font-display: "Familjen Grotesk", "Segoe UI", system-ui, sans-serif;
+    --font-body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+    --font-mono: "IBM Plex Mono", ui-monospace, "Cascadia Mono", Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #101512; --surface: #171e19; --ink: #e3eae4; --muted: #9ba89f; --line: #2a342d;
+      --accent: #8cc79f; --accent-soft: #1c3024; --code-bg: #212a24;
+      --alerta: #e2b46a; --alerta-soft: #2e2416;
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #101512; --surface: #171e19; --ink: #e3eae4; --muted: #9ba89f; --line: #2a342d;
+    --accent: #8cc79f; --accent-soft: #1c3024; --code-bg: #212a24;
+    --alerta: #e2b46a; --alerta-soft: #2e2416;
+    color-scheme: dark;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font: 400 1rem/1.6 var(--font-body); }
+  .pagina { max-width: 60rem; margin: 0 auto; padding-inline: 24px; padding-block: 48px 72px; display: grid; gap: 56px; }
+  section { display: grid; gap: 16px; }
+  .pagina > *, section > * { min-width: 0; }
+  h1, h2, h3 { font-family: var(--font-display); font-weight: 700; text-wrap: balance; margin: 0; }
+  h1 { font-size: clamp(2.1rem, 5.5vw, 3rem); line-height: 1.05; letter-spacing: -0.015em; }
+  h2 { font-size: 1.45rem; line-height: 1.2; }
+  h3 { font-size: 1.12rem; line-height: 1.25; }
+  p { margin: 0; max-width: 70ch; }
+  a { color: var(--accent); text-underline-offset: 2px; }
+  a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  code { font-family: var(--font-mono); font-size: 0.86em; background: var(--code-bg); padding: 0.08em 0.35em; border-radius: 4px; overflow-wrap: anywhere; }
+  pre { margin: 0; padding: 14px 16px; background: var(--code-bg); border-radius: 10px; overflow-x: auto; font: 400 0.84rem/1.55 var(--font-mono); }
+  pre code { background: none; padding: 0; font-size: inherit; overflow-wrap: normal; }
+  .nota { font-size: 0.93rem; color: var(--muted); }
+  ul.lista, ol.lista { margin: 0; padding-left: 1.2rem; display: grid; gap: 6px; max-width: 72ch; }
+
+  .cabecera { display: grid; gap: 16px; }
+  .eyebrow { font-size: 0.78rem; font-weight: 600; letter-spacing: 0.09em; text-transform: uppercase; color: var(--accent); }
+  .sello { justify-self: start; display: inline-flex; flex-wrap: wrap; gap: 4px 10px; padding: 6px 14px; border: 1px solid var(--accent); border-radius: 8px; background: var(--accent-soft); font-size: 0.9rem; }
+  .sello span { color: var(--muted); }
+  .sello strong { font-family: var(--font-mono); font-weight: 500; font-variant-numeric: tabular-nums; }
+  .bajada { font-size: 1.12rem; color: var(--muted); }
+
+  .caja { display: grid; gap: 8px; padding: 16px 18px; border-radius: 12px; border: 2px solid var(--accent); background: var(--surface); }
+  .caja.alerta { border-color: var(--alerta); background: var(--alerta-soft); }
+  .caja.alerta .eyebrow { color: var(--alerta); }
+  .caja .eyebrow { font-size: 0.72rem; }
+
+  .tabla { overflow-x: auto; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); }
+  table { width: 100%; border-collapse: collapse; font-size: 0.93rem; }
+  th, td { text-align: left; padding: 10px 14px; border-bottom: 1px solid var(--line); vertical-align: baseline; }
+  tbody tr:last-child th, tbody tr:last-child td { border-bottom: 0; }
+  thead th { font-size: 0.72rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); white-space: nowrap; }
+  tbody th { font-weight: 600; }
+  td.detalle { color: var(--muted); font-size: 0.9rem; min-width: 14rem; }
+  .num { font-family: var(--font-mono); text-align: right; font-variant-numeric: tabular-nums; }
+
+  /* Tipo de cambio: además del color, el texto lo dice */
+  .marca { display: inline-block; font-size: 0.72rem; font-weight: 600; padding: 1px 7px; border-radius: 999px; border: 1px solid currentColor; white-space: nowrap; vertical-align: 1px; }
+  .nuevo { color: var(--accent); background: var(--accent-soft); }
+  .cambia { color: var(--alerta); background: var(--alerta-soft); }
+
+  .fichas { display: grid; gap: 20px; }
+  .ficha { display: grid; gap: 12px; padding: 20px 22px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); }
+  .ficha > * { min-width: 0; }
+  .ficha header { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 12px; }
+  .ficha .meta { font-size: 0.86rem; color: var(--muted); }
+  .ficha dl { margin: 0; display: grid; gap: 10px; }
+  .ficha dl > div { display: grid; grid-template-columns: 8.5rem minmax(0, 1fr); gap: 12px; }
+  .ficha dt { font-size: 0.78rem; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); padding-top: 2px; }
+  .ficha dd { margin: 0; font-size: 0.95rem; }
+  .ficha dd ul { margin: 0; padding-left: 1.1rem; display: grid; gap: 4px; }
+
+  .dos { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; }
+
+  @media (max-width: 760px) {
+    .pagina { padding-inline: 16px; padding-block: 32px 56px; gap: 44px; }
+    .ficha { padding: 16px; }
+    .ficha dl > div { grid-template-columns: 1fr; gap: 2px; }
+    .dos { grid-template-columns: 1fr; }
+  }
+</style>
+
+<main class="pagina">
+
+  <header class="cabecera">
+    <div class="eyebrow">TPO Ajedrez · Fase 5 · Opcionales</div>
+    <h1>Qué cambió con los opcionales 0, 1 y 2, y el resaltado de movimientos</h1>
+    <p class="sello"><span>Hecho el</span> <strong>16/10/2026</strong> <span>· tests en verde</span> <strong>116</strong> <span>(antes 92)</span></p>
+    <p class="bajada">La partida ahora termina y tiene ganador: jaque mate, ahogado, los jugadores la dan por
+      terminada (gana el que tiene más puntos) o uno se rinde. Cada pieza tiene un valor y los puntos se ven en
+      la consola y en la ventana. En la ventana, al elegir una pieza se ve a dónde puede moverse.</p>
+    <div class="caja alerta">
+      <span class="eyebrow">Si tenés código en curso, leé esto primero</span>
+      <ul class="lista">
+        <li><code>TipoDePieza</code> recibe un parámetro más: <code>new TipoDePieza(nombre, esRey, valor, reglas)</code>.</li>
+        <li><code>Partida</code> recibe un parámetro más: <code>new Partida(tablero, validador, detector, generador)</code>.</li>
+        <li><code>JuegoDeAjedrez</code> tiene seis métodos nuevos. Cualquier clase que lo implemente tiene que sumarlos.</li>
+        <li>Con la partida terminada, <code>jugar</code> rechaza todo con "La partida terminó". Un test que juegue
+          después de un mate ahora falla: por eso cambiamos <code>jugar_conElReyEnJaque_rechazaLasJugadasQueNoLoSacan</code>
+          para que use un jaque que no es mate.</li>
+      </ul>
+    </div>
+  </header>
+
+  <section aria-labelledby="t-reglas">
+    <h2 id="t-reglas">Las reglas que decidimos</h2>
+    <p>El profesor pidió que se pueda ganar por puntos. Lo que no estaba claro lo decidimos así:</p>
+    <div class="tabla">
+      <table>
+        <thead><tr><th scope="col">Cómo termina</th><th scope="col">Resultado</th><th scope="col">Texto que muestra</th></tr></thead>
+        <tbody>
+          <tr><th scope="row">Jaque mate</th><td>Gana el que da el mate, sin mirar los puntos</td><td class="detalle"><code>Jaque mate: gana NEGRO</code></td></tr>
+          <tr><th scope="row">Ahogado</th><td>Tablas, sin mirar los puntos (como en el ajedrez real)</td><td class="detalle"><code>Ahogado: tablas</code></td></tr>
+          <tr><th scope="row">Terminar (comando o botón)</th><td>Gana el que tiene más puntos; con puntos iguales, tablas</td><td class="detalle"><code>Partida terminada por los jugadores: gana NEGRO por 37 a 34 puntos</code></td></tr>
+          <tr><th scope="row">Rendirse</th><td>Gana el rival, aunque el que se rinde tenga más puntos</td><td class="detalle"><code>NEGRO se rinde: gana BLANCO</code></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <ul class="lista">
+      <li><strong>Puntos = material en el tablero</strong>, no piezas capturadas. Los dos bandos arrancan con 39,
+        así que la diferencia es la misma. Solo cambia cuando un peón corona: su bando suma 8.</li>
+      <li><strong>Sin límite de jugadas.</strong> Sin mate ni ahogado, la partida termina cuando los jugadores la
+        terminan o cuando uno se rinde.</li>
+    </ul>
+    <div class="tabla">
+      <table>
+        <thead><tr><th scope="col">Pieza</th><th scope="col" class="num">Peón</th><th scope="col" class="num">Caballo</th><th scope="col" class="num">Alfil</th><th scope="col" class="num">Torre</th><th scope="col" class="num">Dama</th><th scope="col" class="num">Rey</th></tr></thead>
+        <tbody><tr><th scope="row">Valor</th><td class="num">1</td><td class="num">3</td><td class="num">3</td><td class="num">5</td><td class="num">9</td><td class="num">0</td></tr></tbody>
+      </table>
+    </div>
+  </section>
+
+  <section aria-labelledby="t-puerto">
+    <h2 id="t-puerto">El puerto ampliado</h2>
+    <p>Todo lo nuevo que usan la consola y la ventana entra por <code>JuegoDeAjedrez</code>; los adaptadores
+      siguen sin importar <code>reglas</code> ni <code>movimiento</code>.</p>
+<pre><code>public interface JuegoDeAjedrez {
+    // --- lo que ya existía ---
+    ResultadoJugada jugar(Posicion desde, Posicion hasta);
+    Tablero tablero();
+    Color turnoActual();
+    boolean estaEnJaque(Color color);
+
+    // --- nuevo ---
+    int puntos(Color color);       // suma del valor de las piezas de ese color en el tablero
+    EstadoPartida estado();        // en curso, o terminada con ganador (o tablas) y motivo
+    EstadoPartida terminar();      // los jugadores la cortan: se decide por puntos
+    EstadoPartida rendirse();      // el que mueve abandona: gana el rival
+    List&lt;Posicion&gt; destinosLegales(Posicion desde);   // casillas en azul
+    List&lt;Posicion&gt; destinosIlegales(Posicion desde);  // casillas en naranja
+}
+
+/** Nuevo record en juego. ganador vacío = tablas. */
+public record EstadoPartida(boolean terminada, Optional&lt;Color&gt; ganador, String motivo) {
+    public static EstadoPartida enCurso() { ... }
+}</code></pre>
+  </section>
+
+  <section aria-labelledby="t-fichas">
+    <h2 id="t-fichas">Cada opcional</h2>
+    <div class="fichas">
+
+      <article class="ficha">
+        <header><h3>0 · Generador de jugadas legales</h3><span class="meta">base para el mate, el ahogado, la GUI y la IA</span></header>
+        <dl>
+          <div><dt>Qué hay</dt><dd><ul>
+            <li><span class="marca nuevo">Nuevo</span> <code>reglas.GeneradorDeJugadasLegales</code>. Recibe el
+              <code>ValidadorDeJugadas</code> por constructor, pide las <code>jugadasCandidatas</code> de cada pieza y
+              se queda con las que el validador acepta.</li>
+            <li>Métodos: <code>jugadasLegales(Tablero, Color)</code> y <code>jugadasLegalesDesde(Tablero, Posicion, Color)</code>.</li>
+            <li>Sin interfaz: hay una sola forma de generar jugadas legales (decisión 21).</li>
+          </ul></dd></div>
+          <div><dt>Tests</dt><dd><code>GeneradorDeJugadasLegalesTest</code> (4): 20 jugadas en la posición inicial,
+            la pieza clavada no mueve, en jaque solo aparecen las que lo sacan, casilla vacía da lista vacía.</dd></div>
+        </dl>
+      </article>
+
+      <article class="ficha">
+        <header><h3>1 · Valor de las piezas y puntos</h3><span class="meta">pedido del profesor</span></header>
+        <dl>
+          <div><dt>Qué hay</dt><dd><ul>
+            <li><span class="marca cambia">Cambia</span> <code>TipoDePieza</code>: campo <code>valor</code> en el
+              constructor y su getter. El valor viaja con el tipo, sin <code>switch</code> por nombre.</li>
+            <li><span class="marca cambia">Cambia</span> <code>TiposDePiezaEstandar</code>: 1, 5, 3, 3, 9, 0. El
+              canciller de <code>ExtensibilidadTest</code> vale 8.</li>
+            <li><span class="marca nuevo">Nuevo</span> <code>Tablero.puntosDe(Color)</code> y <code>puntos(Color)</code> en el puerto.</li>
+          </ul></dd></div>
+          <div><dt>Tests</dt><dd><ul>
+            <li>Partida nueva: 39 puntos por color.</li>
+            <li>Después de perder una torre, las blancas tienen 34.</li>
+            <li>El canciller suma sus 8 puntos sin tocar <code>Tablero</code> (prueba que el puntaje es extensible).</li>
+          </ul></dd></div>
+          <div><dt>Decisión</dt><dd>22: por qué material y no contador de capturas (no guarda estado, sirve gratis
+            para deshacer y para la IA).</dd></div>
+        </dl>
+      </article>
+
+      <article class="ficha">
+        <header><h3>2 · Fin de partida, ganador por puntos y rendición</h3><span class="meta">el núcleo decide; los adaptadores muestran</span></header>
+        <dl>
+          <div><dt>Qué hay</dt><dd><ul>
+            <li><span class="marca nuevo">Nuevo</span> record <code>juego.EstadoPartida</code>.</li>
+            <li><span class="marca cambia">Cambia</span> <code>Partida</code>: recibe el generador y guarda su estado.
+              Después de cada jugada, si el que tiene que mover no tiene jugadas legales: en jaque es mate, si no,
+              ahogado.</li>
+            <li><code>terminar()</code> compara puntos en un solo método privado, <code>decidirPorPuntos</code>. Si
+              algún día cambia la regla, se toca ahí.</li>
+            <li><code>rendirse()</code> le da la partida al rival del que mueve.</li>
+            <li>Con la partida terminada, <code>jugar</code> rechaza con "La partida terminó"; <code>terminar</code> y
+              <code>rendirse</code> no cambian el resultado.</li>
+            <li><span class="marca cambia">Cambia</span> <code>Principal</code>: crea el generador y se lo pasa a <code>Partida</code>.</li>
+          </ul></dd></div>
+          <div><dt>Tests</dt><dd><ul>
+            <li>Mate del loco: ganan las negras.</li>
+            <li>Mate del pasillo con menos puntos: gana igual el que da el mate.</li>
+            <li>Ahogado con 9 a 0: tablas igual.</li>
+            <li><code>terminar()</code> con ventaja (37 a 34) y con material igual (tablas).</li>
+            <li>Rendirse con más puntos: gana el rival. Rendirse con la partida ya terminada: no cambia nada.</li>
+            <li>Después del final, <code>jugar</code> se rechaza.</li>
+          </ul></dd></div>
+          <div><dt>Decisión</dt><dd>23: <code>EstadoPartida</code> es un record y no el patrón State. Hay dos estados y lo
+            único que cambia es rechazar jugadas, que es un <code>if</code>.</dd></div>
+        </dl>
+      </article>
+
+      <article class="ficha">
+        <header><h3>5 (parte) · Resaltado de movimientos en la ventana</h3><span class="meta">usa el generador del opcional 0</span></header>
+        <dl>
+          <div><dt>Qué se ve</dt><dd><ul>
+            <li><strong>Azul:</strong> casillas a las que la pieza elegida puede ir legalmente. Depende de cómo se
+              mueve: el alfil en diagonal, el peón para adelante, el caballo en L, etc.</li>
+            <li><strong>Naranja:</strong> casillas que la pieza alcanzaría por su forma de moverse pero que no son
+              legales porque dejarían a su rey en jaque (pieza clavada, rey que se mete en jaque).</li>
+            <li><strong>Rojo:</strong> debajo del rey que está en jaque. Después de un mate queda en rojo el rey que perdió.</li>
+            <li>Solo se marcan las piezas del color que mueve; elegir una pieza del rival no pinta nada.</li>
+          </ul></dd></div>
+          <div><dt>Qué hay</dt><dd><ul>
+            <li><span class="marca nuevo">Nuevo</span> <code>destinosLegales(desde)</code> y
+              <code>destinosIlegales(desde)</code> en el puerto, implementados en <code>Partida</code> con el
+              <code>GeneradorDeJugadasLegales</code>. Con la partida terminada devuelven vacío.</li>
+            <li><span class="marca cambia">Cambia</span> <code>VentanaSwing</code>: solo pinta lo que le devuelve el
+              puerto. Prioridad: elegida (amarillo) &gt; rey en jaque &gt; azul &gt; naranja.</li>
+            <li>La consola no cambia (lo decidimos así).</li>
+          </ul></dd></div>
+          <div><dt>Tests</dt><dd>6 en <code>PartidaTest</code>: peón inicial (e3, e4), caballo inicial (a3, c3), pieza del
+            rival (vacío), pieza clavada (todo naranja), rey que se mete en jaque (d1 y d2 naranja), partida terminada (vacío).</dd></div>
+        </dl>
+      </article>
+
+    </div>
+  </section>
+
+  <section aria-labelledby="t-adaptadores">
+    <h2 id="t-adaptadores">Qué se ve en la consola y en la ventana</h2>
+    <div class="dos">
+      <article class="ficha">
+        <header><h3>Consola</h3></header>
+        <ul class="lista">
+          <li>Debajo del tablero: <code>Puntos: BLANCO 39 · NEGRO 39</code>.</li>
+          <li>Comando <code>terminar</code>: decide por puntos.</li>
+          <li>Comando <code>rendirse</code>: el prompt lo ofrece cuando estás en jaque, pero funciona siempre.</li>
+          <li>Al final imprime <code>===== FIN DE LA PARTIDA =====</code>, el ganador (o "tablas") y el motivo, y sale.</li>
+          <li>3 tests nuevos en <code>AdaptadorConsolaTest</code>: terminar, jaque mate y rendirse.</li>
+        </ul>
+      </article>
+      <article class="ficha">
+        <header><h3>Ventana</h3></header>
+        <ul class="lista">
+          <li>Al elegir una pieza: azul donde puede ir, naranja donde no es legal; rojo debajo del rey en jaque.</li>
+          <li>Barra de abajo con los puntos de cada color.</li>
+          <li>Botón <strong>Terminar partida</strong>, siempre visible.</li>
+          <li>Botón <strong>Rendirse</strong>: aparece solo cuando el que mueve está en jaque.</li>
+          <li>Al terminar: diálogo "Fin de la partida" con el ganador y el motivo, la barra dice
+            "FIN DE LA PARTIDA", el tablero deja de responder y "Terminar partida" se desactiva.</li>
+          <li>Sin tests automáticos (decisión 20): <strong>falta probarla a mano</strong>.</li>
+        </ul>
+      </article>
+    </div>
+  </section>
+
+  <section aria-labelledby="t-desvios">
+    <h2 id="t-desvios">Diferencias con <code>plan-opcionales.html</code></h2>
+    <ul class="lista">
+      <li><strong>El ahogado es tablas</strong>, no se decide por puntos como proponía el plan. El plan ya está actualizado.</li>
+      <li><strong>Se agregó rendirse</strong>, que no estaba en el plan.</li>
+      <li><strong><code>ResultadoJugada</code> no lleva el <code>EstadoPartida</code>.</strong> Los adaptadores lo
+        consultan con <code>juego.estado()</code> después de jugar. Así no hubo que tocar todas las fábricas de
+        <code>ResultadoJugada</code>.</li>
+      <li>La consola y la ventana ya muestran puntos, terminar y rendirse, que el plan dejaba para el opcional 5.
+        También se adelantó el resaltado de jugadas y el rey en jaque en rojo. Del opcional 5 queda
+        deshacer/rehacer en la interfaz.</li>
+    </ul>
+  </section>
+
+  <section aria-labelledby="t-archivos">
+    <h2 id="t-archivos">Archivos tocados</h2>
+    <div class="tabla">
+      <table>
+        <thead><tr><th scope="col">Módulo</th><th scope="col">Archivos</th></tr></thead>
+        <tbody>
+          <tr><th scope="row">ajedrez-nucleo</th><td class="detalle"><span class="marca nuevo">Nuevo</span> <code>reglas/GeneradorDeJugadasLegales</code>, <code>juego/EstadoPartida</code>
+            · <span class="marca cambia">Cambia</span> <code>modelo/TipoDePieza</code>, <code>modelo/Tablero</code>, <code>configuracion/TiposDePiezaEstandar</code>, <code>juego/JuegoDeAjedrez</code>, <code>juego/Partida</code></td></tr>
+          <tr><th scope="row">tests del núcleo</th><td class="detalle"><span class="marca nuevo">Nuevo</span> <code>GeneradorDeJugadasLegalesTest</code>
+            · <span class="marca cambia">Cambia</span> <code>PartidaTest</code>, <code>ExtensibilidadTest</code>, <code>TipoDePiezaTest</code></td></tr>
+          <tr><th scope="row">ajedrez-consola</th><td class="detalle"><code>AdaptadorConsola</code>, <code>AdaptadorConsolaTest</code></td></tr>
+          <tr><th scope="row">ajedrez-gui-swing</th><td class="detalle"><code>VentanaSwing</code></td></tr>
+          <tr><th scope="row">ajedrez-app</th><td class="detalle"><code>Principal</code></td></tr>
+          <tr><th scope="row">docs</th><td class="detalle"><code>uml/d2_modelo.puml</code>, <code>uml/d3_juego.puml</code>, <code>decisiones.md</code> (21, 22 y 23), <code>estado.html</code>, <code>plan-opcionales.html</code></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section aria-labelledby="t-probar">
+    <h2 id="t-probar">Cómo probarlo</h2>
+<pre><code>mvn test                                          # 95 del núcleo + 21 de la consola
+mvn package &amp;&amp; java -jar ajedrez-app/target/ajedrez.jar          # consola
+mvn package &amp;&amp; java -jar ajedrez-app/target/ajedrez.jar --gui    # ventana</code></pre>
+    <p>Para ver un mate rápido en la consola: <code>f2 f3</code>, <code>e7 e5</code>, <code>g2 g4</code>,
+      <code>d8 h4</code>. Para ver el botón Rendirse en la ventana: <code>e2 e4</code>, <code>f7 f6</code>,
+      <code>d1 h5</code> (las negras quedan en jaque).</p>
+  </section>
+
+  <section aria-labelledby="t-pendiente">
+    <h2 id="t-pendiente">Lo que falta</h2>
+    <ul class="lista">
+      <li>Probar la ventana a mano: un mate, un "terminar", una rendición y los colores del resaltado.</li>
+      <li>Hacer el commit (todavía no está commiteado) y esperar el CI en verde.</li>
+      <li>Avisarle al profesor cómo quedaron las reglas, sobre todo que el ahogado es tablas.</li>
+      <li>Que otro integrante lo revise y lo pueda explicar: la defensa es individual.</li>
+      <li>Siguiente opcional: <strong>3 · Deshacer / rehacer</strong>.</li>
+    </ul>
+  </section>
+
+</main>

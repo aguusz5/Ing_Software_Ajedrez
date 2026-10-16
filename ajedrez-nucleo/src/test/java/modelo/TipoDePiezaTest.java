@@ -11,6 +11,6 @@ class TipoDePiezaTest {
     @Test
     void constructor_sinReglasDeMovimiento_lanzaExcepcion() {
         // Act & Assert
-        assertThrows(IllegalArgumentException.class, () -> new TipoDePieza("inmóvil", false, List.of()));
+        assertThrows(IllegalArgumentException.class, () -> new TipoDePieza("inmóvil", false, 1, List.of()));
     }
 }

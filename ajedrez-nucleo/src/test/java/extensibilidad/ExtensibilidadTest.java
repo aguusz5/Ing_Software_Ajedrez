@@ -27,6 +27,7 @@ import modelo.TipoDePieza;
 import movimiento.ReglaDeSalto;
 import movimiento.ReglaDeslizante;
 import reglas.DetectorDeJaque;
+import reglas.GeneradorDeJugadasLegales;
 import reglas.ReglaNoDejarReyEnJaque;
 import reglas.ReglaPiezaPropia;
 import reglas.ValidadorDeJugadas;
@@ -38,7 +39,7 @@ import reglas.ValidadorDeJugadas;
 class ExtensibilidadTest {
 
     /** Canciller = torre + caballo. Existe solo en este test. */
-    private static final TipoDePieza CANCILLER = new TipoDePieza("canciller", false, List.of(
+    private static final TipoDePieza CANCILLER = new TipoDePieza("canciller", false, 8, List.of(
             new ReglaDeslizante(Direccion.ORTOGONALES, ReglaDeslizante.SIN_LIMITE),
             new ReglaDeSalto(Direccion.SALTOS_DE_CABALLO)));
 
@@ -47,7 +48,18 @@ class ExtensibilidadTest {
         ValidadorDeJugadas validador = new ValidadorDeJugadas(List.of(
                 new ReglaPiezaPropia(),
                 new ReglaNoDejarReyEnJaque(detector)));
-        return new Partida(tablero, validador, detector);
+        return new Partida(tablero, validador, detector, new GeneradorDeJugadasLegales(validador));
+    }
+
+    @Test
+    void piezaNueva_conSuPropioValor_sumaPuntosSinTocarElTablero() {
+        // Arrange
+        Tablero tablero = new Tablero(8, 8)
+                .con(casilla("e1"), new Pieza(Color.BLANCO, rey()))
+                .con(casilla("d4"), new Pieza(Color.BLANCO, CANCILLER));
+
+        // Act & Assert
+        assertEquals(8, tablero.puntosDe(Color.BLANCO));
     }
 
     @Test

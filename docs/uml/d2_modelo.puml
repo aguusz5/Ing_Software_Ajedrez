@@ -28,6 +28,7 @@ package "ajedrez-nucleo :: modelo" #EAF6EA {
     +estaDentro(p : Posicion) : boolean
     +piezaEn(p : Posicion) : Optional<Pieza>
     +buscarRey(c : Color) : Posicion
+    +puntosDe(c : Color) : int
     +con(p : Posicion, pieza : Pieza) : Tablero
     +sin(p : Posicion) : Tablero
   }
@@ -42,7 +43,8 @@ package "ajedrez-nucleo :: modelo" #EAF6EA {
   class TipoDePieza {
     +nombre : String
     +esRey : boolean
-    +TipoDePieza(nombre, esRey, reglas : List<ReglaDeMovimiento>)
+    +valor : int
+    +TipoDePieza(nombre, esRey, valor, reglas : List<ReglaDeMovimiento>)
     +reglas() : List<ReglaDeMovimiento>
   }
 }

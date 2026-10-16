@@ -22,17 +22,17 @@ public final class TiposDePiezaEstandar {
             new ReglaDeslizante(Direccion.DIAGONALES, ReglaDeslizante.SIN_LIMITE);
 
     private static final TipoDePieza PEON =
-            new TipoDePieza("peón", false, List.of(new ReglaAvanceDePeon(), new ReglaCapturaDePeon()));
+            new TipoDePieza("peón", false, 1, List.of(new ReglaAvanceDePeon(), new ReglaCapturaDePeon()));
     private static final TipoDePieza TORRE =
-            new TipoDePieza("torre", false, List.of(LINEAS_RECTAS));
+            new TipoDePieza("torre", false, 5, List.of(LINEAS_RECTAS));
     private static final TipoDePieza CABALLO =
-            new TipoDePieza("caballo", false, List.of(new ReglaDeSalto(Direccion.SALTOS_DE_CABALLO)));
+            new TipoDePieza("caballo", false, 3, List.of(new ReglaDeSalto(Direccion.SALTOS_DE_CABALLO)));
     private static final TipoDePieza ALFIL =
-            new TipoDePieza("alfil", false, List.of(LINEAS_DIAGONALES));
+            new TipoDePieza("alfil", false, 3, List.of(LINEAS_DIAGONALES));
     private static final TipoDePieza DAMA =
-            new TipoDePieza("dama", false, List.of(LINEAS_RECTAS, LINEAS_DIAGONALES));
+            new TipoDePieza("dama", false, 9, List.of(LINEAS_RECTAS, LINEAS_DIAGONALES));
     private static final TipoDePieza REY =
-            new TipoDePieza("rey", true, List.of(new ReglaDeslizante(Direccion.TODAS, 1)));
+            new TipoDePieza("rey", true, 0, List.of(new ReglaDeslizante(Direccion.TODAS, 1)));
 
     private TiposDePiezaEstandar() {
     }

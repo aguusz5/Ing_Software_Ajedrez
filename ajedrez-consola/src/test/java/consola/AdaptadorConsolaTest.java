@@ -15,6 +15,7 @@ import configuracion.TableroEstandar;
 import juego.JuegoDeAjedrez;
 import juego.Partida;
 import reglas.DetectorDeJaque;
+import reglas.GeneradorDeJugadasLegales;
 import reglas.ReglaNoDejarReyEnJaque;
 import reglas.ReglaPiezaPropia;
 import reglas.ValidadorDeJugadas;
@@ -24,9 +25,10 @@ class AdaptadorConsolaTest {
     /** Corre la consola con un texto como si fuera el teclado y devuelve todo lo que imprimió. */
     private String ejecutarCon(String entrada) {
         DetectorDeJaque detector = new DetectorDeJaque();
-        JuegoDeAjedrez juego = new Partida(new TableroEstandar().crearTablero(),
-                new ValidadorDeJugadas(List.of(new ReglaPiezaPropia(), new ReglaNoDejarReyEnJaque(detector))),
-                detector);
+        ValidadorDeJugadas validador =
+                new ValidadorDeJugadas(List.of(new ReglaPiezaPropia(), new ReglaNoDejarReyEnJaque(detector)));
+        JuegoDeAjedrez juego = new Partida(new TableroEstandar().crearTablero(), validador, detector,
+                new GeneradorDeJugadasLegales(validador));
         ByteArrayOutputStream bytes = new ByteArrayOutputStream();
         PrintStream salida = new PrintStream(bytes, true, StandardCharsets.UTF_8);
 
@@ -81,6 +83,37 @@ class AdaptadorConsolaTest {
 
         // Assert
         assertTrue(salida.contains("¡Jaque al rey BLANCO!"));
+    }
+
+    @Test
+    void ejecutar_comandoTerminar_decidePorPuntosYCierraLaPartida() {
+        // Act: después de "terminar" ya no se lee "e2 e4".
+        String salida = ejecutarCon("terminar\ne2 e4\n");
+
+        // Assert
+        assertTrue(salida.contains("Puntos: BLANCO 39 · NEGRO 39"));
+        assertTrue(salida.contains("Fin de la partida. Partida terminada por los jugadores: tablas, 39 a 39 puntos"));
+    }
+
+    @Test
+    void ejecutar_jaqueMate_anunciaElGanador() {
+        // Act
+        String salida = ejecutarCon("f2 f3\ne7 e5\ng2 g4\nd8 h4\n");
+
+        // Assert
+        assertTrue(salida.contains("Ganador: NEGRO"));
+        assertTrue(salida.contains("Fin de la partida. Jaque mate: gana NEGRO"));
+    }
+
+    @Test
+    void ejecutar_enJaque_ofreceRendirseYAlRendirseGanaElRival() {
+        // Act: Dh5+ pone en jaque a las negras, que se rinden.
+        String salida = ejecutarCon("e2 e4\nf7 f6\nd1 h5\nrendirse\n");
+
+        // Assert
+        assertTrue(salida.contains("Turno de NEGRO (ejemplo: e2 e4, 'rendirse', "));
+        assertTrue(salida.contains("Ganador: BLANCO"));
+        assertTrue(salida.contains("NEGRO se rinde: gana BLANCO"));
     }
 
     @Test

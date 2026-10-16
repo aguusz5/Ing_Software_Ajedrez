@@ -55,6 +55,14 @@ public final class Tablero {
                 .orElseThrow(() -> new IllegalStateException("No hay rey " + color + " en el tablero"));
     }
 
+    /** Suma del valor de las piezas de ese color que siguen en el tablero. */
+    public int puntosDe(Color color) {
+        return piezas.values().stream()
+                .filter(pieza -> pieza.color() == color)
+                .mapToInt(pieza -> pieza.tipo().valor())
+                .sum();
+    }
+
     /** Un tablero nuevo con la pieza en esa casilla. Si ya había otra, la reemplaza: así se captura. */
     public Tablero con(Posicion posicion, Pieza pieza) {
         exigirDentro(posicion);

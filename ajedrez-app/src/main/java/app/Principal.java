@@ -15,6 +15,7 @@ import juego.JuegoDeAjedrez;
 import juego.Partida;
 import modelo.Tablero;
 import reglas.DetectorDeJaque;
+import reglas.GeneradorDeJugadasLegales;
 import reglas.ReglaNoDejarReyEnJaque;
 import reglas.ReglaPiezaPropia;
 import reglas.ValidadorDeJugadas;
@@ -44,6 +45,6 @@ public final class Principal {
                 new ReglaPiezaPropia(),
                 new ReglaNoDejarReyEnJaque(detector)));
         Tablero tablero = new TableroEstandar().crearTablero();
-        return new Partida(tablero, validador, detector);
+        return new Partida(tablero, validador, detector, new GeneradorDeJugadasLegales(validador));
     }
 }
