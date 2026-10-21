@@ -18,6 +18,7 @@ import java.awt.geom.Path2D;
 import java.awt.geom.PathIterator;
 import java.awt.geom.Rectangle2D;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -142,10 +143,24 @@ public final class VentanaSwing {
         } else if (origen.equals(posicion)) {
             origen = null; // segundo clic sobre la misma casilla: se cancela la selección
         } else {
-            mensaje = describir(juego.jugar(origen, posicion));
+            jugarHacia(posicion);
             origen = null;
         }
         repintar();
+    }
+
+    /** Si el núcleo dice que la jugada corona, se pregunta en qué; cerrar el diálogo cancela la jugada. */
+    private void jugarHacia(Posicion destino) {
+        List<String> opciones = juego.opcionesDeCoronacion(origen, destino);
+        if (opciones.isEmpty()) {
+            mensaje = describir(juego.jugar(origen, destino));
+            return;
+        }
+        int elegida = JOptionPane.showOptionDialog(ventana, "¿En qué pieza corona el peón?", "Promoción",
+                JOptionPane.DEFAULT_OPTION, JOptionPane.QUESTION_MESSAGE, null, opciones.toArray(), opciones.get(0));
+        if (elegida != JOptionPane.CLOSED_OPTION) {
+            mensaje = describir(juego.jugar(origen, destino, opciones.get(elegida)));
+        }
     }
 
     /** Después de deshacer o rehacer: se suelta la pieza elegida y, si no cambió nada, se avisa. */

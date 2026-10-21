@@ -160,6 +160,15 @@ class AdaptadorConsolaTest {
     }
 
     @Test
+    void ejecutar_peonQueCoronaConLaPiezaEscrita_quedaEsaPieza() {
+        // Act: el peón de a2 come en b5, a6 y b7, y corona en a8 comiendo la torre.
+        String salida = ejecutarCon("a2 a4\nb7 b5\na4 b5\na7 a6\nb5 a6\nc8 b7\na6 b7\nb8 c6\nb7 a8 caballo\nsalir\n");
+
+        // Assert: en a8 queda un caballo blanco (C).
+        assertTrue(salida.contains(" 8  C . . d r a c t"));
+    }
+
+    @Test
     void ejecutar_seTerminaLaEntrada_terminaSinError() {
         // Act & Assert
         assertDoesNotThrow(() -> ejecutarCon(""));

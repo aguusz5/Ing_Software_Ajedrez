@@ -15,6 +15,15 @@ public interface JuegoDeAjedrez {
     /** Intenta mover la pieza de "desde" a "hasta". Si la jugada es válida, pasa el turno. */
     ResultadoJugada jugar(Posicion desde, Posicion hasta);
 
+    /**
+     * Igual que jugar, pero si el peón corona lo hace en el tipo pedido ("dama", "torre", "alfil" o "caballo").
+     * Sin elegir, corona en dama. Si la jugada no corona, la promoción se ignora.
+     */
+    ResultadoJugada jugar(Posicion desde, Posicion hasta, String promocion);
+
+    /** En qué puede coronar esa jugada legal, para que la interfaz pregunte. Vacío si no corona. */
+    List<String> opcionesDeCoronacion(Posicion desde, Posicion hasta);
+
     Tablero tablero();
 
     Color turnoActual();

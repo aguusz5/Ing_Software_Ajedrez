@@ -190,7 +190,7 @@
     <div class="siguiente">
       <span class="eyebrow">Lo próximo</span>
       <p>La partida ya termina y anuncia al ganador (mate, ahogado, por puntos o porque uno se rinde),
-        se puede deshacer y rehacer, y la interfaz (opcional 5) está completa. Sigue <strong>promoción de peón</strong>.</p>
+        se puede deshacer y rehacer, el peón corona y la interfaz (opcional 5) está completa. Sigue <strong>enroque</strong>.</p>
     </div>
   </header>
 
@@ -314,7 +314,7 @@
           <tr>
             <th scope="row">Núcleo probado sin levantar nada</th>
             <td><span class="estado hecho">Cumple</span></td>
-            <td class="detalle">104 tests del núcleo con tableros armados a mano. Sin consola ni ventana.</td>
+            <td class="detalle">120 tests del núcleo con tableros armados a mano. Sin consola ni ventana.</td>
           </tr>
           <tr>
             <th scope="row">Clases nuevas sin modificar las existentes</th>
@@ -352,7 +352,7 @@
           <tr>
             <th scope="row">Tests unitarios del núcleo</th>
             <td><span class="estado parcial">En curso</span></td>
-            <td class="detalle">129 tests en verde: 104 del núcleo y 25 de la consola.</td>
+            <td class="detalle">146 tests en verde: 120 del núcleo y 26 de la consola.</td>
           </tr>
           <tr>
             <th scope="row">Documento de justificación</th>
@@ -400,8 +400,8 @@
           </tr>
           <tr>
             <th scope="row">Promoción de peón</th>
-            <td><span class="estado pendiente">Sin empezar</span></td>
-            <td class="detalle">Una clase nueva que implemente <code>Jugada</code>.</td>
+            <td><span class="estado hecho">Hecho</span></td>
+            <td class="detalle"><code>JugadaConPromocion</code> implementa <code>Jugada</code>. El peón corona al llegar a la última fila, avanzando o capturando, sin números de fila (funciona en 10x10). Sin elegir corona en dama; la consola acepta <code>e7 e8 caballo</code> y la ventana pregunta con un diálogo.</td>
           </tr>
           <tr>
             <th scope="row">Interfaz más allá de lo mínimo</th>
@@ -433,8 +433,8 @@
     <ol class="pasos">
       <li>Hacer push de lo del 08/10 y confirmar en la pestaña <strong>Actions</strong> de GitHub que el CI quede en verde.</li>
       <li>Avisarle al profesor cómo quedaron las reglas de fin: puntos por material, ahogado = tablas, final por "terminar" o rendición.</li>
-      <li>Probar la ventana a mano (no tiene tests automáticos): resaltado, Deshacer y Rehacer, también después de un mate o una rendición.</li>
-      <li>Implementar promoción de peón (opcional 4), con sus tests y el UML actualizado en el mismo commit.</li>
+      <li>Probar la ventana a mano (no tiene tests automáticos): resaltado, Deshacer y Rehacer (también después de un mate o una rendición) y el diálogo de promoción.</li>
+      <li>Implementar enroque (opcional 6), con sus tests y el UML actualizado en el mismo commit.</li>
       <li>Elegir qué otros opcionales entran antes del congelamiento del 12/11.</li>
       <li>Que cada integrante lea el código de los otros paquetes: la defensa es individual y puede pedir agregar una pieza o cambiar el tamaño del tablero.</li>
     </ol>
@@ -462,6 +462,8 @@
           <li>Opcional 3: <code>deshacer()</code> y <code>rehacer()</code> en el puerto, con fotos de la partida en <code>Partida</code>. Terminar y rendirse también se pueden deshacer. 9 tests nuevos en <code>PartidaTest</code>.</li>
           <li>Opcional 5 completo: botones Deshacer y Rehacer en la ventana; comandos <code>deshacer</code>, <code>rehacer</code> y <code>puntos</code> en la consola, con 4 tests nuevos en <code>AdaptadorConsolaTest</code>.</li>
           <li>Decisión 24; UML <code>d3_juego</code> actualizado. 129 tests en verde.</li>
+          <li>Opcional 4: promoción de peón con <code>JugadaConPromocion</code>. Las reglas del peón reciben por constructor los tipos en los que puede coronar (dama, torre, alfil, caballo). Puerto: <code>jugar(desde, hasta, promocion)</code> y <code>opcionesDeCoronacion</code>. Consola: <code>e7 e8 caballo</code>; ventana: diálogo para elegir.</li>
+          <li>17 tests nuevos (16 del núcleo, incluido coronar en la fila 10 de un tablero de 10x10, y 1 de la consola). Decisión 25; UML <code>d2_modelo</code> y <code>d3_juego</code> actualizados. 146 tests en verde.</li>
         </ul>
       </li>
       <li>

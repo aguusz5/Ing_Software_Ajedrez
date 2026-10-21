@@ -270,3 +270,19 @@ se revierte, no se borra: se marca como reemplazada y se dice por cuál.
 - **Cuándo se rompería:** si el tablero pasara a ser mutable (habría que copiarlo en cada foto) o si la
   partida sumara estado que no está en la foto (un reloj, un contador de 50 jugadas): ese estado tiene que
   entrar en `Foto` o se pierde al deshacer.
+
+### 25. La promoción es una jugada más, y la interfaz le pregunta al núcleo si hay que elegir
+
+- **Qué:** `JugadaConPromocion(desde, hasta, nuevoTipo)` implementa `Jugada` (la extensión que anticipaba
+  la decisión 9). `ReglaAvanceDePeon` y `ReglaCapturaDePeon` reciben por constructor los tipos en los que
+  puede coronar el peón; `TiposDePiezaEstandar` les pasa dama, torre, alfil y caballo, en ese orden.
+  La última fila es aquella desde la que un paso más adelante sale del tablero: no hay números de fila,
+  así que corona en la fila 10 de un tablero de 10x10. Ahí la regla genera una candidata por tipo.
+  `Jugada.promocion()` (por defecto vacío) le dice a `Partida` en qué corona cada candidata, sin
+  `instanceof`. `jugar(desde, hasta, promocion)` elige por nombre; sin elegir corona en la primera (dama).
+  Para la ventana, `opcionesDeCoronacion(desde, hasta)` devuelve los nombres posibles, o vacío si no corona.
+- **Por qué:** la regla de cuándo se corona queda en el núcleo; la ventana solo muestra las opciones que
+  recibe y la consola pasa el texto que escribió el jugador. Una pieza nueva puede entrar en la lista de
+  coronaciones sin tocar `Partida` ni los adaptadores.
+- **Cuándo se rompería:** si el nombre deja de identificar al tipo (dos tipos con el mismo nombre). Ahí el
+  puerto tendría que recibir otra cosa que un `String`.

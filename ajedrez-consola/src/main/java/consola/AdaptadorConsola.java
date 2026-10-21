@@ -96,9 +96,11 @@ public final class AdaptadorConsola {
     }
 
     private void procesar(String linea) {
+        // "e2 e4", o "e7 e8 caballo" para coronar en algo que no sea dama.
         String[] casillas = linea.split("\\s+");
-        if (casillas.length != 2) {
-            salida.println("Escribí la casilla de origen y la de destino separadas por un espacio, por ejemplo: e2 e4");
+        if (casillas.length != 2 && casillas.length != 3) {
+            salida.println("Escribí la casilla de origen y la de destino separadas por un espacio, por ejemplo: e2 e4"
+                    + " (para coronar en otra pieza, agregala al final: e7 e8 caballo)");
             return;
         }
         Posicion desde;
@@ -110,7 +112,7 @@ public final class AdaptadorConsola {
             salida.println(e.getMessage());
             return;
         }
-        mostrar(juego.jugar(desde, hasta));
+        mostrar(casillas.length == 3 ? juego.jugar(desde, hasta, casillas[2]) : juego.jugar(desde, hasta));
     }
 
     private void mostrar(ResultadoJugada resultado) {

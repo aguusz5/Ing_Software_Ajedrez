@@ -4,6 +4,8 @@ top to bottom direction
 package "ajedrez-nucleo :: juego" #EAF6EA {
   interface JuegoDeAjedrez <<puerto de entrada>> {
     +jugar(desde : Posicion, hasta : Posicion) : ResultadoJugada
+    +jugar(desde : Posicion, hasta : Posicion, promocion : String) : ResultadoJugada
+    +opcionesDeCoronacion(desde : Posicion, hasta : Posicion) : List<String>
     +tablero() : Tablero
     +turnoActual() : Color
     +estaEnJaque(c : Color) : boolean

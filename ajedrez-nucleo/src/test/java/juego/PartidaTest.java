@@ -1,6 +1,7 @@
 package juego;
 
 import static configuracion.TiposDePiezaEstandar.alfil;
+import static configuracion.TiposDePiezaEstandar.caballo;
 import static configuracion.TiposDePiezaEstandar.dama;
 import static configuracion.TiposDePiezaEstandar.peon;
 import static configuracion.TiposDePiezaEstandar.rey;
@@ -403,6 +404,126 @@ class PartidaTest {
 
         // Act & Assert
         assertFalse(partida.deshacer());
+    }
+
+    // --- Promoción de peón ---
+
+    /** Rey blanco en h1, rey negro en a3 y un peón blanco en e7 a punto de coronar. */
+    private static Partida partidaConPeonEnE7() {
+        return partidaSobre(new Tablero(8, 8)
+                .con(casilla("h1"), new Pieza(Color.BLANCO, rey()))
+                .con(casilla("a3"), new Pieza(Color.NEGRO, rey()))
+                .con(casilla("e7"), new Pieza(Color.BLANCO, peon()).movida()));
+    }
+
+    @Test
+    void jugar_peonQueLlegaAlFinalSinElegir_coronaEnDama() {
+        // Arrange
+        Partida partida = partidaConPeonEnE7();
+
+        // Act
+        ResultadoJugada resultado = partida.jugar(casilla("e7"), casilla("e8"));
+
+        // Assert
+        assertTrue(resultado.valida());
+        assertEquals(dama(), partida.tablero().piezaEn(casilla("e8")).orElseThrow().tipo());
+    }
+
+    @Test
+    void jugar_peonQueLlegaAlFinalPidiendoCaballo_coronaEnCaballo() {
+        // Arrange
+        Partida partida = partidaConPeonEnE7();
+
+        // Act
+        ResultadoJugada resultado = partida.jugar(casilla("e7"), casilla("e8"), "caballo");
+
+        // Assert
+        assertTrue(resultado.valida());
+        assertEquals(caballo(), partida.tablero().piezaEn(casilla("e8")).orElseThrow().tipo());
+    }
+
+    @Test
+    void jugar_peonNegroQueCapturaEnLaPrimeraFila_coronaEnLoQuePide() {
+        // Arrange: blancas mueven el rey y el peón negro de d2 captura la torre de e1.
+        Partida partida = partidaSobre(new Tablero(8, 8)
+                .con(casilla("h4"), new Pieza(Color.BLANCO, rey()))
+                .con(casilla("e1"), new Pieza(Color.BLANCO, torre()))
+                .con(casilla("a6"), new Pieza(Color.NEGRO, rey()))
+                .con(casilla("d2"), new Pieza(Color.NEGRO, peon()).movida()));
+        partida.jugar(casilla("h4"), casilla("h5"));
+
+        // Act
+        ResultadoJugada resultado = partida.jugar(casilla("d2"), casilla("e1"), "torre");
+
+        // Assert
+        assertTrue(resultado.valida());
+        assertEquals(Optional.of(new Pieza(Color.NEGRO, torre()).movida()), partida.tablero().piezaEn(casilla("e1")));
+    }
+
+    @Test
+    void jugar_coronarEnUnTipoQueNoSePuede_esRechazado() {
+        // Arrange
+        Partida partida = partidaConPeonEnE7();
+
+        // Act
+        ResultadoJugada resultado = partida.jugar(casilla("e7"), casilla("e8"), "rey");
+
+        // Assert
+        assertFalse(resultado.valida());
+        assertEquals("No se puede coronar en rey", resultado.motivo());
+    }
+
+    @Test
+    void jugar_conPromocionEnUnaJugadaQueNoCorona_laIgnora() {
+        // Act
+        ResultadoJugada resultado = partida.jugar(casilla("e2"), casilla("e4"), "dama");
+
+        // Assert
+        assertTrue(resultado.valida());
+        assertEquals(peon(), partida.tablero().piezaEn(casilla("e4")).orElseThrow().tipo());
+    }
+
+    @Test
+    void puntos_alCoronarEnDama_sumanOcho() {
+        // Arrange
+        Partida partida = partidaConPeonEnE7();
+        int antes = partida.puntos(Color.BLANCO);
+
+        // Act
+        partida.jugar(casilla("e7"), casilla("e8"), "dama");
+
+        // Assert
+        assertEquals(antes + 8, partida.puntos(Color.BLANCO));
+    }
+
+    @Test
+    void deshacer_unaCoronacion_devuelveElPeon() {
+        // Arrange
+        Partida partida = partidaConPeonEnE7();
+        partida.jugar(casilla("e7"), casilla("e8"), "dama");
+
+        // Act
+        partida.deshacer();
+
+        // Assert
+        assertEquals(peon(), partida.tablero().piezaEn(casilla("e7")).orElseThrow().tipo());
+        assertTrue(partida.tablero().piezaEn(casilla("e8")).isEmpty());
+    }
+
+    @Test
+    void opcionesDeCoronacion_peonQueLlegaAlFinal_lasCuatroPiezas() {
+        // Arrange
+        Partida partida = partidaConPeonEnE7();
+
+        // Act & Assert
+        assertEquals(List.of("dama", "torre", "alfil", "caballo"),
+                partida.opcionesDeCoronacion(casilla("e7"), casilla("e8")));
+    }
+
+    @Test
+    void opcionesDeCoronacion_jugadaQueNoCorona_vacio() {
+        // Act & Assert
+        assertTrue(partida.opcionesDeCoronacion(casilla("e2"), casilla("e4")).isEmpty());
     }
 
     // --- Destinos para resaltar en la interfaz ---

@@ -96,6 +96,29 @@ class ExtensibilidadTest {
     }
 
     @Test
+    void tableroDe10x10_peonQueLlegaALaFila10_corona() {
+        // Arrange: si hubiera un 8 escondido, el peón coronaría en la fila 8 o no podría entrar a la 10.
+        Tablero tablero = new Tablero(10, 10)
+                .con(casilla("a1"), new Pieza(Color.BLANCO, rey()))
+                .con(casilla("j1"), new Pieza(Color.NEGRO, rey()))
+                .con(casilla("e7"), new Pieza(Color.BLANCO, peon()).movida());
+        JuegoDeAjedrez juego = partidaSobre(tablero);
+
+        // Act
+        juego.jugar(casilla("e7"), casilla("e8"));
+        TipoDePieza enLaFila8 = juego.tablero().piezaEn(casilla("e8")).orElseThrow().tipo();
+        juego.jugar(casilla("j1"), casilla("j2"));
+        juego.jugar(casilla("e8"), casilla("e9"));
+        juego.jugar(casilla("j2"), casilla("j1"));
+        ResultadoJugada coronacion = juego.jugar(casilla("e9"), casilla("e10"), "torre");
+
+        // Assert
+        assertEquals(peon(), enLaFila8);
+        assertTrue(coronacion.valida());
+        assertEquals(torre(), juego.tablero().piezaEn(casilla("e10")).orElseThrow().tipo());
+    }
+
+    @Test
     void tableroDe10x10_unaPartida_funcionaSinCambiosEnElNucleo() {
         // Arrange
         Tablero tablero = new Tablero(10, 10)

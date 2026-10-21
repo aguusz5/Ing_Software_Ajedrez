@@ -9,6 +9,7 @@ import modelo.Color;
 import modelo.Pieza;
 import modelo.Posicion;
 import modelo.Tablero;
+import modelo.TipoDePieza;
 import movimiento.Jugada;
 import reglas.DetectorDeJaque;
 import reglas.GeneradorDeJugadasLegales;
@@ -43,6 +44,15 @@ public final class Partida implements JuegoDeAjedrez {
 
     @Override
     public ResultadoJugada jugar(Posicion desde, Posicion hasta) {
+        return jugar(desde, hasta, Optional.empty());
+    }
+
+    @Override
+    public ResultadoJugada jugar(Posicion desde, Posicion hasta, String promocion) {
+        return jugar(desde, hasta, Optional.of(promocion));
+    }
+
+    private ResultadoJugada jugar(Posicion desde, Posicion hasta, Optional<String> promocion) {
         // 0. Con la partida terminada no se juega más.
         if (estado.terminada()) {
             return ResultadoJugada.rechazada("La partida terminó");
@@ -55,11 +65,18 @@ public final class Partida implements JuegoDeAjedrez {
         }
 
         // 2. El destino tiene que ser una de las jugadas que permite el movimiento de esa pieza.
-        Optional<Jugada> jugada = pieza.get().jugadasCandidatas(tablero, desde).stream()
+        //    Si corona hay una candidata por tipo: se toma la pedida o, sin elegir, la primera (dama).
+        List<Jugada> alDestino = pieza.get().jugadasCandidatas(tablero, desde).stream()
                 .filter(candidata -> candidata.hasta().equals(hasta))
+                .toList();
+        if (alDestino.isEmpty()) {
+            return ResultadoJugada.rechazada("Esa pieza no puede moverse a esa casilla");
+        }
+        Optional<Jugada> jugada = alDestino.stream()
+                .filter(candidata -> promocion.isEmpty() || coronaEn(candidata, promocion.get()))
                 .findFirst();
         if (jugada.isEmpty()) {
-            return ResultadoJugada.rechazada("Esa pieza no puede moverse a esa casilla");
+            return ResultadoJugada.rechazada("No se puede coronar en " + promocion.get());
         }
 
         // 3. La jugada tiene que pasar las reglas de validación (turno, no dejar al rey en jaque, ...).
@@ -83,6 +100,23 @@ public final class Partida implements JuegoDeAjedrez {
                     : new EstadoPartida(true, Optional.empty(), "Ahogado: tablas");
         }
         return enJaque ? ResultadoJugada.okConJaque(turno) : ResultadoJugada.ok();
+    }
+
+    /** Una jugada que no corona acepta cualquier pedido (se ignora); una que corona, solo el de su tipo. */
+    private static boolean coronaEn(Jugada jugada, String promocion) {
+        return jugada.promocion().map(tipo -> tipo.nombre().equalsIgnoreCase(promocion)).orElse(true);
+    }
+
+    @Override
+    public List<String> opcionesDeCoronacion(Posicion desde, Posicion hasta) {
+        if (estado.terminada()) {
+            return List.of();
+        }
+        return generador.jugadasLegalesDesde(tablero, desde, turno).stream()
+                .filter(jugada -> jugada.hasta().equals(hasta))
+                .flatMap(jugada -> jugada.promocion().stream())
+                .map(TipoDePieza::nombre)
+                .toList();
     }
 
     @Override

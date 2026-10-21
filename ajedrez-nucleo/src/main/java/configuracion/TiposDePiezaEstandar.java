@@ -21,8 +21,6 @@ public final class TiposDePiezaEstandar {
     private static final ReglaDeMovimiento LINEAS_DIAGONALES =
             new ReglaDeslizante(Direccion.DIAGONALES, ReglaDeslizante.SIN_LIMITE);
 
-    private static final TipoDePieza PEON =
-            new TipoDePieza("peón", false, 1, List.of(new ReglaAvanceDePeon(), new ReglaCapturaDePeon()));
     private static final TipoDePieza TORRE =
             new TipoDePieza("torre", false, 5, List.of(LINEAS_RECTAS));
     private static final TipoDePieza CABALLO =
@@ -33,6 +31,12 @@ public final class TiposDePiezaEstandar {
             new TipoDePieza("dama", false, 9, List.of(LINEAS_RECTAS, LINEAS_DIAGONALES));
     private static final TipoDePieza REY =
             new TipoDePieza("rey", true, 0, List.of(new ReglaDeslizante(Direccion.TODAS, 1)));
+
+    /** En qué puede coronar el peón, en este orden: sin elegir, corona en la primera (dama). */
+    private static final List<TipoDePieza> CORONACIONES = List.of(DAMA, TORRE, ALFIL, CABALLO);
+    // Va después de las otras piezas porque las necesita para coronar.
+    private static final TipoDePieza PEON = new TipoDePieza("peón", false, 1,
+            List.of(new ReglaAvanceDePeon(CORONACIONES), new ReglaCapturaDePeon(CORONACIONES)));
 
     private TiposDePiezaEstandar() {
     }
