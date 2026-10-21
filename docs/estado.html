@@ -183,14 +183,14 @@
   <header class="cabecera">
     <div class="eyebrow">TPO Ajedrez · Ingeniería de Software</div>
     <h1>Dónde estamos</h1>
-    <p class="sello"><span>Última actualización</span> <time datetime="2026-10-16">16 de octubre de 2026</time></p>
+    <p class="sello"><span>Última actualización</span> <time datetime="2026-10-21">21 de octubre de 2026</time></p>
     <p class="bajada">El alcance obligatorio está completo y probado: las seis piezas, turnos, captura,
       validación y jaque, jugables por consola y por ventana. Por calendario el roadmap nos ubica en la
       fase 2, así que vamos adelantados.</p>
     <div class="siguiente">
       <span class="eyebrow">Lo próximo</span>
-      <p>La partida ya termina y anuncia al ganador (mate, ahogado, por puntos o porque uno se rinde).
-        Sigue <strong>deshacer / rehacer</strong>.</p>
+      <p>La partida ya termina y anuncia al ganador (mate, ahogado, por puntos o porque uno se rinde),
+        se puede deshacer y rehacer, y la interfaz (opcional 5) está completa. Sigue <strong>promoción de peón</strong>.</p>
     </div>
   </header>
 
@@ -314,7 +314,7 @@
           <tr>
             <th scope="row">Núcleo probado sin levantar nada</th>
             <td><span class="estado hecho">Cumple</span></td>
-            <td class="detalle">74 tests del núcleo con tableros armados a mano. Sin consola ni ventana.</td>
+            <td class="detalle">104 tests del núcleo con tableros armados a mano. Sin consola ni ventana.</td>
           </tr>
           <tr>
             <th scope="row">Clases nuevas sin modificar las existentes</th>
@@ -352,7 +352,7 @@
           <tr>
             <th scope="row">Tests unitarios del núcleo</th>
             <td><span class="estado parcial">En curso</span></td>
-            <td class="detalle">92 tests en verde: 74 del núcleo y 18 de la consola.</td>
+            <td class="detalle">129 tests en verde: 104 del núcleo y 25 de la consola.</td>
           </tr>
           <tr>
             <th scope="row">Documento de justificación</th>
@@ -395,8 +395,8 @@
           </tr>
           <tr>
             <th scope="row">Deshacer / rehacer</th>
-            <td><span class="estado pendiente">Sin empezar</span></td>
-            <td class="detalle">El tablero inmutable lo simplifica: alcanza con guardar los tableros anteriores.</td>
+            <td><span class="estado hecho">Hecho</span></td>
+            <td class="detalle"><code>deshacer()</code> y <code>rehacer()</code> en el puerto. <code>Partida</code> guarda fotos (tablero, turno, estado) en dos pilas. Deshacer un mate, un "terminar" o una rendición reabre la partida.</td>
           </tr>
           <tr>
             <th scope="row">Promoción de peón</th>
@@ -404,9 +404,9 @@
             <td class="detalle">Una clase nueva que implemente <code>Jugada</code>.</td>
           </tr>
           <tr>
-            <th scope="row">Resaltar jugadas legales en la GUI</th>
+            <th scope="row">Interfaz más allá de lo mínimo</th>
             <td><span class="estado hecho">Hecho</span></td>
-            <td class="detalle">Al elegir una pieza: azul donde puede ir, naranja donde llegaría pero es ilegal. Rojo debajo del rey en jaque. Puerto: <code>destinosLegales</code> y <code>destinosIlegales</code>.</td>
+            <td class="detalle">Ventana: azul donde puede ir la pieza elegida, naranja donde llegaría pero es ilegal, rojo debajo del rey en jaque; puntos; botones Deshacer, Rehacer, Rendirse y Terminar partida; diálogo de fin. Consola: comandos <code>deshacer</code>, <code>rehacer</code>, <code>puntos</code>, <code>terminar</code> y <code>rendirse</code>. La ventana falta probarla a mano.</td>
           </tr>
           <tr>
             <th scope="row">Enroque</th>
@@ -433,7 +433,8 @@
     <ol class="pasos">
       <li>Hacer push de lo del 08/10 y confirmar en la pestaña <strong>Actions</strong> de GitHub que el CI quede en verde.</li>
       <li>Avisarle al profesor cómo quedaron las reglas de fin: puntos por material, ahogado = tablas, final por "terminar" o rendición.</li>
-      <li>Implementar deshacer / rehacer (opcional 3), con sus tests y el UML actualizado en el mismo commit.</li>
+      <li>Probar la ventana a mano (no tiene tests automáticos): resaltado, Deshacer y Rehacer, también después de un mate o una rendición.</li>
+      <li>Implementar promoción de peón (opcional 4), con sus tests y el UML actualizado en el mismo commit.</li>
       <li>Elegir qué otros opcionales entran antes del congelamiento del 12/11.</li>
       <li>Que cada integrante lea el código de los otros paquetes: la defensa es individual y puede pedir agregar una pieza o cambiar el tamaño del tablero.</li>
     </ol>
@@ -455,6 +456,14 @@
   <section aria-labelledby="t-historial">
     <h2 id="t-historial">Historial</h2>
     <ol class="historial" reversed>
+      <li>
+        <time datetime="2026-10-21">21/10/2026</time>
+        <ul>
+          <li>Opcional 3: <code>deshacer()</code> y <code>rehacer()</code> en el puerto, con fotos de la partida en <code>Partida</code>. Terminar y rendirse también se pueden deshacer. 9 tests nuevos en <code>PartidaTest</code>.</li>
+          <li>Opcional 5 completo: botones Deshacer y Rehacer en la ventana; comandos <code>deshacer</code>, <code>rehacer</code> y <code>puntos</code> en la consola, con 4 tests nuevos en <code>AdaptadorConsolaTest</code>.</li>
+          <li>Decisión 24; UML <code>d3_juego</code> actualizado. 129 tests en verde.</li>
+        </ul>
+      </li>
       <li>
         <time datetime="2026-10-16">16/10/2026</time>
         <ul>

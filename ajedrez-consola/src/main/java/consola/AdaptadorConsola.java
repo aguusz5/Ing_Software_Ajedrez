@@ -18,6 +18,9 @@ public final class AdaptadorConsola {
     private static final String COMANDO_SALIR = "salir";
     private static final String COMANDO_TERMINAR = "terminar";
     private static final String COMANDO_RENDIRSE = "rendirse";
+    private static final String COMANDO_DESHACER = "deshacer";
+    private static final String COMANDO_REHACER = "rehacer";
+    private static final String COMANDO_PUNTOS = "puntos";
 
     private final JuegoDeAjedrez juego;
     private final TraductorDeNotacion traductor;
@@ -40,7 +43,8 @@ public final class AdaptadorConsola {
             // En jaque se ofrece rendirse; el comando igual funciona en cualquier momento.
             String rendirse = juego.estaEnJaque(juego.turnoActual()) ? "'" + COMANDO_RENDIRSE + "', " : "";
             salida.print("Turno de " + juego.turnoActual() + " (ejemplo: e2 e4, " + rendirse
-                    + "'" + COMANDO_TERMINAR + "' o '" + COMANDO_SALIR + "'): ");
+                    + "'" + COMANDO_DESHACER + "', '" + COMANDO_REHACER + "', '" + COMANDO_PUNTOS + "', '"
+                    + COMANDO_TERMINAR + "' o '" + COMANDO_SALIR + "'): ");
             if (!entrada.hasNextLine()) {
                 return;
             }
@@ -52,6 +56,12 @@ public final class AdaptadorConsola {
                 juego.terminar();
             } else if (linea.equalsIgnoreCase(COMANDO_RENDIRSE)) {
                 juego.rendirse();
+            } else if (linea.equalsIgnoreCase(COMANDO_DESHACER)) {
+                redibujarSi(juego.deshacer(), "No hay nada para deshacer");
+            } else if (linea.equalsIgnoreCase(COMANDO_REHACER)) {
+                redibujarSi(juego.rehacer(), "No hay nada para rehacer");
+            } else if (linea.equalsIgnoreCase(COMANDO_PUNTOS)) {
+                mostrarPuntos();
             } else {
                 procesar(linea);
             }
@@ -68,8 +78,21 @@ public final class AdaptadorConsola {
 
     private void dibujar() {
         salida.println(dibujante.dibujar(juego.tablero()));
+        mostrarPuntos();
+    }
+
+    private void mostrarPuntos() {
         salida.println("Puntos: BLANCO " + juego.puntos(Color.BLANCO)
                 + " · NEGRO " + juego.puntos(Color.NEGRO));
+    }
+
+    /** Después de deshacer o rehacer: si cambió algo se redibuja; si no, se avisa. */
+    private void redibujarSi(boolean cambio, String sinCambios) {
+        if (cambio) {
+            dibujar();
+        } else {
+            salida.println(sinCambios);
+        }
     }
 
     private void procesar(String linea) {

@@ -33,6 +33,12 @@ public interface JuegoDeAjedrez {
     /** El jugador al que le toca mover abandona: gana el rival, sin mirar los puntos. */
     EstadoPartida rendirse();
 
+    /** Vuelve un paso atrás: la última jugada, o el fin por "terminar" o rendición. false si no hay nada. */
+    boolean deshacer();
+
+    /** Vuelve a aplicar lo último que se deshizo. false si no hay nada; una jugada nueva lo descarta. */
+    boolean rehacer();
+
     /** Casillas a las que la pieza de "desde" puede ir legalmente. Vacío si no es del turno o la partida terminó. */
     List<Posicion> destinosLegales(Posicion desde);
 

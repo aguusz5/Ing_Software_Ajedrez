@@ -296,6 +296,115 @@ class PartidaTest {
         assertEquals(antes, partida.rendirse());
     }
 
+    // --- Deshacer / rehacer ---
+
+    @Test
+    void deshacer_despuesDeUnaJugada_vuelveAlMismoTableroYTurno() {
+        // Arrange
+        Tablero inicial = partida.tablero();
+        jugarValidas("e2 e4");
+
+        // Act
+        boolean deshizo = partida.deshacer();
+
+        // Assert
+        assertTrue(deshizo);
+        assertSame(inicial, partida.tablero());
+        assertEquals(Color.BLANCO, partida.turnoActual());
+    }
+
+    @Test
+    void deshacer_unaCaptura_devuelveLaPiezaYLosPuntos() {
+        // Arrange: la torre negra captura a la torre blanca en h5.
+        jugarValidas("h2 h4", "g7 g5", "h4 g5", "h7 h5", "h1 h5", "h8 h5");
+
+        // Act
+        partida.deshacer();
+
+        // Assert
+        assertEquals(39, partida.puntos(Color.BLANCO));
+        assertEquals(Color.NEGRO, partida.turnoActual());
+    }
+
+    @Test
+    void rehacer_despuesDeDeshacer_vuelveALaPosicion() {
+        // Arrange
+        jugarValidas("e2 e4");
+        Tablero despuesDeJugar = partida.tablero();
+        partida.deshacer();
+
+        // Act
+        boolean rehizo = partida.rehacer();
+
+        // Assert
+        assertTrue(rehizo);
+        assertSame(despuesDeJugar, partida.tablero());
+        assertEquals(Color.NEGRO, partida.turnoActual());
+    }
+
+    @Test
+    void rehacer_despuesDeUnaJugadaNueva_noHayNadaParaRehacer() {
+        // Arrange
+        jugarValidas("e2 e4");
+        partida.deshacer();
+        jugarValidas("d2 d4");
+
+        // Act & Assert
+        assertFalse(partida.rehacer());
+    }
+
+    @Test
+    void deshacer_unMate_reabreLaPartida() {
+        // Arrange
+        jugarValidas("f2 f3", "e7 e5", "g2 g4", "d8 h4");
+
+        // Act
+        partida.deshacer();
+
+        // Assert
+        assertEquals(EstadoPartida.enCurso(), partida.estado());
+        assertEquals(Color.NEGRO, partida.turnoActual());
+    }
+
+    @Test
+    void deshacer_unaRendicion_reabreLaPartidaSinDeshacerJugadas() {
+        // Arrange
+        jugarValidas("e2 e4");
+        Tablero antesDeRendirse = partida.tablero();
+        partida.rendirse();
+
+        // Act
+        partida.deshacer();
+
+        // Assert
+        assertEquals(EstadoPartida.enCurso(), partida.estado());
+        assertSame(antesDeRendirse, partida.tablero());
+    }
+
+    @Test
+    void deshacer_sinJugadas_devuelveFalse() {
+        // Act & Assert
+        assertFalse(partida.deshacer());
+    }
+
+    @Test
+    void rehacer_sinNadaDeshecho_devuelveFalse() {
+        // Arrange
+        jugarValidas("e2 e4");
+
+        // Act & Assert
+        assertFalse(partida.rehacer());
+    }
+
+    @Test
+    void deshacer_jugadaRechazada_noSeGuarda() {
+        // Arrange: e2 e5 no es válida, así que no hay nada para deshacer.
+        jugar("e2", "e5");
+
+        // Act & Assert
+        assertFalse(partida.deshacer());
+    }
+
     // --- Destinos para resaltar en la interfaz ---
 
     @Test

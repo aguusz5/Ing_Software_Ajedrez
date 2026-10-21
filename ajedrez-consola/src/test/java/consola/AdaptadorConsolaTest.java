@@ -1,6 +1,7 @@
 package consola;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.ByteArrayOutputStream;
@@ -114,6 +115,48 @@ class AdaptadorConsolaTest {
         assertTrue(salida.contains("Turno de NEGRO (ejemplo: e2 e4, 'rendirse', "));
         assertTrue(salida.contains("Ganador: BLANCO"));
         assertTrue(salida.contains("NEGRO se rinde: gana BLANCO"));
+    }
+
+    @Test
+    void ejecutar_comandoDeshacer_vuelveElPeonYElTurno() {
+        // Act
+        String salida = ejecutarCon("e2 e4\ndeshacer\nsalir\n");
+
+        // Assert: el último tablero dibujado vuelve a tener el peón en e2 y le toca a BLANCO.
+        String despuesDeDeshacer = salida.substring(salida.lastIndexOf(" 8  "));
+        assertTrue(despuesDeDeshacer.contains(" 2  P P P P P P P P"));
+        assertTrue(despuesDeDeshacer.contains("Turno de BLANCO"));
+    }
+
+    @Test
+    void ejecutar_comandoRehacer_vuelveAAplicarLaJugada() {
+        // Act
+        String salida = ejecutarCon("e2 e4\ndeshacer\nrehacer\nsalir\n");
+
+        // Assert: se dibujaron tres tableros más el inicial, y el último es el de después de e2 e4.
+        assertEquals(4, salida.split(" 8  ", -1).length - 1);
+        String despuesDeRehacer = salida.substring(salida.lastIndexOf(" 8  "));
+        assertTrue(despuesDeRehacer.contains(" 4  . . . . P . . ."));
+        assertTrue(despuesDeRehacer.contains("Turno de NEGRO"));
+    }
+
+    @Test
+    void ejecutar_deshacerSinJugadas_loAvisa() {
+        // Act
+        String salida = ejecutarCon("deshacer\nrehacer\nsalir\n");
+
+        // Assert
+        assertTrue(salida.contains("No hay nada para deshacer"));
+        assertTrue(salida.contains("No hay nada para rehacer"));
+    }
+
+    @Test
+    void ejecutar_comandoPuntos_muestraLosPuntosDeCadaColor() {
+        // Act: "puntos" vuelve a imprimir la línea de puntos, que ya salió una vez debajo del tablero.
+        String salida = ejecutarCon("puntos\nsalir\n");
+
+        // Assert
+        assertEquals(2, salida.split("Puntos: BLANCO 39 · NEGRO 39", -1).length - 1);
     }
 
     @Test

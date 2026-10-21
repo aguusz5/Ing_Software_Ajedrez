@@ -255,3 +255,18 @@ se revierte, no se borra: se marca como reemplazada y se dice por cuál.
   jugadas, que es un `if`. Una jerarquía de estados sería indirección sin comportamiento.
 - **Cuándo se rompería:** con más estados que tengan comportamiento propio (pausa, esperando promoción,
   reloj). Ahí sí conviene State.
+
+### 24. Deshacer guarda fotos de la partida (Memento), no la inversa de cada jugada
+
+- **Qué:** `Partida` guarda un record privado `Foto(tablero, turno, estado)` en dos pilas, pasado y futuro.
+  Antes de cada cambio apila la foto actual en el pasado y vacía el futuro. `deshacer` pasa la foto actual
+  al futuro y restaura la última del pasado; `rehacer`, al revés. Si no hay nada, devuelven `false`.
+  Además de las jugadas, `terminar()` y `rendirse()` también guardan foto: deshacerlos reabre la partida
+  en la misma posición, sin perder la última jugada. Deshacer un mate también la reabre.
+- **Por qué:** el tablero es inmutable (decisión 7), así que guardar el anterior cuesta una referencia y
+  sirve igual para cualquier jugada especial que se agregue (enroque, promoción, captura al paso). Con
+  Command habría que escribir la inversa de cada una. Que el fin de partida sea un paso más evita que
+  "Deshacer" después de rendirse se lleve también la jugada anterior.
+- **Cuándo se rompería:** si el tablero pasara a ser mutable (habría que copiarlo en cada foto) o si la
+  partida sumara estado que no está en la foto (un reloj, un contador de 50 jugadas): ese estado tiene que
+  entrar en `Foto` o se pierde al deshacer.

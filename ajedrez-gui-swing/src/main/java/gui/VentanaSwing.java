@@ -66,6 +66,8 @@ public final class VentanaSwing {
     private final JLabel estado = new JLabel(" ", SwingConstants.CENTER);
     private final JButton terminar = new JButton("Terminar partida");
     private final JButton rendirse = new JButton("Rendirse");
+    private final JButton deshacer = new JButton("Deshacer");
+    private final JButton rehacer = new JButton("Rehacer");
     private final Map<Posicion, JButton> casillas = new HashMap<>();
     private Posicion origen; // null mientras no se eligió ninguna pieza
     private String mensaje = "";
@@ -115,7 +117,12 @@ public final class VentanaSwing {
             juego.rendirse();
             repintar();
         });
+        // Deshacer también vale con la partida terminada: deshacer un mate o una rendición la reabre.
+        deshacer.addActionListener(evento -> volverA(juego.deshacer(), "No hay nada para deshacer"));
+        rehacer.addActionListener(evento -> volverA(juego.rehacer(), "No hay nada para rehacer"));
         JPanel botones = new JPanel();
+        botones.add(deshacer);
+        botones.add(rehacer);
         botones.add(rendirse);
         botones.add(terminar);
         JPanel barra = new JPanel(new BorderLayout());
@@ -138,6 +145,13 @@ public final class VentanaSwing {
             mensaje = describir(juego.jugar(origen, posicion));
             origen = null;
         }
+        repintar();
+    }
+
+    /** Después de deshacer o rehacer: se suelta la pieza elegida y, si no cambió nada, se avisa. */
+    private void volverA(boolean cambio, String sinCambios) {
+        origen = null;
+        mensaje = cambio ? "" : sinCambios;
         repintar();
     }
 
@@ -177,6 +191,7 @@ public final class VentanaSwing {
             estado.setText(puntos + "FIN DE LA PARTIDA  —  " + resultado(fin));
             anunciarFin(fin);
         } else {
+            finAnunciado = false; // si se deshizo el final, el próximo final se vuelve a anunciar
             estado.setText(puntos + "Turno de " + juego.turnoActual() + (mensaje.isEmpty() ? "" : "  —  " + mensaje));
         }
     }

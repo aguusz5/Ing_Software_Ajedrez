@@ -11,6 +11,8 @@ package "ajedrez-nucleo :: juego" #EAF6EA {
     +estado() : EstadoPartida
     +terminar() : EstadoPartida
     +rendirse() : EstadoPartida
+    +deshacer() : boolean
+    +rehacer() : boolean
     +destinosLegales(desde : Posicion) : List<Posicion>
     +destinosIlegales(desde : Posicion) : List<Posicion>
   }

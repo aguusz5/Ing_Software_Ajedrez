@@ -1,5 +1,7 @@
 package juego;
 
+import java.util.ArrayDeque;
+import java.util.Deque;
 import java.util.List;
 import java.util.Optional;
 
@@ -22,6 +24,9 @@ public final class Partida implements JuegoDeAjedrez {
     private final ValidadorDeJugadas validador;
     private final DetectorDeJaque detector;
     private final GeneradorDeJugadasLegales generador;
+    // Para deshacer/rehacer alcanza con guardar fotos: el tablero es inmutable (decisión 7).
+    private final Deque<Foto> pasado = new ArrayDeque<>();
+    private final Deque<Foto> futuro = new ArrayDeque<>();
     private Tablero tablero;
     private Color turno;
     private EstadoPartida estado;
@@ -64,6 +69,7 @@ public final class Partida implements JuegoDeAjedrez {
         }
 
         // 4. Se aplica la jugada y pasa el turno.
+        guardarFoto();
         tablero = jugada.get().aplicarEn(tablero);
         turno = turno.contrario();
 
@@ -107,6 +113,7 @@ public final class Partida implements JuegoDeAjedrez {
     @Override
     public EstadoPartida terminar() {
         if (!estado.terminada()) {
+            guardarFoto();
             estado = decidirPorPuntos("Partida terminada por los jugadores");
         }
         return estado;
@@ -115,10 +122,21 @@ public final class Partida implements JuegoDeAjedrez {
     @Override
     public EstadoPartida rendirse() {
         if (!estado.terminada()) {
+            guardarFoto();
             Color rival = turno.contrario();
             estado = new EstadoPartida(true, Optional.of(rival), turno + " se rinde: gana " + rival);
         }
         return estado;
+    }
+
+    @Override
+    public boolean deshacer() {
+        return moverFoto(pasado, futuro);
+    }
+
+    @Override
+    public boolean rehacer() {
+        return moverFoto(futuro, pasado);
     }
 
     @Override
@@ -146,6 +164,28 @@ public final class Partida implements JuegoDeAjedrez {
                 .filter(destino -> !legales.contains(destino))
                 .toList();
     }
+
+    /** Antes de cada cambio (jugada, terminar o rendirse) se guarda cómo estaba; lo deshecho se descarta. */
+    private void guardarFoto() {
+        pasado.push(new Foto(tablero, turno, estado));
+        futuro.clear();
+    }
+
+    /** Restaura la última foto de "desde" y guarda la actual en "hacia". Así funcionan deshacer y rehacer. */
+    private boolean moverFoto(Deque<Foto> desde, Deque<Foto> hacia) {
+        if (desde.isEmpty()) {
+            return false;
+        }
+        hacia.push(new Foto(tablero, turno, estado));
+        Foto foto = desde.pop();
+        tablero = foto.tablero();
+        turno = foto.turno();
+        estado = foto.estado();
+        return true;
+    }
+
+    /** Cómo estaba la partida en un momento: alcanza para volver a él. */
+    private record Foto(Tablero tablero, Color turno, EstadoPartida estado) { }
 
     /** La única regla de "ganar por puntos": si el profesor la quiere distinta, se cambia acá. */
     private EstadoPartida decidirPorPuntos(String motivo) {
