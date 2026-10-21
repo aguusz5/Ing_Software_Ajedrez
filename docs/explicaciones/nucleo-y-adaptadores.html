@@ -297,8 +297,8 @@
           <span>El puerto. Lo implementa <code>Partida</code>. Es la única puerta de entrada.</span>
         </div>
         <dl class="paquetes">
-          <div><dt>juego</dt><dd><code>Partida</code>, <code>ResultadoJugada</code></dd></div>
-          <div><dt>reglas</dt><dd>Validador, turno, no dejar al rey en jaque, detector de jaque</dd></div>
+          <div><dt>juego</dt><dd><code>Partida</code>, <code>ResultadoJugada</code>, <code>EstadoPartida</code></dd></div>
+          <div><dt>reglas</dt><dd>Validador, turno, no dejar al rey en jaque, detector de jaque, jugadas legales</dd></div>
           <div><dt>movimiento</dt><dd>Cómo se mueve cada pieza, la jugada</dd></div>
           <div><dt>modelo</dt><dd>Tablero, pieza, posición, color</dd></div>
           <div><dt>configuracion</dt><dd>Las seis piezas clásicas y la posición inicial</dd></div>
@@ -334,25 +334,27 @@
         </thead>
         <tbody>
           <tr class="grupo c-nucleo"><th colspan="3" scope="rowgroup">Núcleo · ajedrez-nucleo</th></tr>
-          <tr class="c-nucleo"><th scope="row">JuegoDeAjedrez</th><td class="lado">Puerto</td><td>La interfaz que ven los adaptadores: <code>jugar</code>, <code>tablero</code>, <code>turnoActual</code>, <code>estaEnJaque</code>.</td></tr>
-          <tr class="c-nucleo"><th scope="row">Partida</th><td class="lado">Núcleo</td><td>Implementa el puerto. Guarda el tablero y el turno, y coordina cada jugada.</td></tr>
+          <tr class="c-nucleo"><th scope="row">JuegoDeAjedrez</th><td class="lado">Puerto</td><td>La interfaz que ven los adaptadores. Para jugar: <code>jugar</code> (también con la pieza en la que corona), <code>deshacer</code>, <code>rehacer</code>, <code>terminar</code>, <code>rendirse</code>. Para mostrar: <code>tablero</code>, <code>turnoActual</code>, <code>estaEnJaque</code>, <code>puntos</code>, <code>estado</code>, <code>destinosLegales</code>, <code>destinosIlegales</code>, <code>opcionesDeCoronacion</code>.</td></tr>
+          <tr class="c-nucleo"><th scope="row">Partida</th><td class="lado">Núcleo</td><td>Implementa el puerto. Guarda el tablero, el turno, si la partida terminó y las fotos para deshacer, y coordina cada jugada.</td></tr>
           <tr class="c-nucleo"><th scope="row">ResultadoJugada</th><td class="lado">Núcleo</td><td>La respuesta de <code>jugar()</code>: si valió, el motivo si no, y si hay jaque.</td></tr>
+          <tr class="c-nucleo"><th scope="row">EstadoPartida</th><td class="lado">Núcleo</td><td>Si la partida sigue o terminó y, en ese caso, quién ganó (o tablas) y por qué.</td></tr>
           <tr class="c-nucleo"><th scope="row">ValidadorDeJugadas</th><td class="lado">Núcleo</td><td>Pasa la jugada por una lista de reglas.</td></tr>
           <tr class="c-nucleo"><th scope="row">ReglaPiezaPropia</th><td class="lado">Núcleo</td><td>Solo podés mover tus piezas.</td></tr>
           <tr class="c-nucleo"><th scope="row">ReglaNoDejarReyEnJaque</th><td class="lado">Núcleo</td><td>No podés dejar a tu rey en jaque.</td></tr>
           <tr class="c-nucleo"><th scope="row">DetectorDeJaque</th><td class="lado">Núcleo</td><td>Dice si un rey está atacado.</td></tr>
+          <tr class="c-nucleo"><th scope="row">GeneradorDeJugadasLegales</th><td class="lado">Núcleo</td><td>Qué jugadas legales tiene un color o una pieza. Lo usan el mate, el ahogado y el resaltado de la ventana.</td></tr>
           <tr class="c-nucleo"><th scope="row">ReglaDeslizante, ReglaDeSalto, ReglaAvanceDePeon, ReglaCapturaDePeon</th><td class="lado">Núcleo</td><td>Cómo se mueve cada pieza (patrón Strategy).</td></tr>
-          <tr class="c-nucleo"><th scope="row">Jugada, JugadaSimple</th><td class="lado">Núcleo</td><td>Una jugada como objeto, que se aplica sobre un tablero y devuelve uno nuevo.</td></tr>
+          <tr class="c-nucleo"><th scope="row">Jugada, JugadaSimple, JugadaConPromocion</th><td class="lado">Núcleo</td><td>Una jugada como objeto, que se aplica sobre un tablero y devuelve uno nuevo. La de promoción deja en el destino la pieza en la que corona el peón.</td></tr>
           <tr class="c-nucleo"><th scope="row">Tablero, Pieza, TipoDePieza, Posicion, Direccion, Color</th><td class="lado">Núcleo</td><td>Las cosas del juego.</td></tr>
           <tr class="c-nucleo"><th scope="row">TiposDePiezaEstandar, TableroEstandar</th><td class="lado">Núcleo</td><td>Arman el ajedrez clásico: las seis piezas y la posición inicial.</td></tr>
 
           <tr class="grupo c-adapt"><th colspan="3" scope="rowgroup">Adaptador de consola · ajedrez-consola</th></tr>
-          <tr class="c-adapt"><th scope="row">AdaptadorConsola</th><td class="lado">Adaptador</td><td>El bucle: lee una línea, llama a <code>juego.jugar()</code> e imprime el resultado.</td></tr>
+          <tr class="c-adapt"><th scope="row">AdaptadorConsola</th><td class="lado">Adaptador</td><td>El bucle: lee una línea, llama a <code>juego.jugar()</code> (o a <code>deshacer</code>, <code>terminar</code>…, según el comando) e imprime el resultado.</td></tr>
           <tr class="c-adapt"><th scope="row">TraductorDeNotacion</th><td class="lado">Adaptador</td><td>Convierte <code>"e2"</code> en <code>Posicion(4, 1)</code>.</td></tr>
           <tr class="c-adapt"><th scope="row">DibujanteAscii</th><td class="lado">Adaptador</td><td>Dibuja el tablero con letras (<code>P</code>, <code>t</code>, <code>.</code>).</td></tr>
 
           <tr class="grupo c-adapt"><th colspan="3" scope="rowgroup">Adaptador gráfico · ajedrez-gui-swing</th></tr>
-          <tr class="c-adapt"><th scope="row">VentanaSwing</th><td class="lado">Adaptador</td><td>Grilla de botones: primer clic elige la pieza y el segundo, el destino.</td></tr>
+          <tr class="c-adapt"><th scope="row">VentanaSwing</th><td class="lado">Adaptador</td><td>Grilla de botones: primer clic elige la pieza y el segundo, el destino. Pinta lo que le dice el puerto y tiene botones para deshacer, rehacer, terminar y rendirse.</td></tr>
           <tr class="c-adapt"><th scope="row">GlifosDePieza</th><td class="lado">Adaptador</td><td>Elige el símbolo de cada pieza (♔, ♕…).</td></tr>
 
           <tr class="grupo c-app"><th colspan="3" scope="rowgroup">Arranque · ajedrez-app</th></tr>
@@ -370,7 +372,7 @@
         <h3>Lo que los adaptadores toman del núcleo</h3>
         <ul>
           <li><code>JuegoDeAjedrez</code>: el puerto, para pedir jugadas.</li>
-          <li><code>ResultadoJugada</code>: la respuesta.</li>
+          <li><code>ResultadoJugada</code> y <code>EstadoPartida</code>: la respuesta a cada jugada y si la partida terminó.</li>
           <li><code>Tablero</code>, <code>Pieza</code>, <code>Posicion</code> y <code>Color</code>: los datos que el puerto devuelve o recibe, para dibujar y para indicar casillas.</li>
         </ul>
         <p class="nota">Nunca importan <code>reglas</code>, <code>movimiento</code> ni <code>configuracion</code>. No pueden saltearse la validación ni mover una pieza por su cuenta. Además, el <code>Tablero</code> es inmutable, así que un adaptador puede leerlo pero no modificarlo.</p>

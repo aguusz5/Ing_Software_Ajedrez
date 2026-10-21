@@ -1,4 +1,4 @@
-<title>Opcionales 0, 1 y 2</title>
+<title>Opcionales 0 a 5</title>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -105,17 +105,22 @@
 
   <header class="cabecera">
     <div class="eyebrow">TPO Ajedrez · Fase 5 · Opcionales</div>
-    <h1>Qué cambió con los opcionales 0, 1 y 2, y el resaltado de movimientos</h1>
-    <p class="sello"><span>Hecho el</span> <strong>16/10/2026</strong> <span>· tests en verde</span> <strong>116</strong> <span>(antes 92)</span></p>
+    <h1>Qué cambió con los opcionales 0 a 5</h1>
+    <p class="sello"><span>0, 1, 2 y resaltado:</span> <strong>16/10/2026</strong> <span>· 3, 4 y resto del 5:</span> <strong>21/10/2026</strong> <span>· tests en verde</span> <strong>146</strong> <span>(antes 92)</span></p>
     <p class="bajada">La partida ahora termina y tiene ganador: jaque mate, ahogado, los jugadores la dan por
       terminada (gana el que tiene más puntos) o uno se rinde. Cada pieza tiene un valor y los puntos se ven en
-      la consola y en la ventana. En la ventana, al elegir una pieza se ve a dónde puede moverse.</p>
+      la consola y en la ventana. Se puede deshacer y rehacer, el peón corona al llegar al final y, en la ventana,
+      al elegir una pieza se ve a dónde puede moverse.</p>
     <div class="caja alerta">
       <span class="eyebrow">Si tenés código en curso, leé esto primero</span>
       <ul class="lista">
         <li><code>TipoDePieza</code> recibe un parámetro más: <code>new TipoDePieza(nombre, esRey, valor, reglas)</code>.</li>
         <li><code>Partida</code> recibe un parámetro más: <code>new Partida(tablero, validador, detector, generador)</code>.</li>
-        <li><code>JuegoDeAjedrez</code> tiene seis métodos nuevos. Cualquier clase que lo implemente tiene que sumarlos.</li>
+        <li><code>JuegoDeAjedrez</code> tiene diez métodos nuevos. Cualquier clase que lo implemente tiene que sumarlos.</li>
+        <li><code>ReglaAvanceDePeon</code> y <code>ReglaCapturaDePeon</code> reciben en qué puede coronar el peón:
+          <code>new ReglaAvanceDePeon(coronaciones)</code>. Para el peón clásico, usá <code>TiposDePiezaEstandar.peon()</code>.</li>
+        <li><code>Jugada</code> tiene un método nuevo, <code>promocion()</code>, que por defecto devuelve vacío. Una jugada
+          nueva (el enroque, por ejemplo) no necesita implementarlo.</li>
         <li>Con la partida terminada, <code>jugar</code> rechaza todo con "La partida terminó". Un test que juegue
           después de un mate ahora falla: por eso cambiamos <code>jugar_conElReyEnJaque_rechazaLasJugadasQueNoLoSacan</code>
           para que use un jaque que no es mate.</li>
@@ -162,13 +167,19 @@
     Color turnoActual();
     boolean estaEnJaque(Color color);
 
-    // --- nuevo ---
+    // --- nuevo (16/10) ---
     int puntos(Color color);       // suma del valor de las piezas de ese color en el tablero
     EstadoPartida estado();        // en curso, o terminada con ganador (o tablas) y motivo
     EstadoPartida terminar();      // los jugadores la cortan: se decide por puntos
     EstadoPartida rendirse();      // el que mueve abandona: gana el rival
     List&lt;Posicion&gt; destinosLegales(Posicion desde);   // casillas en azul
     List&lt;Posicion&gt; destinosIlegales(Posicion desde);  // casillas en naranja
+
+    // --- nuevo (21/10) ---
+    boolean deshacer();            // vuelve un paso atrás; false si no hay nada
+    boolean rehacer();             // vuelve a aplicar lo deshecho; false si no hay nada
+    ResultadoJugada jugar(Posicion desde, Posicion hasta, String promocion);  // "caballo", "torre"...
+    List&lt;String&gt; opcionesDeCoronacion(Posicion desde, Posicion hasta);       // vacío si no corona
 }
 
 /** Nuevo record en juego. ganador vacío = tablas. */
@@ -245,9 +256,60 @@ public record EstadoPartida(boolean terminada, Optional&lt;Color&gt; ganador, St
       </article>
 
       <article class="ficha">
-        <header><h3>5 (parte) · Resaltado de movimientos en la ventana</h3><span class="meta">usa el generador del opcional 0</span></header>
+        <header><h3>3 · Deshacer / rehacer</h3><span class="meta">casi gratis por el tablero inmutable</span></header>
         <dl>
-          <div><dt>Qué se ve</dt><dd><ul>
+          <div><dt>Qué hay</dt><dd><ul>
+            <li><span class="marca nuevo">Nuevo</span> <code>deshacer()</code> y <code>rehacer()</code> en el puerto.
+              Devuelven <code>false</code> si no hay nada para deshacer o rehacer.</li>
+            <li><span class="marca cambia">Cambia</span> <code>Partida</code>: antes de cada cambio guarda una foto
+              (record privado <code>Foto(tablero, turno, estado)</code>) en una pila de pasado. Deshacer pasa la foto
+              actual a la pila de futuro y restaura la última del pasado; rehacer, al revés. Una jugada nueva vacía el futuro.</li>
+            <li>Además de las jugadas, <code>terminar()</code> y <code>rendirse()</code> guardan foto: deshacerlos reabre la
+              partida en la misma posición. Deshacer un mate también la reabre.</li>
+          </ul></dd></div>
+          <div><dt>Tests</dt><dd>9 en <code>PartidaTest</code>: jugar y deshacer deja el mismo tablero y turno, deshacer una
+            captura devuelve los puntos, rehacer vuelve a la posición, una jugada nueva borra el rehacer, deshacer un mate y
+            una rendición reabren la partida, sin nada que deshacer o rehacer devuelve <code>false</code>, una jugada
+            rechazada no se guarda.</dd></div>
+          <div><dt>Decisión</dt><dd>24: fotos de la partida (Memento) en vez de escribir la inversa de cada jugada.</dd></div>
+        </dl>
+      </article>
+
+      <article class="ficha">
+        <header><h3>4 · Promoción de peón</h3><span class="meta">la extensión que anticipaba la decisión 9</span></header>
+        <dl>
+          <div><dt>Qué hay</dt><dd><ul>
+            <li><span class="marca nuevo">Nuevo</span> <code>movimiento.JugadaConPromocion(desde, hasta, nuevoTipo)</code>:
+              deja en el destino una pieza del mismo color con el tipo nuevo, y captura si había un rival.</li>
+            <li><span class="marca cambia">Cambia</span> <code>ReglaAvanceDePeon</code> y <code>ReglaCapturaDePeon</code>:
+              reciben por constructor en qué puede coronar el peón. Si el destino es la última fila generan una
+              <code>JugadaConPromocion</code> por cada tipo. La última fila es aquella desde la que un paso más adelante
+              sale del tablero: sin números de fila, así que en 10x10 corona en la fila 10.</li>
+            <li><span class="marca cambia">Cambia</span> <code>TiposDePiezaEstandar</code>: el peón corona en dama, torre,
+              alfil o caballo, en ese orden. El peón se declara al final porque necesita las otras piezas.</li>
+            <li><span class="marca cambia">Cambia</span> <code>Jugada</code>: <code>promocion()</code>, vacío por defecto.
+              Así <code>Partida</code> elige la candidata por tipo sin <code>instanceof</code>.</li>
+            <li><span class="marca nuevo">Nuevo</span> en el puerto: <code>jugar(desde, hasta, promocion)</code> elige por
+              nombre (sin elegir, dama; un nombre que no corresponde se rechaza con "No se puede coronar en rey") y
+              <code>opcionesDeCoronacion(desde, hasta)</code>, para que la ventana sepa cuándo preguntar.</li>
+          </ul></dd></div>
+          <div><dt>Tests</dt><dd><ul>
+            <li><code>JugadaConPromocionTest</code> (3): deja el tipo nuevo, corona capturando, <code>promocion()</code> devuelve el tipo.</li>
+            <li><code>PeonTest</code> (3): una jugada por tipo al llegar al final, el peón negro corona capturando en la fila 1,
+              lejos del final no corona.</li>
+            <li><code>PartidaTest</code> (9): dama por defecto, caballo pedido, peón negro que corona en torre capturando,
+              tipo inválido, pedido en una jugada que no corona (se ignora), coronar suma 8 puntos, deshacer devuelve el peón,
+              y las opciones de coronación con y sin coronación.</li>
+            <li><code>ExtensibilidadTest</code> (1): en 10x10 el peón no corona en la fila 8 y sí en la 10.</li>
+          </ul></dd></div>
+          <div><dt>Decisión</dt><dd>25: la promoción es una jugada más y la interfaz le pregunta al núcleo si hay que elegir.</dd></div>
+        </dl>
+      </article>
+
+      <article class="ficha">
+        <header><h3>5 · Interfaz más allá de lo mínimo</h3><span class="meta">todo adaptador, ninguna regla nueva</span></header>
+        <dl>
+          <div><dt>Resaltado</dt><dd><ul>
             <li><strong>Azul:</strong> casillas a las que la pieza elegida puede ir legalmente. Depende de cómo se
               mueve: el alfil en diagonal, el peón para adelante, el caballo en L, etc.</li>
             <li><strong>Naranja:</strong> casillas que la pieza alcanzaría por su forma de moverse pero que no son
@@ -260,11 +322,15 @@ public record EstadoPartida(boolean terminada, Optional&lt;Color&gt; ganador, St
               <code>destinosIlegales(desde)</code> en el puerto, implementados en <code>Partida</code> con el
               <code>GeneradorDeJugadasLegales</code>. Con la partida terminada devuelven vacío.</li>
             <li><span class="marca cambia">Cambia</span> <code>VentanaSwing</code>: solo pinta lo que le devuelve el
-              puerto. Prioridad: elegida (amarillo) &gt; rey en jaque &gt; azul &gt; naranja.</li>
-            <li>La consola no cambia (lo decidimos así).</li>
+              puerto. Prioridad: elegida (amarillo) &gt; rey en jaque &gt; azul &gt; naranja. Botones Deshacer, Rehacer,
+              Rendirse y Terminar partida, y diálogo para elegir en qué corona el peón.</li>
+            <li><span class="marca cambia">Cambia</span> <code>AdaptadorConsola</code>: comandos <code>deshacer</code>,
+              <code>rehacer</code>, <code>puntos</code>, <code>terminar</code> y <code>rendirse</code>, y coronar con
+              <code>e7 e8 caballo</code>.</li>
           </ul></dd></div>
-          <div><dt>Tests</dt><dd>6 en <code>PartidaTest</code>: peón inicial (e3, e4), caballo inicial (a3, c3), pieza del
-            rival (vacío), pieza clavada (todo naranja), rey que se mete en jaque (d1 y d2 naranja), partida terminada (vacío).</dd></div>
+          <div><dt>Tests</dt><dd>6 en <code>PartidaTest</code> para el resaltado: peón inicial (e3, e4), caballo inicial (a3, c3),
+            pieza del rival (vacío), pieza clavada (todo naranja), rey que se mete en jaque (d1 y d2 naranja), partida
+            terminada (vacío). Los de la consola están abajo. La ventana no tiene tests automáticos (decisión 20).</dd></div>
         </dl>
       </article>
 
@@ -280,8 +346,13 @@ public record EstadoPartida(boolean terminada, Optional&lt;Color&gt; ganador, St
           <li>Debajo del tablero: <code>Puntos: BLANCO 39 · NEGRO 39</code>.</li>
           <li>Comando <code>terminar</code>: decide por puntos.</li>
           <li>Comando <code>rendirse</code>: el prompt lo ofrece cuando estás en jaque, pero funciona siempre.</li>
-          <li>Al final imprime <code>===== FIN DE LA PARTIDA =====</code>, el ganador (o "tablas") y el motivo, y sale.</li>
-          <li>3 tests nuevos en <code>AdaptadorConsolaTest</code>: terminar, jaque mate y rendirse.</li>
+          <li>Comandos <code>deshacer</code> y <code>rehacer</code>: redibujan el tablero, o avisan "No hay nada para deshacer".</li>
+          <li>Comando <code>puntos</code>: vuelve a mostrar los puntos.</li>
+          <li>Coronar: <code>e7 e8 caballo</code>. Sin la tercera palabra, corona en dama.</li>
+          <li>Al final imprime <code>===== FIN DE LA PARTIDA =====</code>, el ganador (o "tablas") y el motivo, y sale.
+            Por eso en la consola no se puede deshacer un mate; en la ventana sí.</li>
+          <li>8 tests nuevos en <code>AdaptadorConsolaTest</code>: terminar, jaque mate, rendirse, deshacer, rehacer,
+            deshacer sin jugadas, puntos y coronar en caballo.</li>
         </ul>
       </article>
       <article class="ficha">
@@ -291,6 +362,9 @@ public record EstadoPartida(boolean terminada, Optional&lt;Color&gt; ganador, St
           <li>Barra de abajo con los puntos de cada color.</li>
           <li>Botón <strong>Terminar partida</strong>, siempre visible.</li>
           <li>Botón <strong>Rendirse</strong>: aparece solo cuando el que mueve está en jaque.</li>
+          <li>Botones <strong>Deshacer</strong> y <strong>Rehacer</strong>: funcionan también con la partida terminada,
+            así que deshacer un mate la reabre. Si no hay nada, la barra lo avisa.</li>
+          <li>Cuando un peón llega al final: diálogo "Promoción" con dama, torre, alfil y caballo. Cerrarlo cancela la jugada.</li>
           <li>Al terminar: diálogo "Fin de la partida" con el ganador y el motivo, la barra dice
             "FIN DE LA PARTIDA", el tablero deja de responder y "Terminar partida" se desactiva.</li>
           <li>Sin tests automáticos (decisión 20): <strong>falta probarla a mano</strong>.</li>
@@ -307,9 +381,13 @@ public record EstadoPartida(boolean terminada, Optional&lt;Color&gt; ganador, St
       <li><strong><code>ResultadoJugada</code> no lleva el <code>EstadoPartida</code>.</strong> Los adaptadores lo
         consultan con <code>juego.estado()</code> después de jugar. Así no hubo que tocar todas las fábricas de
         <code>ResultadoJugada</code>.</li>
-      <li>La consola y la ventana ya muestran puntos, terminar y rendirse, que el plan dejaba para el opcional 5.
-        También se adelantó el resaltado de jugadas y el rey en jaque en rojo. Del opcional 5 queda
-        deshacer/rehacer en la interfaz.</li>
+      <li>La consola y la ventana mostraron puntos, terminar y rendirse antes del opcional 5, que era donde los ponía el plan.</li>
+      <li>Los puntos de la ventana están en la barra de abajo, no arriba.</li>
+      <li><strong>Terminar y rendirse también se pueden deshacer.</strong> El plan solo guardaba foto en cada jugada.</li>
+      <li><strong>Se sumaron <code>Jugada.promocion()</code> y <code>opcionesDeCoronacion</code></strong>, que el plan no
+        tenía: el primero para elegir la candidata sin <code>instanceof</code>, el segundo para que la ventana pregunte
+        sin conocer las reglas.</li>
+      <li>El plan ya tiene una fila "Cómo quedó" en cada opcional hecho.</li>
     </ul>
   </section>
 
@@ -319,14 +397,14 @@ public record EstadoPartida(boolean terminada, Optional&lt;Color&gt; ganador, St
       <table>
         <thead><tr><th scope="col">Módulo</th><th scope="col">Archivos</th></tr></thead>
         <tbody>
-          <tr><th scope="row">ajedrez-nucleo</th><td class="detalle"><span class="marca nuevo">Nuevo</span> <code>reglas/GeneradorDeJugadasLegales</code>, <code>juego/EstadoPartida</code>
-            · <span class="marca cambia">Cambia</span> <code>modelo/TipoDePieza</code>, <code>modelo/Tablero</code>, <code>configuracion/TiposDePiezaEstandar</code>, <code>juego/JuegoDeAjedrez</code>, <code>juego/Partida</code></td></tr>
-          <tr><th scope="row">tests del núcleo</th><td class="detalle"><span class="marca nuevo">Nuevo</span> <code>GeneradorDeJugadasLegalesTest</code>
-            · <span class="marca cambia">Cambia</span> <code>PartidaTest</code>, <code>ExtensibilidadTest</code>, <code>TipoDePiezaTest</code></td></tr>
+          <tr><th scope="row">ajedrez-nucleo</th><td class="detalle"><span class="marca nuevo">Nuevo</span> <code>reglas/GeneradorDeJugadasLegales</code>, <code>juego/EstadoPartida</code>, <code>movimiento/JugadaConPromocion</code>
+            · <span class="marca cambia">Cambia</span> <code>modelo/TipoDePieza</code>, <code>modelo/Tablero</code>, <code>configuracion/TiposDePiezaEstandar</code>, <code>juego/JuegoDeAjedrez</code>, <code>juego/Partida</code>, <code>movimiento/Jugada</code>, <code>movimiento/ReglaAvanceDePeon</code>, <code>movimiento/ReglaCapturaDePeon</code></td></tr>
+          <tr><th scope="row">tests del núcleo</th><td class="detalle"><span class="marca nuevo">Nuevo</span> <code>GeneradorDeJugadasLegalesTest</code>, <code>JugadaConPromocionTest</code>
+            · <span class="marca cambia">Cambia</span> <code>PartidaTest</code>, <code>PeonTest</code>, <code>ExtensibilidadTest</code>, <code>TipoDePiezaTest</code></td></tr>
           <tr><th scope="row">ajedrez-consola</th><td class="detalle"><code>AdaptadorConsola</code>, <code>AdaptadorConsolaTest</code></td></tr>
           <tr><th scope="row">ajedrez-gui-swing</th><td class="detalle"><code>VentanaSwing</code></td></tr>
           <tr><th scope="row">ajedrez-app</th><td class="detalle"><code>Principal</code></td></tr>
-          <tr><th scope="row">docs</th><td class="detalle"><code>uml/d2_modelo.puml</code>, <code>uml/d3_juego.puml</code>, <code>decisiones.md</code> (21, 22 y 23), <code>estado.html</code>, <code>plan-opcionales.html</code></td></tr>
+          <tr><th scope="row">docs</th><td class="detalle"><code>uml/d2_modelo.puml</code>, <code>uml/d3_juego.puml</code>, <code>decisiones.md</code> (21 a 25), <code>estado.html</code>, <code>plan-opcionales.html</code></td></tr>
         </tbody>
       </table>
     </div>
@@ -334,22 +412,25 @@ public record EstadoPartida(boolean terminada, Optional&lt;Color&gt; ganador, St
 
   <section aria-labelledby="t-probar">
     <h2 id="t-probar">Cómo probarlo</h2>
-<pre><code>mvn test                                          # 95 del núcleo + 21 de la consola
+<pre><code>mvn test                                          # 120 del núcleo + 26 de la consola
 mvn package &amp;&amp; java -jar ajedrez-app/target/ajedrez.jar          # consola
 mvn package &amp;&amp; java -jar ajedrez-app/target/ajedrez.jar --gui    # ventana</code></pre>
     <p>Para ver un mate rápido en la consola: <code>f2 f3</code>, <code>e7 e5</code>, <code>g2 g4</code>,
       <code>d8 h4</code>. Para ver el botón Rendirse en la ventana: <code>e2 e4</code>, <code>f7 f6</code>,
-      <code>d1 h5</code> (las negras quedan en jaque).</p>
+      <code>d1 h5</code> (las negras quedan en jaque). Para coronar rápido en la consola: <code>a2 a4</code>,
+      <code>b7 b5</code>, <code>a4 b5</code>, <code>a7 a6</code>, <code>b5 a6</code>, <code>c8 b7</code>, <code>a6 b7</code>,
+      <code>b8 c6</code>, <code>b7 a8 caballo</code> (en la ventana, la misma secuencia con clics abre el diálogo).</p>
   </section>
 
   <section aria-labelledby="t-pendiente">
     <h2 id="t-pendiente">Lo que falta</h2>
     <ul class="lista">
-      <li>Probar la ventana a mano: un mate, un "terminar", una rendición y los colores del resaltado.</li>
-      <li>Hacer el commit (todavía no está commiteado) y esperar el CI en verde.</li>
+      <li>Probar la ventana a mano: un mate, un "terminar", una rendición, los colores del resaltado, Deshacer y
+        Rehacer (también después de un mate) y el diálogo de promoción.</li>
+      <li>Confirmar en la pestaña <strong>Actions</strong> de GitHub que el CI quedó en verde con los push del 21/10.</li>
       <li>Avisarle al profesor cómo quedaron las reglas, sobre todo que el ahogado es tablas.</li>
       <li>Que otro integrante lo revise y lo pueda explicar: la defensa es individual.</li>
-      <li>Siguiente opcional: <strong>3 · Deshacer / rehacer</strong>.</li>
+      <li>Siguiente opcional: <strong>6 · Enroque</strong>.</li>
     </ul>
   </section>
 

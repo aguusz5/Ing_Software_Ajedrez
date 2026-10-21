@@ -109,10 +109,12 @@
   <header class="cabecera">
     <div class="eyebrow">TPO Ajedrez · Fase 5 · Opcionales</div>
     <h1>Plan para implementar los opcionales</h1>
-    <p class="sello"><span>Armado el</span> <time datetime="2026-10-16">16 de octubre de 2026</time> <span>· congelamiento</span> <time datetime="2026-11-12">12/11</time></p>
+    <p class="sello"><span>Armado el</span> <time datetime="2026-10-16">16 de octubre de 2026</time> <span>· estado al</span> <time datetime="2026-10-21">21/10</time> <span>· congelamiento</span> <time datetime="2026-11-12">12/11</time></p>
     <p class="bajada">El alcance obligatorio está completo, así que la fase 5 puede arrancar ya, tres semanas antes
       de lo que marca el roadmap. Este plan ordena los opcionales de la consigna más el pedido nuevo del
       profesor: <strong>el valor de las piezas y ganar por puntos</strong>.</p>
+    <p class="nota">Al 21/10 están hechos los opcionales 0 a 5. Cada ficha dice cómo quedó, y el detalle de lo
+      que cambió está en <a href="explicaciones/opcionales-implementados.html">opcionales-implementados.html</a>.</p>
     <div class="caja">
       <span class="eyebrow">Lo primero (16/10 – 18/10)</span>
       <p>Commitear juntos el <a href="#contrato">contrato ampliado del puerto</a>, con los métodos nuevos
@@ -158,7 +160,7 @@
     </ul>
 
     <h3>3. Cuándo termina el juego para comparar puntos</h3>
-    <p>Hoy la partida no termina nunca. Proponemos que se decida por puntos toda partida que termine
+    <p>Cuando se armó el plan, la partida no terminaba nunca. Proponemos que se decida por puntos toda partida que termine
       <strong>sin jaque mate</strong>:</p>
     <div class="tabla">
       <table>
@@ -192,19 +194,19 @@
     <div class="tabla">
       <table>
         <thead>
-          <tr><th scope="col">#</th><th scope="col">Opcional</th><th scope="col">Prioridad</th><th scope="col">Esfuerzo</th><th scope="col">Depende de</th><th scope="col">Responsable</th></tr>
+          <tr><th scope="col">#</th><th scope="col">Opcional</th><th scope="col">Prioridad</th><th scope="col">Esfuerzo</th><th scope="col">Depende de</th><th scope="col">Responsable</th><th scope="col">Estado</th></tr>
         </thead>
         <tbody>
-          <tr><td class="num">0</td><th scope="row"><a href="#f-base">Base: generador de jugadas legales</a></th><td><span class="prio p1">Imprescindible</span></td><td>Bajo</td><td class="detalle">—</td><td>P3</td></tr>
-          <tr><td class="num">1</td><th scope="row"><a href="#f-puntos">Valor de las piezas y puntos</a></th><td><span class="prio p1">Imprescindible</span></td><td>Bajo</td><td class="detalle">—</td><td>P1</td></tr>
-          <tr><td class="num">2</td><th scope="row"><a href="#f-fin">Fin de partida: jaque mate, ahogado y ganador por puntos</a></th><td><span class="prio p1">Imprescindible</span></td><td>Medio</td><td class="detalle">0, 1</td><td>P4 + P3</td></tr>
-          <tr><td class="num">3</td><th scope="row"><a href="#f-deshacer">Deshacer / rehacer</a></th><td><span class="prio p2">Alta</span></td><td>Bajo</td><td class="detalle">—</td><td>P4</td></tr>
-          <tr><td class="num">4</td><th scope="row"><a href="#f-promocion">Promoción de peón</a></th><td><span class="prio p2">Alta</span></td><td>Medio</td><td class="detalle">—</td><td>P3 + P1</td></tr>
-          <tr><td class="num">5</td><th scope="row"><a href="#f-gui">Interfaz más allá de lo mínimo</a></th><td><span class="prio p2">Alta</span></td><td>Medio</td><td class="detalle">0, 1, 2, 3</td><td>P5</td></tr>
-          <tr><td class="num">6</td><th scope="row"><a href="#f-enroque">Enroque</a></th><td><span class="prio p3">Media</span></td><td>Medio</td><td class="detalle">0</td><td>P2</td></tr>
-          <tr><td class="num">7</td><th scope="row"><a href="#f-ia">Oponente con IA</a></th><td><span class="prio p3">Media</span></td><td>Medio</td><td class="detalle">0, 1, 2 (minimax: 3)</td><td>P2</td></tr>
-          <tr><td class="num">8</td><th scope="row"><a href="#f-tablas">Tablas: 50 jugadas y repetición</a></th><td><span class="prio p3">Si sobra tiempo</span></td><td>Medio</td><td class="detalle">2, 3</td><td>P4</td></tr>
-          <tr><td class="num">9</td><th scope="row"><a href="#f-alpaso">Captura al paso</a></th><td><span class="prio p3">Si sobra tiempo</span></td><td>Alto</td><td class="detalle">—</td><td>P3</td></tr>
+          <tr><td class="num">0</td><th scope="row"><a href="#f-base">Base: generador de jugadas legales</a></th><td><span class="prio p1">Imprescindible</span></td><td>Bajo</td><td class="detalle">—</td><td>P3</td><td><strong>Hecho</strong></td></tr>
+          <tr><td class="num">1</td><th scope="row"><a href="#f-puntos">Valor de las piezas y puntos</a></th><td><span class="prio p1">Imprescindible</span></td><td>Bajo</td><td class="detalle">—</td><td>P1</td><td><strong>Hecho</strong></td></tr>
+          <tr><td class="num">2</td><th scope="row"><a href="#f-fin">Fin de partida: jaque mate, ahogado y ganador por puntos</a></th><td><span class="prio p1">Imprescindible</span></td><td>Medio</td><td class="detalle">0, 1</td><td>P4 + P3</td><td><strong>Hecho</strong></td></tr>
+          <tr><td class="num">3</td><th scope="row"><a href="#f-deshacer">Deshacer / rehacer</a></th><td><span class="prio p2">Alta</span></td><td>Bajo</td><td class="detalle">—</td><td>P4</td><td><strong>Hecho</strong></td></tr>
+          <tr><td class="num">4</td><th scope="row"><a href="#f-promocion">Promoción de peón</a></th><td><span class="prio p2">Alta</span></td><td>Medio</td><td class="detalle">—</td><td>P3 + P1</td><td><strong>Hecho</strong></td></tr>
+          <tr><td class="num">5</td><th scope="row"><a href="#f-gui">Interfaz más allá de lo mínimo</a></th><td><span class="prio p2">Alta</span></td><td>Medio</td><td class="detalle">0, 1, 2, 3</td><td>P5</td><td><strong>Hecho</strong></td></tr>
+          <tr><td class="num">6</td><th scope="row"><a href="#f-enroque">Enroque</a></th><td><span class="prio p3">Media</span></td><td>Medio</td><td class="detalle">0</td><td>P2</td><td>Sin empezar</td></tr>
+          <tr><td class="num">7</td><th scope="row"><a href="#f-ia">Oponente con IA</a></th><td><span class="prio p3">Media</span></td><td>Medio</td><td class="detalle">0, 1, 2 (minimax: 3)</td><td>P2</td><td>Sin empezar</td></tr>
+          <tr><td class="num">8</td><th scope="row"><a href="#f-tablas">Tablas: 50 jugadas y repetición</a></th><td><span class="prio p3">Si sobra tiempo</span></td><td>Medio</td><td class="detalle">2, 3</td><td>P4</td><td>Sin empezar</td></tr>
+          <tr><td class="num">9</td><th scope="row"><a href="#f-alpaso">Captura al paso</a></th><td><span class="prio p3">Si sobra tiempo</span></td><td>Alto</td><td class="detalle">—</td><td>P3</td><td>Sin empezar</td></tr>
         </tbody>
       </table>
     </div>
@@ -232,33 +234,41 @@
     <h2 id="t-contrato">Contrato ampliado del puerto</h2>
     <p>Los adaptadores solo pueden usar <code>JuegoDeAjedrez</code> (decisión 2). Todo lo nuevo que necesitan
       la consola, la GUI y la IA entra por acá. Se commitea primero, con los métodos lanzando
-      <code>UnsupportedOperationException</code>, y el UML se actualiza en el mismo commit.</p>
+      <code>UnsupportedOperationException</code>, y el UML se actualiza en el mismo commit.
+      Así quedó al 21/10, con los opcionales 0 a 5:</p>
 <pre><code>public interface JuegoDeAjedrez {
-    // --- lo que ya existe ---
+    // --- lo que existía antes de los opcionales ---
     ResultadoJugada jugar(Posicion desde, Posicion hasta);
     Tablero tablero();
     Color turnoActual();
     boolean estaEnJaque(Color color);
 
-    // --- nuevo ---
-    /** Jugada con promoción: "dama", "torre", "alfil" o "caballo". */
+    // --- agregado con los opcionales 0 a 5 ---
+    /** Jugada con promoción: "dama", "torre", "alfil" o "caballo". Sin elegir, dama. */
     ResultadoJugada jugar(Posicion desde, Posicion hasta, String promocion);
-    /** Casillas a las que la pieza de "desde" puede ir legalmente (GUI e IA). */
-    List&lt;Posicion&gt; destinosLegales(Posicion desde);
+    /** En qué puede coronar esa jugada, para que la interfaz pregunte. Vacío si no corona. */
+    List&lt;String&gt; opcionesDeCoronacion(Posicion desde, Posicion hasta);
     /** Suma del valor de las piezas de ese color que siguen en el tablero. */
     int puntos(Color color);
     /** En curso, o terminada con su ganador (o tablas) y el motivo. */
     EstadoPartida estado();
     /** Los jugadores dan la partida por terminada: se decide por puntos. */
     EstadoPartida terminar();
+    /** El que mueve abandona: gana el rival. */
+    EstadoPartida rendirse();
     boolean deshacer();
     boolean rehacer();
+    /** Casillas a las que la pieza de "desde" puede ir legalmente (GUI e IA). */
+    List&lt;Posicion&gt; destinosLegales(Posicion desde);
+    /** Casillas que alcanza pero que dejarían a su rey en jaque (GUI). */
+    List&lt;Posicion&gt; destinosIlegales(Posicion desde);
 }
 
-/** Nuevo record en el paquete juego. ganador vacío = tablas. */
+/** Record en el paquete juego. ganador vacío = tablas. */
 public record EstadoPartida(boolean terminada, Optional&lt;Color&gt; ganador, String motivo) { }</code></pre>
-    <p class="nota">Si al final no se hace la promoción, el <code>jugar</code> con tres parámetros no se
-      agrega. Mismo criterio para cada método: entra cuando entra el opcional que lo usa.</p>
+    <p class="nota">Frente al contrato original se sumaron <code>rendirse</code>, <code>destinosIlegales</code> y
+      <code>opcionesDeCoronacion</code>. Los opcionales que faltan no necesitan métodos nuevos en el puerto:
+      el enroque entra por <code>jugar</code> y la IA usa <code>destinosLegales</code>, <code>puntos</code> y <code>deshacer</code>.</p>
   </section>
 
   <section aria-labelledby="t-fichas">
@@ -338,6 +348,7 @@ public record EstadoPartida(boolean terminada, Optional&lt;Color&gt; ganador, St
             State: la partida tiene dos estados (en curso / terminada) y el único comportamiento que cambia es
             rechazar jugadas, que es un <code>if</code>. Se rompería con más estados con comportamiento propio
             (pausa, esperando promoción, reloj).</dd></div>
+          <div><dt>Cómo quedó</dt><dd>Como el plan, con dos cambios: se sumó <code>rendirse()</code>, y <code>ResultadoJugada</code> no lleva el <code>EstadoPartida</code>: los adaptadores lo consultan con <code>estado()</code> después de jugar.</dd></div>
         </dl>
       </article>
 
@@ -362,6 +373,7 @@ public record EstadoPartida(boolean terminada, Optional&lt;Color&gt; ganador, St
           <div><dt>Decisión</dt><dd>Fotos del estado (Memento) en vez de Command con <code>deshacer()</code> en
             cada jugada: con tableros inmutables, guardar el anterior es más simple que escribir la inversa de
             cada jugada especial. Se rompería con tableros mutables (ver decisión 7).</dd></div>
+          <div><dt>Cómo quedó</dt><dd>Como el plan. Además <code>terminar()</code> y <code>rendirse()</code> guardan foto, así que deshacerlos reabre la partida sin perder la última jugada (decisión 24).</dd></div>
         </dl>
       </article>
 
@@ -385,11 +397,12 @@ public record EstadoPartida(boolean terminada, Optional&lt;Color&gt; ganador, St
           <div><dt>Tests</dt><dd><ul>
             <li>Peón blanco que llega a la última fila corona en dama por defecto, y en caballo si se pide.</li>
             <li>Lo mismo capturando, y lo mismo para negras.</li>
-            <li>En un tablero de 10x10 corona en la fila 9 (prueba que no hay un 8 escondido).</li>
+            <li>En un tablero de 10x10 corona en la fila 10 (prueba que no hay un 8 escondido).</li>
             <li>Coronar suma 8 puntos.</li>
           </ul></dd></div>
           <div><dt>Ojo</dt><dd>Hoy <code>Partida</code> busca la candidata con <code>findFirst</code> por destino.
             Con promoción hay cuatro candidatas al mismo destino: hay que filtrar también por el tipo pedido.</dd></div>
+          <div><dt>Cómo quedó</dt><dd>Como el plan, y resuelve el "Ojo": <code>Jugada</code> ganó <code>promocion()</code> (vacío por defecto) para filtrar por tipo sin <code>instanceof</code>. La última fila es aquella desde la que un paso más adelante sale del tablero. Para que la ventana sepa cuándo preguntar se sumó <code>opcionesDeCoronacion</code> al puerto (decisión 25).</dd></div>
         </dl>
       </article>
 
@@ -410,6 +423,7 @@ public record EstadoPartida(boolean terminada, Optional&lt;Color&gt; ganador, St
           <div><dt>Tests</dt><dd>Consola: un test por comando nuevo, con el <code>Scanner</code> sobre un
             <code>String</code> como los actuales. La GUI no tiene tests automáticos (decisión 20): se prueba a
             mano con una lista corta antes del congelamiento.</dd></div>
+          <div><dt>Cómo quedó</dt><dd>Como el plan, salvo que los puntos van en la barra de abajo. Se sumaron el naranja para los destinos ilegales y el botón Rendirse, que aparece en jaque. La ventana todavía no se probó a mano.</dd></div>
         </dl>
       </article>
 

@@ -186,7 +186,7 @@
     <p class="sello"><span>Última actualización</span> <time datetime="2026-10-21">21 de octubre de 2026</time></p>
     <p class="bajada">El alcance obligatorio está completo y probado: las seis piezas, turnos, captura,
       validación y jaque, jugables por consola y por ventana. Por calendario el roadmap nos ubica en la
-      fase 2, así que vamos adelantados.</p>
+      fase 3, así que vamos adelantados: ya están los opcionales 0 a 5.</p>
     <div class="siguiente">
       <span class="eyebrow">Lo próximo</span>
       <p>La partida ya termina y anuncia al ganador (mate, ahogado, por puntos o porque uno se rinde),
@@ -211,7 +211,7 @@
             <th scope="row">F0 · Setup y contratos</th>
             <td class="fechas">19/09 – 27/09</td>
             <td><span class="estado hecho">Hecha</span></td>
-            <td class="detalle">Módulos Maven, núcleo sin dependencias, contrato del núcleo. El 08/10 se sumaron el CI, <code>CLAUDE.md</code> y <code>decisiones.md</code>. El CI corre en GitHub a partir del próximo push.</td>
+            <td class="detalle">Módulos Maven, núcleo sin dependencias, contrato del núcleo. El 08/10 se sumaron el CI, <code>CLAUDE.md</code> y <code>decisiones.md</code>. El CI corre <code>mvn test</code> en GitHub con cada push.</td>
           </tr>
           <tr>
             <th scope="row">F1 · Walking skeleton</th>
@@ -219,17 +219,17 @@
             <td><span class="estado hecho">Hecha</span></td>
             <td class="detalle">Una jugada atraviesa consola → puerto → núcleo y vuelve.</td>
           </tr>
-          <tr class="actual">
+          <tr>
             <th scope="row">F2 · Piezas y captura</th>
             <td class="fechas">05/10 – 18/10</td>
             <td><span class="estado hecho">Hecha</span></td>
-            <td class="detalle">Las seis piezas por composición de reglas, con un test por pieza. Es la fase que marca el calendario hoy.</td>
+            <td class="detalle">Las seis piezas por composición de reglas, con un test por pieza.</td>
           </tr>
-          <tr>
+          <tr class="actual">
             <th scope="row">F3 · Turnos, validación y jaque</th>
             <td class="fechas">19/10 – 25/10</td>
             <td><span class="estado hecho">Hecha</span></td>
-            <td class="detalle">Hito MVP. Están todos los tests que pide el roadmap: turnos, jaque por cada pieza, pieza clavada, rey que entra en casilla atacada, salir del jaque.</td>
+            <td class="detalle">Hito MVP. Están todos los tests que pide el roadmap: turnos, jaque por cada pieza, pieza clavada, rey que entra en casilla atacada, salir del jaque. Es la fase que marca el calendario hoy.</td>
           </tr>
           <tr>
             <th scope="row">F4 · GUI y extensibilidad</th>
@@ -240,8 +240,8 @@
           <tr>
             <th scope="row">F5 · Opcionales</th>
             <td class="fechas">02/11 – 12/11</td>
-            <td><span class="estado pendiente">Sin empezar</span></td>
-            <td class="detalle">Ver la tabla de opcionales más abajo.</td>
+            <td><span class="estado parcial">En curso</span></td>
+            <td class="detalle">Adelantada: los opcionales 0 a 5 están hechos. Ver la tabla de opcionales más abajo.</td>
           </tr>
           <tr>
             <th scope="row">F6 · Cierre y defensa</th>
@@ -357,7 +357,7 @@
           <tr>
             <th scope="row">Documento de justificación</th>
             <td><span class="estado parcial">En curso</span></td>
-            <td class="detalle">La base está en <code>decisiones.md</code>, con 20 decisiones en formato qué / por qué / cuándo se rompería. Falta redactar el documento.</td>
+            <td class="detalle">La base está en <code>decisiones.md</code>, con 25 decisiones en formato qué / por qué / cuándo se rompería. Falta redactar el documento.</td>
           </tr>
           <tr>
             <th scope="row">Presentación (PPTX)</th>
@@ -381,7 +381,7 @@
           <tr>
             <th scope="row">Base: generador de jugadas legales</th>
             <td><span class="estado hecho">Hecho</span></td>
-            <td class="detalle"><code>reglas.GeneradorDeJugadasLegales</code>, con tests. Lo van a usar el mate, el ahogado, la GUI y la IA.</td>
+            <td class="detalle"><code>reglas.GeneradorDeJugadasLegales</code>, con tests. Lo usan el mate, el ahogado y el resaltado de la ventana; lo va a usar la IA.</td>
           </tr>
           <tr>
             <th scope="row">Valor de las piezas y puntos</th>
@@ -423,6 +423,11 @@
             <td><span class="estado pendiente">Sin empezar</span></td>
             <td class="detalle">Sería otro adaptador sobre el mismo puerto.</td>
           </tr>
+          <tr>
+            <th scope="row">Tablas por 50 jugadas o repetición</th>
+            <td><span class="estado pendiente">Sin empezar</span></td>
+            <td class="detalle">Si sobra tiempo. La repetición puede usar las fotos de deshacer.</td>
+          </tr>
         </tbody>
       </table>
     </div>
@@ -431,7 +436,7 @@
   <section aria-labelledby="t-pasos">
     <h2 id="t-pasos">Próximos pasos</h2>
     <ol class="pasos">
-      <li>Hacer push de lo del 08/10 y confirmar en la pestaña <strong>Actions</strong> de GitHub que el CI quede en verde.</li>
+      <li>Confirmar en la pestaña <strong>Actions</strong> de GitHub que el CI quedó en verde con los push del 21/10.</li>
       <li>Avisarle al profesor cómo quedaron las reglas de fin: puntos por material, ahogado = tablas, final por "terminar" o rendición.</li>
       <li>Probar la ventana a mano (no tiene tests automáticos): resaltado, Deshacer y Rehacer (también después de un mate o una rendición) y el diálogo de promoción.</li>
       <li>Implementar enroque (opcional 6), con sus tests y el UML actualizado en el mismo commit.</li>
@@ -445,6 +450,8 @@
     <dl class="mapa">
       <div><dt><a href="decisiones.md">decisiones.md</a></dt><dd>Decisiones de diseño: qué, por qué y cuándo se rompería.</dd></div>
       <div><dt><a href="uml/">uml/</a></dt><dd>Los cuatro diagramas de clases en PlantUML.</dd></div>
+      <div><dt><a href="plan-opcionales.html">plan-opcionales.html</a></dt><dd>El plan de los opcionales: orden, responsables y cómo encarar cada uno.</dd></div>
+      <div><dt><a href="explicaciones/opcionales-implementados.html">explicaciones/opcionales-implementados.html</a></dt><dd>Qué cambió con cada opcional hecho y en qué se apartó del plan.</dd></div>
       <div><dt><a href="explicaciones/resumen.html">explicaciones/resumen.html</a></dt><dd>Resumen visual de cómo está armado el ajedrez.</dd></div>
       <div><dt><a href="explicaciones/nucleo-y-adaptadores.html">explicaciones/nucleo-y-adaptadores.html</a></dt><dd>Qué es núcleo y qué es adaptador, clase por clase.</dd></div>
       <div><dt><a href="referencia/TPO_Ingenieria%20de%20Software_Dominio%20Ajedrez.pdf">referencia/ consigna</a></dt><dd>El enunciado del TPO.</dd></div>
@@ -464,6 +471,7 @@
           <li>Decisión 24; UML <code>d3_juego</code> actualizado. 129 tests en verde.</li>
           <li>Opcional 4: promoción de peón con <code>JugadaConPromocion</code>. Las reglas del peón reciben por constructor los tipos en los que puede coronar (dama, torre, alfil, caballo). Puerto: <code>jugar(desde, hasta, promocion)</code> y <code>opcionesDeCoronacion</code>. Consola: <code>e7 e8 caballo</code>; ventana: diálogo para elegir.</li>
           <li>17 tests nuevos (16 del núcleo, incluido coronar en la fila 10 de un tablero de 10x10, y 1 de la consola). Decisión 25; UML <code>d2_modelo</code> y <code>d3_juego</code> actualizados. 146 tests en verde.</li>
+          <li>HTML de <code>docs/</code> al día: <code>plan-opcionales</code> (estado de cada opcional, puerto final y "Cómo quedó" en los hechos), <code>opcionales-implementados</code> (ahora cubre del 0 al 5), <code>resumen</code> y <code>nucleo-y-adaptadores</code>.</li>
         </ul>
       </li>
       <li>

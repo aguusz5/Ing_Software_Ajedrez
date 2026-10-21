@@ -230,7 +230,8 @@
     <p class="bajada">Quedó implementado todo lo que piden los diagramas UML: el núcleo con las reglas, dos formas de jugar (consola y ventana) y los tests. Esta página resume cómo está armado y cómo funciona.</p>
     <ul class="estado">
       <li>Alcance obligatorio completo</li>
-      <li>92 tests en verde</li>
+      <li>146 tests en verde</li>
+      <li>Opcionales 0 a 5 hechos</li>
       <li>UML al día con el código</li>
     </ul>
   </header>
@@ -261,8 +262,8 @@
           <span class="rol">Java puro, sin dependencias</span>
         </div>
         <dl class="paquetes">
-          <div><dt>juego</dt><dd>El puerto <code>JuegoDeAjedrez</code> y la <code>Partida</code>, que guarda el tablero y el turno</dd></div>
-          <div><dt>reglas</dt><dd>Validador con dos reglas (turno y no dejar al rey en jaque) y el detector de jaque</dd></div>
+          <div><dt>juego</dt><dd>El puerto <code>JuegoDeAjedrez</code> y la <code>Partida</code>, que guarda el tablero, el turno, si terminó y las fotos para deshacer</dd></div>
+          <div><dt>reglas</dt><dd>Validador con dos reglas (turno y no dejar al rey en jaque), el detector de jaque y el generador de jugadas legales</dd></div>
           <div><dt>movimiento</dt><dd>Cómo se mueve cada pieza y la jugada como objeto</dd></div>
           <div><dt>modelo</dt><dd>Tablero inmutable, piezas, posiciones y colores</dd></div>
           <div><dt>configuracion</dt><dd>Las seis piezas clásicas y la posición inicial</dd></div>
@@ -286,7 +287,7 @@
           <tr class="destacada"><th scope="row"><span class="glifo" aria-hidden="true">&#x2655;&#xFE0E;</span>Dama</th><td>Las reglas de la torre y las del alfil, juntas</td></tr>
           <tr><th scope="row"><span class="glifo" aria-hidden="true">&#x2654;&#xFE0E;</span>Rey</th><td><code>ReglaDeslizante(TODAS, 1)</code></td></tr>
           <tr><th scope="row"><span class="glifo" aria-hidden="true">&#x2658;&#xFE0E;</span>Caballo</th><td><code>ReglaDeSalto(SALTOS_DE_CABALLO)</code></td></tr>
-          <tr><th scope="row"><span class="glifo" aria-hidden="true">&#x2659;&#xFE0E;</span>Peón</th><td><code>ReglaAvanceDePeon</code> + <code>ReglaCapturaDePeon</code></td></tr>
+          <tr><th scope="row"><span class="glifo" aria-hidden="true">&#x2659;&#xFE0E;</span>Peón</th><td><code>ReglaAvanceDePeon</code> + <code>ReglaCapturaDePeon</code>, que reciben en qué puede coronar (dama, torre, alfil, caballo)</td></tr>
         </tbody>
       </table>
     </div>
@@ -303,7 +304,7 @@
         <li><span><strong>Respuesta.</strong> Vuelve un <code>ResultadoJugada</code> y la consola redibuja el tablero.</span></li>
       </ol>
       <figure class="terminal">
-<pre aria-label="Salida de la consola después de jugar e2 e4"><span class="dim">Turno de BLANCO (ejemplo: e2 e4, o 'salir'):</span> <span class="entrada">e2 e4</span>
+<pre aria-label="Salida de la consola después de jugar e2 e4"><span class="dim">Turno de BLANCO (ejemplo: e2 e4, 'deshacer', 'rehacer', 'puntos', 'terminar' o 'salir'):</span> <span class="entrada">e2 e4</span>
  8  t c a d r a c t
  7  p p p p p p p p
  6  . . . . . . . .
@@ -314,7 +315,8 @@
  1  T C A D R A C T
     a b c d e f g h
 
-<span class="dim">Turno de NEGRO (ejemplo: e2 e4, o 'salir'):</span></pre>
+Puntos: BLANCO 39 · NEGRO 39
+<span class="dim">Turno de NEGRO (ejemplo: e2 e4, 'deshacer', 'rehacer', 'puntos', 'terminar' o 'salir'):</span></pre>
         <figcaption>Salida real de la consola. Mayúsculas son blancas y minúsculas negras: P peón, T torre, C caballo, A alfil, D dama, R rey.</figcaption>
       </figure>
     </div>
@@ -323,12 +325,14 @@
   <section aria-labelledby="t-comprobado">
     <h2 id="t-comprobado">Cómo se comprobó</h2>
     <ul class="checks">
-      <li><span><strong>92 tests automáticos en verde</strong> (74 del núcleo y 18 de la consola), sin abrir ninguna interfaz.</span></li>
+      <li><span><strong>146 tests automáticos en verde</strong> (120 del núcleo y 26 de la consola), sin abrir ninguna interfaz.</span></li>
       <li><span><strong>Extensibilidad:</strong> un test crea una pieza nueva (torre + caballo) y otro juega en un tablero de 10x10. Ninguno toca el núcleo.</span></li>
       <li><span><strong>Partida real por consola:</strong> el juego no deja que el rey capture una dama defendida.</span></li>
       <li><span><strong>Ventana Swing</strong> probada con clics simulados, abajo.</span></li>
       <li><span><strong>Reglas del roadmap:</strong> el núcleo no usa consola, Swing ni archivos, no hay <code>switch</code> sobre piezas y el único <code>8</code> está en <code>TableroEstandar</code>.</span></li>
     </ul>
+    <p class="nota">Las dos capturas son de antes de los opcionales. Hoy la barra de la ventana también muestra los
+      puntos y los botones Deshacer, Rehacer y Terminar partida, y el mate termina la partida con un diálogo.</p>
     <div class="capturas">
       <figure>
         <img src="gui-jaque.png" width="576" height="592" alt="Ventana Swing del ajedrez: la dama negra en h4 da jaque al rey blanco y la barra inferior dice Turno de BLANCO, ¡Jaque al rey BLANCO!">
@@ -345,13 +349,12 @@
     <div class="bloque">
       <h2>Lo que falta (opcional)</h2>
       <ul class="chips">
-        <li>Jaque mate</li>
         <li>Enroque</li>
+        <li>Oponente con IA</li>
+        <li>Tablas por 50 jugadas o repetición</li>
         <li>Captura al paso</li>
-        <li>Promoción</li>
-        <li>Tablas</li>
       </ul>
-      <p>Hoy, después de un mate, la partida no termina: rechaza todas las jugadas. El jaque mate es el primer opcional para sumar, porque reutiliza el validador.</p>
+      <p>Ya están el jaque mate, el ahogado, los puntos, rendirse, deshacer/rehacer, la promoción de peón y la interfaz ampliada. El detalle está en <a href="opcionales-implementados.html">opcionales-implementados.html</a> y el avance, en <a href="../estado.html">estado.html</a>.</p>
     </div>
     <div class="bloque">
       <h2>Cómo correrlo</h2>
