@@ -6,6 +6,7 @@ import modelo.Direccion;
 import modelo.TipoDePieza;
 import movimiento.ReglaAvanceDePeon;
 import movimiento.ReglaCapturaDePeon;
+import movimiento.ReglaDeEnroque;
 import movimiento.ReglaDeMovimiento;
 import movimiento.ReglaDeSalto;
 import movimiento.ReglaDeslizante;
@@ -29,8 +30,9 @@ public final class TiposDePiezaEstandar {
             new TipoDePieza("alfil", false, 3, List.of(LINEAS_DIAGONALES));
     private static final TipoDePieza DAMA =
             new TipoDePieza("dama", false, 9, List.of(LINEAS_RECTAS, LINEAS_DIAGONALES));
-    private static final TipoDePieza REY =
-            new TipoDePieza("rey", true, 0, List.of(new ReglaDeslizante(Direccion.TODAS, 1)));
+    // El enroque es una regla más del rey: su compañera es la torre.
+    private static final TipoDePieza REY = new TipoDePieza("rey", true, 0,
+            List.of(new ReglaDeslizante(Direccion.TODAS, 1), new ReglaDeEnroque(TORRE)));
 
     /** En qué puede coronar el peón, en este orden: sin elegir, corona en la primera (dama). */
     private static final List<TipoDePieza> CORONACIONES = List.of(DAMA, TORRE, ALFIL, CABALLO);
@@ -62,7 +64,7 @@ public final class TiposDePiezaEstandar {
         return DAMA;
     }
 
-    /** Se desliza un solo paso en cualquier dirección, y es la pieza que no puede quedar en jaque. */
+    /** Se desliza un solo paso en cualquier dirección o enroca, y es la pieza que no puede quedar en jaque. */
     public static TipoDePieza rey() {
         return REY;
     }

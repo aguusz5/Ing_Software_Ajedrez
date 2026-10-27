@@ -183,14 +183,15 @@
   <header class="cabecera">
     <div class="eyebrow">TPO Ajedrez · Ingeniería de Software</div>
     <h1>Dónde estamos</h1>
-    <p class="sello"><span>Última actualización</span> <time datetime="2026-10-21">21 de octubre de 2026</time></p>
+    <p class="sello"><span>Última actualización</span> <time datetime="2026-10-27">27 de octubre de 2026</time></p>
     <p class="bajada">El alcance obligatorio está completo y probado: las seis piezas, turnos, captura,
       validación y jaque, jugables por consola y por ventana. Por calendario el roadmap nos ubica en la
-      fase 3, así que vamos adelantados: ya están los opcionales 0 a 5.</p>
+      fase 3, así que vamos adelantados: ya están los opcionales 0 a 6.</p>
     <div class="siguiente">
       <span class="eyebrow">Lo próximo</span>
       <p>La partida ya termina y anuncia al ganador (mate, ahogado, por puntos o porque uno se rinde),
-        se puede deshacer y rehacer, el peón corona y la interfaz (opcional 5) está completa. Sigue <strong>enroque</strong>.</p>
+        se puede deshacer y rehacer, el peón corona y el rey enroca. Sigue el <strong>oponente con IA</strong>
+        y, con él, un <strong>menú de inicio</strong> en la ventana.</p>
     </div>
   </header>
 
@@ -241,7 +242,7 @@
             <th scope="row">F5 · Opcionales</th>
             <td class="fechas">02/11 – 12/11</td>
             <td><span class="estado parcial">En curso</span></td>
-            <td class="detalle">Adelantada: los opcionales 0 a 5 están hechos. Ver la tabla de opcionales más abajo.</td>
+            <td class="detalle">Adelantada: los opcionales 0 a 6 están hechos. Ver la tabla de opcionales más abajo.</td>
           </tr>
           <tr>
             <th scope="row">F6 · Cierre y defensa</th>
@@ -410,13 +411,8 @@
           </tr>
           <tr>
             <th scope="row">Enroque</th>
-            <td><span class="estado pendiente">Sin empezar</span></td>
-            <td class="detalle">Una clase nueva que implemente <code>Jugada</code> y mueva dos piezas.</td>
-          </tr>
-          <tr>
-            <th scope="row">Captura al paso</th>
-            <td><span class="estado pendiente">Sin empezar</span></td>
-            <td class="detalle">Una clase nueva que implemente <code>Jugada</code>.</td>
+            <td><span class="estado hecho">Hecho</span></td>
+            <td class="detalle"><code>ReglaDeEnroque</code> es una regla más del rey y propone una <code>JugadaDeEnroque</code> (mueve rey y torre). <code>ReglaEnroqueSeguro</code> impide enrocar en jaque o cruzando una casilla atacada. Se juega moviendo el rey dos casillas: <code>e1 g1</code> en la consola; en la ventana la casilla se pinta de azul. Funciona en 10x10.</td>
           </tr>
           <tr>
             <th scope="row">Oponente con IA</th>
@@ -424,9 +420,19 @@
             <td class="detalle">Sería otro adaptador sobre el mismo puerto.</td>
           </tr>
           <tr>
+            <th scope="row">Menú de inicio en la ventana</th>
+            <td><span class="estado pendiente">Sin empezar</span></td>
+            <td class="detalle">Pedido del grupo: que la ventana no abra directo en el tablero. Elegir uno contra uno o contra la IA, reiniciar la partida y volver al menú.</td>
+          </tr>
+          <tr>
             <th scope="row">Tablas por 50 jugadas o repetición</th>
             <td><span class="estado pendiente">Sin empezar</span></td>
             <td class="detalle">Si sobra tiempo. La repetición puede usar las fotos de deshacer.</td>
+          </tr>
+          <tr>
+            <th scope="row">Captura al paso</th>
+            <td><span class="estado pendiente">Descartada</span></td>
+            <td class="detalle">El profesor indicó dejarla afuera.</td>
           </tr>
         </tbody>
       </table>
@@ -439,8 +445,9 @@
       <li>Confirmar en la pestaña <strong>Actions</strong> de GitHub que el CI quedó en verde con los push del 21/10.</li>
       <li>Avisarle al profesor cómo quedaron las reglas de fin: puntos por material, ahogado = tablas, final por "terminar" o rendición.</li>
       <li>Probar la ventana a mano (no tiene tests automáticos): resaltado, Deshacer y Rehacer (también después de un mate o una rendición) y el diálogo de promoción.</li>
-      <li>Implementar enroque (opcional 6), con sus tests y el UML actualizado en el mismo commit.</li>
-      <li>Elegir qué otros opcionales entran antes del congelamiento del 12/11.</li>
+      <li>Probar el enroque en la ventana: con el rey sin mover, las casillas del enroque se pintan de azul, o de naranja si el rey cruzaría una casilla atacada.</li>
+      <li>Implementar el oponente con IA (opcional 7) y el menú de inicio de la ventana (uno contra uno o contra la IA, reiniciar, volver al menú).</li>
+      <li>Decidir si las tablas por 50 jugadas o repetición (opcional 8) entran antes del congelamiento del 12/11.</li>
       <li>Que cada integrante lea el código de los otros paquetes: la defensa es individual y puede pedir agregar una pieza o cambiar el tamaño del tablero.</li>
     </ol>
   </section>
@@ -463,6 +470,14 @@
   <section aria-labelledby="t-historial">
     <h2 id="t-historial">Historial</h2>
     <ol class="historial" reversed>
+      <li>
+        <time datetime="2026-10-27">27/10/2026</time>
+        <ul>
+          <li>Opcional 6: enroque. <code>ReglaDeEnroque</code> se suma a las reglas del rey y propone una <code>JugadaDeEnroque</code>; <code>ReglaEnroqueSeguro</code> entra en el validador. <code>Jugada</code> ganó <code>casillasQueNoPuedenEstarAtacadas()</code>. El puerto y la ventana no cambiaron; la consola suma la pista <code>e1 g1</code> en la ayuda.</li>
+          <li>24 tests nuevos: <code>EnroqueTest</code> (9), <code>ReglaEnroqueSeguroTest</code> (6), 7 en <code>PartidaTest</code>, enroque en 10x10 en <code>ExtensibilidadTest</code> y <code>e1 g1</code> en <code>AdaptadorConsolaTest</code>. Decisión 26; UML <code>d2_modelo</code> y <code>d3_juego</code> actualizados. 170 tests en verde.</li>
+          <li>La captura al paso queda descartada por indicación del profesor. Se suma al plan un menú de inicio para la ventana.</li>
+        </ul>
+      </li>
       <li>
         <time datetime="2026-10-21">21/10/2026</time>
         <ul>

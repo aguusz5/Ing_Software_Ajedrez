@@ -88,7 +88,8 @@ Una pieza nueva no toca código existente: es un `new TipoDePieza("canciller", f
   validador. Interfaz nueva (web, IA) = otro adaptador que use `JuegoDeAjedrez`.
 - **Nada de `8` suelto:** el tamaño lo sabe el tablero. Hay un test que juega en 10x10.
 
-Todavía no está hecho el alcance opcional: jaque mate, enroque, captura al paso, promoción y tablas.
+Del alcance opcional ya están el jaque mate y el ahogado, los puntos, rendirse, deshacer/rehacer, la
+promoción y el enroque. El avance está en [docs/estado.html](docs/estado.html).
 
 ## Para profundizar (orden de lectura sugerido)
 

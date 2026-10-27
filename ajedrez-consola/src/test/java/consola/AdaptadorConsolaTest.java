@@ -17,6 +17,7 @@ import juego.JuegoDeAjedrez;
 import juego.Partida;
 import reglas.DetectorDeJaque;
 import reglas.GeneradorDeJugadasLegales;
+import reglas.ReglaEnroqueSeguro;
 import reglas.ReglaNoDejarReyEnJaque;
 import reglas.ReglaPiezaPropia;
 import reglas.ValidadorDeJugadas;
@@ -26,8 +27,8 @@ class AdaptadorConsolaTest {
     /** Corre la consola con un texto como si fuera el teclado y devuelve todo lo que imprimió. */
     private String ejecutarCon(String entrada) {
         DetectorDeJaque detector = new DetectorDeJaque();
-        ValidadorDeJugadas validador =
-                new ValidadorDeJugadas(List.of(new ReglaPiezaPropia(), new ReglaNoDejarReyEnJaque(detector)));
+        ValidadorDeJugadas validador = new ValidadorDeJugadas(List.of(
+                new ReglaPiezaPropia(), new ReglaEnroqueSeguro(detector), new ReglaNoDejarReyEnJaque(detector)));
         JuegoDeAjedrez juego = new Partida(new TableroEstandar().crearTablero(), validador, detector,
                 new GeneradorDeJugadasLegales(validador));
         ByteArrayOutputStream bytes = new ByteArrayOutputStream();
@@ -66,6 +67,15 @@ class AdaptadorConsolaTest {
         // Assert
         assertTrue(salida.contains("por ejemplo: e2 e4"));
         assertTrue(salida.contains("Turno de NEGRO"));
+    }
+
+    @Test
+    void ejecutar_reyDosCasillasHaciaLaTorre_enrocaYLaTorreQuedaAlLado() {
+        // Act
+        String salida = ejecutarCon("e2 e4\ne7 e5\ng1 f3\nb8 c6\nf1 c4\ng8 f6\ne1 g1\nsalir\n");
+
+        // Assert
+        assertTrue(salida.contains(" 1  T C A D . T R ."));
     }
 
     @Test

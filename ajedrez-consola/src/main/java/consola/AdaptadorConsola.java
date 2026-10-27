@@ -96,11 +96,12 @@ public final class AdaptadorConsola {
     }
 
     private void procesar(String linea) {
-        // "e2 e4", o "e7 e8 caballo" para coronar en algo que no sea dama.
+        // "e2 e4", o "e7 e8 caballo" para coronar en algo que no sea dama. El enroque es "e1 g1".
         String[] casillas = linea.split("\\s+");
         if (casillas.length != 2 && casillas.length != 3) {
             salida.println("Escribí la casilla de origen y la de destino separadas por un espacio, por ejemplo: e2 e4"
-                    + " (para coronar en otra pieza, agregala al final: e7 e8 caballo)");
+                    + " (para coronar en otra pieza, agregala al final: e7 e8 caballo;"
+                    + " para enrocar, mové el rey dos casillas hacia la torre: e1 g1)");
             return;
         }
         Posicion desde;

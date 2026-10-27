@@ -65,11 +65,15 @@ package "ajedrez-nucleo :: movimiento" #EAF6EA {
   class ReglaCapturaDePeon {
     +ReglaCapturaDePeon(coronaciones : List<TipoDePieza>)
   }
+  class ReglaDeEnroque {
+    +ReglaDeEnroque(companera : TipoDePieza)
+  }
   interface Jugada {
     +desde() : Posicion
     +hasta() : Posicion
     +aplicarEn(t : Tablero) : Tablero
     +promocion() : Optional<TipoDePieza>
+    +casillasQueNoPuedenEstarAtacadas() : List<Posicion>
   }
   class JugadaSimple <<record>> {
     +desde : Posicion
@@ -79,6 +83,12 @@ package "ajedrez-nucleo :: movimiento" #EAF6EA {
     +desde : Posicion
     +hasta : Posicion
     +nuevoTipo : TipoDePieza
+  }
+  class JugadaDeEnroque <<record>> {
+    +desde : Posicion
+    +hasta : Posicion
+    +desdeTorre : Posicion
+    +hastaTorre : Posicion
   }
 }
 package "ajedrez-nucleo :: configuracion" #EAF6EA {
@@ -98,10 +108,13 @@ ReglaDeslizante ..|> ReglaDeMovimiento
 ReglaDeSalto ..|> ReglaDeMovimiento
 ReglaAvanceDePeon ..|> ReglaDeMovimiento
 ReglaCapturaDePeon ..|> ReglaDeMovimiento
+ReglaDeEnroque ..|> ReglaDeMovimiento
+ReglaDeEnroque --> TipoDePieza : compañera
 ReglaDeMovimiento ..> Jugada : crea
 JugadaSimple ..|> Jugada
 JugadaConPromocion ..|> Jugada
 JugadaConPromocion --> TipoDePieza
+JugadaDeEnroque ..|> Jugada
 TableroEstandar ..> TiposDePiezaEstandar
 TiposDePiezaEstandar ..> TipoDePieza : crea
 Posicion ..> Direccion

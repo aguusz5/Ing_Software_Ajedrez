@@ -47,6 +47,9 @@ package "ajedrez-nucleo :: reglas" #EAF6EA {
   class ReglaNoDejarReyEnJaque {
     +ReglaNoDejarReyEnJaque(d : DetectorDeJaque)
   }
+  class ReglaEnroqueSeguro {
+    +ReglaEnroqueSeguro(d : DetectorDeJaque)
+  }
   class ValidadorDeJugadas {
     +ValidadorDeJugadas(reglas : List<ReglaDeValidacion>)
     +validar(t : Tablero, j : Jugada, turno : Color) : ResultadoValidacion
@@ -72,6 +75,8 @@ Partida --> EstadoPartida
 ReglaPiezaPropia ..|> ReglaDeValidacion
 ReglaNoDejarReyEnJaque ..|> ReglaDeValidacion
 ReglaNoDejarReyEnJaque --> DetectorDeJaque
+ReglaEnroqueSeguro ..|> ReglaDeValidacion
+ReglaEnroqueSeguro --> DetectorDeJaque
 ValidadorDeJugadas o-- "1..*" ReglaDeValidacion
 GeneradorDeJugadasLegales --> ValidadorDeJugadas
 ReglaDeValidacion ..> ResultadoValidacion : devuelve

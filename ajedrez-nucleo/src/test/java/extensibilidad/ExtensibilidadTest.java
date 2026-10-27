@@ -28,6 +28,7 @@ import movimiento.ReglaDeSalto;
 import movimiento.ReglaDeslizante;
 import reglas.DetectorDeJaque;
 import reglas.GeneradorDeJugadasLegales;
+import reglas.ReglaEnroqueSeguro;
 import reglas.ReglaNoDejarReyEnJaque;
 import reglas.ReglaPiezaPropia;
 import reglas.ValidadorDeJugadas;
@@ -47,6 +48,7 @@ class ExtensibilidadTest {
         DetectorDeJaque detector = new DetectorDeJaque();
         ValidadorDeJugadas validador = new ValidadorDeJugadas(List.of(
                 new ReglaPiezaPropia(),
+                new ReglaEnroqueSeguro(detector),
                 new ReglaNoDejarReyEnJaque(detector)));
         return new Partida(tablero, validador, detector, new GeneradorDeJugadasLegales(validador));
     }
@@ -139,5 +141,26 @@ class ExtensibilidadTest {
         assertTrue(dobleNegro.valida());
         assertTrue(torreHastaLaFila10.valida());
         assertEquals(Optional.of(Color.NEGRO), torreHastaLaFila10.colorEnJaque());
+    }
+
+    @Test
+    void tableroDe10x10_reyYTorresSinMover_enrocanSinNumerosDeColumna() {
+        // Arrange: el rey está en f1 y las torres en a1 y j1, no en las columnas del 8x8.
+        Tablero tablero = new Tablero(10, 10)
+                .con(casilla("f1"), new Pieza(Color.BLANCO, rey()))
+                .con(casilla("a1"), new Pieza(Color.BLANCO, torre()))
+                .con(casilla("j1"), new Pieza(Color.BLANCO, torre()))
+                .con(casilla("f10"), new Pieza(Color.NEGRO, rey()));
+        JuegoDeAjedrez juego = partidaSobre(tablero);
+
+        // Act
+        List<Posicion> destinos = juego.destinosLegales(casilla("f1"));
+        ResultadoJugada enroque = juego.jugar(casilla("f1"), casilla("h1"));
+
+        // Assert
+        assertTrue(destinos.containsAll(casillas("d1", "h1")));
+        assertTrue(enroque.valida());
+        assertEquals(rey(), juego.tablero().piezaEn(casilla("h1")).orElseThrow().tipo());
+        assertEquals(torre(), juego.tablero().piezaEn(casilla("g1")).orElseThrow().tipo());
     }
 }

@@ -1,4 +1,4 @@
-<title>Opcionales 0 a 5</title>
+<title>Opcionales 0 a 6</title>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -105,12 +105,12 @@
 
   <header class="cabecera">
     <div class="eyebrow">TPO Ajedrez · Fase 5 · Opcionales</div>
-    <h1>Qué cambió con los opcionales 0 a 5</h1>
-    <p class="sello"><span>0, 1, 2 y resaltado:</span> <strong>16/10/2026</strong> <span>· 3, 4 y resto del 5:</span> <strong>21/10/2026</strong> <span>· tests en verde</span> <strong>146</strong> <span>(antes 92)</span></p>
+    <h1>Qué cambió con los opcionales 0 a 6</h1>
+    <p class="sello"><span>0, 1, 2 y resaltado:</span> <strong>16/10/2026</strong> <span>· 3, 4 y resto del 5:</span> <strong>21/10/2026</strong> <span>· 6:</span> <strong>27/10/2026</strong> <span>· tests en verde</span> <strong>170</strong> <span>(antes 92)</span></p>
     <p class="bajada">La partida ahora termina y tiene ganador: jaque mate, ahogado, los jugadores la dan por
       terminada (gana el que tiene más puntos) o uno se rinde. Cada pieza tiene un valor y los puntos se ven en
-      la consola y en la ventana. Se puede deshacer y rehacer, el peón corona al llegar al final y, en la ventana,
-      al elegir una pieza se ve a dónde puede moverse.</p>
+      la consola y en la ventana. Se puede deshacer y rehacer, el peón corona al llegar al final, el rey enroca
+      y, en la ventana, al elegir una pieza se ve a dónde puede moverse.</p>
     <div class="caja alerta">
       <span class="eyebrow">Si tenés código en curso, leé esto primero</span>
       <ul class="lista">
@@ -120,7 +120,10 @@
         <li><code>ReglaAvanceDePeon</code> y <code>ReglaCapturaDePeon</code> reciben en qué puede coronar el peón:
           <code>new ReglaAvanceDePeon(coronaciones)</code>. Para el peón clásico, usá <code>TiposDePiezaEstandar.peon()</code>.</li>
         <li><code>Jugada</code> tiene un método nuevo, <code>promocion()</code>, que por defecto devuelve vacío. Una jugada
-          nueva (el enroque, por ejemplo) no necesita implementarlo.</li>
+          nueva no necesita implementarlo. Lo mismo con <code>casillasQueNoPuedenEstarAtacadas()</code>, que sumó el enroque.</li>
+        <li>El rey de <code>TiposDePiezaEstandar</code> ahora enroca: si un test arma un rey y una torre sin mover en la
+          misma fila con el camino libre, el rey tiene una jugada más. Si armás tu propio <code>ValidadorDeJugadas</code>,
+          sumá <code>new ReglaEnroqueSeguro(detector)</code> como en <code>Principal</code>; sin ella se podría enrocar en jaque.</li>
         <li>Con la partida terminada, <code>jugar</code> rechaza todo con "La partida terminó". Un test que juegue
           después de un mate ahora falla: por eso cambiamos <code>jugar_conElReyEnJaque_rechazaLasJugadasQueNoLoSacan</code>
           para que use un jaque que no es mate.</li>
@@ -334,6 +337,43 @@ public record EstadoPartida(boolean terminada, Optional&lt;Color&gt; ganador, St
         </dl>
       </article>
 
+      <article class="ficha">
+        <header><h3>6 · Enroque</h3><span class="meta">una regla más del rey; el jaque se controla al validar</span></header>
+        <dl>
+          <div><dt>Cómo se juega</dt><dd>Moviendo el rey dos casillas hacia la torre: <code>e1 g1</code> (corto) o
+            <code>e1 c1</code> (largo). La torre salta sola a la casilla que cruzó el rey. En la ventana, al elegir el
+            rey, la casilla del enroque se pinta de azul, o de naranja si no se puede por un jaque.</dd></div>
+          <div><dt>Qué hay</dt><dd><ul>
+            <li><span class="marca nuevo">Nuevo</span> <code>movimiento.ReglaDeEnroque(companera)</code>: hacia cada costado
+              busca la primera pieza de la fila. Si es la compañera (la torre), del mismo color, ni ella ni el rey se
+              movieron y las dos casillas que recorre el rey están libres, propone el enroque. Sin números de columna:
+              en un 10x10 enroca igual.</li>
+            <li><span class="marca nuevo">Nuevo</span> <code>movimiento.JugadaDeEnroque(desde, hasta, desdeTorre, hastaTorre)</code>:
+              mueve las dos piezas y las marca como movidas.</li>
+            <li><span class="marca nuevo">Nuevo</span> <code>reglas.ReglaEnroqueSeguro(detector)</code>: rechaza el enroque si
+              el rey está en jaque o si cruza o cae en una casilla atacada. Pone al rey en cada casilla y le pregunta al
+              detector, así cuenta también el ataque en diagonal del peón.</li>
+            <li><span class="marca cambia">Cambia</span> <code>Jugada</code>: <code>casillasQueNoPuedenEstarAtacadas()</code>,
+              vacío por defecto. Así la regla no usa <code>instanceof</code>.</li>
+            <li><span class="marca cambia">Cambia</span> <code>TiposDePiezaEstandar</code> (el rey suma la regla) y
+              <code>Principal</code> (el validador suma <code>ReglaEnroqueSeguro</code>). El puerto y la ventana no cambian.</li>
+          </ul></dd></div>
+          <div><dt>La trampa</dt><dd>Si <code>ReglaDeEnroque</code> le preguntara al detector si hay jaque, el detector le
+            pediría las jugadas al rey rival, que volvería a preguntarle al detector: recursión infinita. Por eso la regla
+            de movimiento solo mira el tablero y el jaque se controla en una regla de validación.</dd></div>
+          <div><dt>Tests</dt><dd><ul>
+            <li><code>EnroqueTest</code> (9): corto y largo, de los dos colores; no enroca si se movió el rey o la torre, si hay
+              una pieza en el medio o si la torre es rival.</li>
+            <li><code>ReglaEnroqueSeguroTest</code> (6): en jaque, cruzando una casilla atacada (también por un peón), con b1
+              atacada en el largo (vale: por ahí pasa solo la torre) y una jugada que no es enroque.</li>
+            <li><code>PartidaTest</code> (7): enroque en una apertura real, largo de los dos colores, rey que se movió y volvió,
+              enroque en jaque, deshacer un enroque, y lo que pinta la ventana.</li>
+            <li><code>ExtensibilidadTest</code> (1): enroque en un 10x10, con el rey en f1. <code>AdaptadorConsolaTest</code> (1): <code>e1 g1</code>.</li>
+          </ul></dd></div>
+          <div><dt>Decisión</dt><dd>26: el enroque es una regla más del rey, y el jaque se controla al validar.</dd></div>
+        </dl>
+      </article>
+
     </div>
   </section>
 
@@ -349,6 +389,7 @@ public record EstadoPartida(boolean terminada, Optional&lt;Color&gt; ganador, St
           <li>Comandos <code>deshacer</code> y <code>rehacer</code>: redibujan el tablero, o avisan "No hay nada para deshacer".</li>
           <li>Comando <code>puntos</code>: vuelve a mostrar los puntos.</li>
           <li>Coronar: <code>e7 e8 caballo</code>. Sin la tercera palabra, corona en dama.</li>
+          <li>Enrocar: <code>e1 g1</code> o <code>e1 c1</code>. La ayuda que aparece al escribir mal una jugada lo explica.</li>
           <li>Al final imprime <code>===== FIN DE LA PARTIDA =====</code>, el ganador (o "tablas") y el motivo, y sale.
             Por eso en la consola no se puede deshacer un mate; en la ventana sí.</li>
           <li>8 tests nuevos en <code>AdaptadorConsolaTest</code>: terminar, jaque mate, rendirse, deshacer, rehacer,
@@ -365,6 +406,7 @@ public record EstadoPartida(boolean terminada, Optional&lt;Color&gt; ganador, St
           <li>Botones <strong>Deshacer</strong> y <strong>Rehacer</strong>: funcionan también con la partida terminada,
             así que deshacer un mate la reabre. Si no hay nada, la barra lo avisa.</li>
           <li>Cuando un peón llega al final: diálogo "Promoción" con dama, torre, alfil y caballo. Cerrarlo cancela la jugada.</li>
+          <li>Enroque: al elegir el rey, la casilla del enroque aparece en azul; un clic ahí mueve rey y torre.</li>
           <li>Al terminar: diálogo "Fin de la partida" con el ganador y el motivo, la barra dice
             "FIN DE LA PARTIDA", el tablero deja de responder y "Terminar partida" se desactiva.</li>
           <li>Sin tests automáticos (decisión 20): <strong>falta probarla a mano</strong>.</li>
@@ -387,6 +429,7 @@ public record EstadoPartida(boolean terminada, Optional&lt;Color&gt; ganador, St
       <li><strong>Se sumaron <code>Jugada.promocion()</code> y <code>opcionesDeCoronacion</code></strong>, que el plan no
         tenía: el primero para elegir la candidata sin <code>instanceof</code>, el segundo para que la ventana pregunte
         sin conocer las reglas.</li>
+      <li>El enroque salió como el plan.</li>
       <li>El plan ya tiene una fila "Cómo quedó" en cada opcional hecho.</li>
     </ul>
   </section>
@@ -397,14 +440,14 @@ public record EstadoPartida(boolean terminada, Optional&lt;Color&gt; ganador, St
       <table>
         <thead><tr><th scope="col">Módulo</th><th scope="col">Archivos</th></tr></thead>
         <tbody>
-          <tr><th scope="row">ajedrez-nucleo</th><td class="detalle"><span class="marca nuevo">Nuevo</span> <code>reglas/GeneradorDeJugadasLegales</code>, <code>juego/EstadoPartida</code>, <code>movimiento/JugadaConPromocion</code>
+          <tr><th scope="row">ajedrez-nucleo</th><td class="detalle"><span class="marca nuevo">Nuevo</span> <code>reglas/GeneradorDeJugadasLegales</code>, <code>juego/EstadoPartida</code>, <code>movimiento/JugadaConPromocion</code>, <code>movimiento/ReglaDeEnroque</code>, <code>movimiento/JugadaDeEnroque</code>, <code>reglas/ReglaEnroqueSeguro</code>
             · <span class="marca cambia">Cambia</span> <code>modelo/TipoDePieza</code>, <code>modelo/Tablero</code>, <code>configuracion/TiposDePiezaEstandar</code>, <code>juego/JuegoDeAjedrez</code>, <code>juego/Partida</code>, <code>movimiento/Jugada</code>, <code>movimiento/ReglaAvanceDePeon</code>, <code>movimiento/ReglaCapturaDePeon</code></td></tr>
-          <tr><th scope="row">tests del núcleo</th><td class="detalle"><span class="marca nuevo">Nuevo</span> <code>GeneradorDeJugadasLegalesTest</code>, <code>JugadaConPromocionTest</code>
+          <tr><th scope="row">tests del núcleo</th><td class="detalle"><span class="marca nuevo">Nuevo</span> <code>GeneradorDeJugadasLegalesTest</code>, <code>JugadaConPromocionTest</code>, <code>EnroqueTest</code>, <code>ReglaEnroqueSeguroTest</code>
             · <span class="marca cambia">Cambia</span> <code>PartidaTest</code>, <code>PeonTest</code>, <code>ExtensibilidadTest</code>, <code>TipoDePiezaTest</code></td></tr>
           <tr><th scope="row">ajedrez-consola</th><td class="detalle"><code>AdaptadorConsola</code>, <code>AdaptadorConsolaTest</code></td></tr>
           <tr><th scope="row">ajedrez-gui-swing</th><td class="detalle"><code>VentanaSwing</code></td></tr>
           <tr><th scope="row">ajedrez-app</th><td class="detalle"><code>Principal</code></td></tr>
-          <tr><th scope="row">docs</th><td class="detalle"><code>uml/d2_modelo.puml</code>, <code>uml/d3_juego.puml</code>, <code>decisiones.md</code> (21 a 25), <code>estado.html</code>, <code>plan-opcionales.html</code></td></tr>
+          <tr><th scope="row">docs</th><td class="detalle"><code>uml/d2_modelo.puml</code>, <code>uml/d3_juego.puml</code>, <code>decisiones.md</code> (21 a 26), <code>estado.html</code>, <code>plan-opcionales.html</code></td></tr>
         </tbody>
       </table>
     </div>
@@ -412,25 +455,28 @@ public record EstadoPartida(boolean terminada, Optional&lt;Color&gt; ganador, St
 
   <section aria-labelledby="t-probar">
     <h2 id="t-probar">Cómo probarlo</h2>
-<pre><code>mvn test                                          # 120 del núcleo + 26 de la consola
+<pre><code>mvn test                                          # 143 del núcleo + 27 de la consola
 mvn package &amp;&amp; java -jar ajedrez-app/target/ajedrez.jar          # consola
 mvn package &amp;&amp; java -jar ajedrez-app/target/ajedrez.jar --gui    # ventana</code></pre>
     <p>Para ver un mate rápido en la consola: <code>f2 f3</code>, <code>e7 e5</code>, <code>g2 g4</code>,
       <code>d8 h4</code>. Para ver el botón Rendirse en la ventana: <code>e2 e4</code>, <code>f7 f6</code>,
       <code>d1 h5</code> (las negras quedan en jaque). Para coronar rápido en la consola: <code>a2 a4</code>,
       <code>b7 b5</code>, <code>a4 b5</code>, <code>a7 a6</code>, <code>b5 a6</code>, <code>c8 b7</code>, <code>a6 b7</code>,
-      <code>b8 c6</code>, <code>b7 a8 caballo</code> (en la ventana, la misma secuencia con clics abre el diálogo).</p>
+      <code>b8 c6</code>, <code>b7 a8 caballo</code> (en la ventana, la misma secuencia con clics abre el diálogo).
+      Para enrocar: <code>e2 e4</code>, <code>e7 e5</code>, <code>g1 f3</code>, <code>b8 c6</code>, <code>f1 c4</code>,
+      <code>g8 f6</code>, <code>e1 g1</code>.</p>
   </section>
 
   <section aria-labelledby="t-pendiente">
     <h2 id="t-pendiente">Lo que falta</h2>
     <ul class="lista">
       <li>Probar la ventana a mano: un mate, un "terminar", una rendición, los colores del resaltado, Deshacer y
-        Rehacer (también después de un mate) y el diálogo de promoción.</li>
+        Rehacer (también después de un mate), el diálogo de promoción y el enroque.</li>
       <li>Confirmar en la pestaña <strong>Actions</strong> de GitHub que el CI quedó en verde con los push del 21/10.</li>
       <li>Avisarle al profesor cómo quedaron las reglas, sobre todo que el ahogado es tablas.</li>
       <li>Que otro integrante lo revise y lo pueda explicar: la defensa es individual.</li>
-      <li>Siguiente opcional: <strong>6 · Enroque</strong>.</li>
+      <li>Siguiente: <strong>7 · Oponente con IA</strong> y <strong>10 · Menú de inicio</strong> en la ventana.
+        La captura al paso quedó descartada por el profesor.</li>
     </ul>
   </section>
 

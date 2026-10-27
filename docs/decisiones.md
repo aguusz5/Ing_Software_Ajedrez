@@ -286,3 +286,24 @@ se revierte, no se borra: se marca como reemplazada y se dice por cuál.
   coronaciones sin tocar `Partida` ni los adaptadores.
 - **Cuándo se rompería:** si el nombre deja de identificar al tipo (dos tipos con el mismo nombre). Ahí el
   puerto tendría que recibir otra cosa que un `String`.
+
+### 26. El enroque es una regla más del rey, y el jaque se controla al validar
+
+- **Qué:** `ReglaDeEnroque` es una `ReglaDeMovimiento` que se suma a la lista del rey en
+  `TiposDePiezaEstandar` y recibe por constructor el tipo de su compañera (la torre). Hacia cada costado
+  busca la primera pieza de la fila: si es la compañera, del mismo color, ni ella ni el rey se movieron
+  (`yaSeMovio`) y las dos casillas que recorre el rey están libres, propone una `JugadaDeEnroque`, que
+  mueve el rey dos casillas y pone la torre en la que el rey cruzó. No hay números de columna: en un
+  10x10 enroca igual. Que el rey no esté en jaque ni cruce o caiga en una casilla atacada lo controla
+  `ReglaEnroqueSeguro`, una `ReglaDeValidacion` más en `Principal`. Para no usar `instanceof`, `Jugada`
+  ganó `casillasQueNoPuedenEstarAtacadas()` (vacío por defecto; el enroque devuelve salida, cruce y
+  llegada). Para cada casilla, la regla pone al rey ahí y le pregunta al `DetectorDeJaque`.
+- **Por qué:** si la regla de movimiento le preguntara al detector, el detector le pediría las jugadas
+  al rey rival, que volvería a llamar al detector: recursión infinita. Separar "qué propone la pieza" de
+  "qué se permite" es lo mismo que ya hacía `ReglaNoDejarReyEnJaque`. Poner al rey en la casilla en vez de
+  buscar jugadas que lleguen a ella hace que cuente la captura en diagonal del peón, que el peón solo
+  propone cuando hay una pieza rival en el destino. El enroque entra por `jugar(desde, hasta)`, así que
+  ni el puerto ni los adaptadores cambiaron: la ventana pinta la casilla del enroque porque está en
+  `destinosLegales`, y en la consola se escribe `e1 g1`.
+- **Cuándo se rompería:** con variantes donde el rey no termina a dos casillas o la torre no salta a
+  su lado (ajedrez 960). Ahí `ReglaDeEnroque` tendría que recibir también las casillas de llegada.

@@ -27,6 +27,7 @@ import modelo.Posicion;
 import modelo.Tablero;
 import reglas.DetectorDeJaque;
 import reglas.GeneradorDeJugadasLegales;
+import reglas.ReglaEnroqueSeguro;
 import reglas.ReglaNoDejarReyEnJaque;
 import reglas.ReglaPiezaPropia;
 import reglas.ValidadorDeJugadas;
@@ -44,6 +45,7 @@ class PartidaTest {
         DetectorDeJaque detector = new DetectorDeJaque();
         ValidadorDeJugadas validador = new ValidadorDeJugadas(List.of(
                 new ReglaPiezaPropia(),
+                new ReglaEnroqueSeguro(detector),
                 new ReglaNoDejarReyEnJaque(detector)));
         return new Partida(tablero, validador, detector, new GeneradorDeJugadasLegales(validador));
     }
@@ -596,5 +598,116 @@ class PartidaTest {
         // Assert
         assertFalse(resultado.valida());
         assertEquals("La partida terminó", resultado.motivo());
+    }
+
+    // --- Enroque ---
+
+    /** Rey blanco en e1 con la torre de h1, y rey negro en a8. */
+    private static Partida partidaListaParaEnrocar() {
+        return partidaSobre(new Tablero(8, 8)
+                .con(casilla("e1"), new Pieza(Color.BLANCO, rey()))
+                .con(casilla("h1"), new Pieza(Color.BLANCO, torre()))
+                .con(casilla("a8"), new Pieza(Color.NEGRO, rey())));
+    }
+
+    @Test
+    void jugar_enroqueCortoEnUnaApertura_mueveElReyYLaTorre() {
+        // Arrange
+        jugarValidas("e2 e4", "e7 e5", "g1 f3", "b8 c6", "f1 c4", "g8 f6");
+
+        // Act: el rey se mueve dos casillas hacia la torre.
+        ResultadoJugada resultado = jugar("e1", "g1");
+
+        // Assert
+        assertTrue(resultado.valida());
+        assertEquals(rey(), partida.tablero().piezaEn(casilla("g1")).orElseThrow().tipo());
+        assertEquals(torre(), partida.tablero().piezaEn(casilla("f1")).orElseThrow().tipo());
+        assertTrue(partida.tablero().piezaEn(casilla("h1")).isEmpty());
+        assertEquals(Color.NEGRO, partida.turnoActual());
+    }
+
+    @Test
+    void jugar_enroqueLargoDeLosDosColores_dejaLasTorresEnD1YD8() {
+        // Arrange
+        jugarValidas("d2 d4", "d7 d5", "b1 c3", "b8 c6", "c1 f4", "c8 f5", "d1 d2", "d8 d7");
+
+        // Act
+        ResultadoJugada blancas = jugar("e1", "c1");
+        ResultadoJugada negras = jugar("e8", "c8");
+
+        // Assert
+        assertTrue(blancas.valida());
+        assertTrue(negras.valida());
+        assertEquals(torre(), partida.tablero().piezaEn(casilla("d1")).orElseThrow().tipo());
+        assertEquals(torre(), partida.tablero().piezaEn(casilla("d8")).orElseThrow().tipo());
+        assertEquals(rey(), partida.tablero().piezaEn(casilla("c8")).orElseThrow().tipo());
+    }
+
+    @Test
+    void jugar_reyQueSeMovioYVolvio_yaNoPuedeEnrocar() {
+        // Arrange
+        jugarValidas("e2 e4", "e7 e5", "g1 f3", "b8 c6", "f1 c4", "g8 f6", "e1 e2", "h7 h6", "e2 e1", "h6 h5");
+
+        // Act
+        ResultadoJugada resultado = jugar("e1", "g1");
+
+        // Assert
+        assertFalse(resultado.valida());
+        assertEquals("Esa pieza no puede moverse a esa casilla", resultado.motivo());
+    }
+
+    @Test
+    void jugar_enroqueConElReyEnJaque_esRechazadoYDiceElMotivo() {
+        // Arrange: la torre negra de e8 le da jaque al rey blanco.
+        partida = partidaSobre(new Tablero(8, 8)
+                .con(casilla("e1"), new Pieza(Color.BLANCO, rey()))
+                .con(casilla("h1"), new Pieza(Color.BLANCO, torre()))
+                .con(casilla("a8"), new Pieza(Color.NEGRO, rey()))
+                .con(casilla("e8"), new Pieza(Color.NEGRO, torre())));
+
+        // Act
+        ResultadoJugada resultado = jugar("e1", "g1");
+
+        // Assert
+        assertFalse(resultado.valida());
+        assertTrue(resultado.motivo().startsWith("No se puede enrocar"));
+    }
+
+    @Test
+    void deshacer_unEnroque_devuelveReyYTorreSinMoverYSePuedeVolverAEnrocar() {
+        // Arrange
+        partida = partidaListaParaEnrocar();
+        jugarValidas("e1 g1");
+
+        // Act
+        partida.deshacer();
+
+        // Assert
+        assertEquals(Optional.of(new Pieza(Color.BLANCO, rey())), partida.tablero().piezaEn(casilla("e1")));
+        assertEquals(Optional.of(new Pieza(Color.BLANCO, torre())), partida.tablero().piezaEn(casilla("h1")));
+        assertTrue(partida.destinosLegales(casilla("e1")).contains(casilla("g1")));
+    }
+
+    @Test
+    void destinosLegales_reyQuePuedeEnrocar_incluyeLaCasillaDelEnroque() {
+        // Arrange
+        partida = partidaListaParaEnrocar();
+
+        // Act & Assert
+        assertEquals(casillas("d1", "d2", "e2", "f2", "f1", "g1"), Set.copyOf(partida.destinosLegales(casilla("e1"))));
+    }
+
+    @Test
+    void destinosIlegales_enroqueQueCruzaUnaCasillaAtacada_loMarca() {
+        // Arrange: la torre negra de f8 controla toda la columna f.
+        partida = partidaSobre(new Tablero(8, 8)
+                .con(casilla("e1"), new Pieza(Color.BLANCO, rey()))
+                .con(casilla("h1"), new Pieza(Color.BLANCO, torre()))
+                .con(casilla("a8"), new Pieza(Color.NEGRO, rey()))
+                .con(casilla("f8"), new Pieza(Color.NEGRO, torre())));
+
+        // Act & Assert
+        assertEquals(casillas("d1", "d2", "e2"), Set.copyOf(partida.destinosLegales(casilla("e1"))));
+        assertEquals(casillas("f1", "f2", "g1"), Set.copyOf(partida.destinosIlegales(casilla("e1"))));
     }
 }
