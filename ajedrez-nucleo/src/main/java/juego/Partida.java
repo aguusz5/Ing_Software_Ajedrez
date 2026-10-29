@@ -199,6 +199,16 @@ public final class Partida implements JuegoDeAjedrez {
                 .toList();
     }
 
+    @Override
+    public List<JugadaLegal> jugadasLegales() {
+        if (estado.terminada()) {
+            return List.of();
+        }
+        return generador.jugadasLegales(tablero, turno).stream()
+                .map(JugadaLegal::de)
+                .toList();
+    }
+
     /** Antes de cada cambio (jugada, terminar o rendirse) se guarda cómo estaba; lo deshecho se descarta. */
     private void guardarFoto() {
         pasado.push(new Foto(tablero, turno, estado));

@@ -8,11 +8,15 @@ import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
+import java.util.Optional;
+import java.util.Random;
 import java.util.Scanner;
 
 import org.junit.jupiter.api.Test;
 
 import configuracion.TableroEstandar;
+import ia.AsesorAleatorio;
+import ia.Computadora;
 import juego.JuegoDeAjedrez;
 import juego.Partida;
 import reglas.DetectorDeJaque;
@@ -26,6 +30,10 @@ class AdaptadorConsolaTest {
 
     /** Corre la consola con un texto como si fuera el teclado y devuelve todo lo que imprimió. */
     private String ejecutarCon(String entrada) {
+        return ejecutarCon(entrada, Optional.empty());
+    }
+
+    private String ejecutarCon(String entrada, Optional<Computadora> computadora) {
         DetectorDeJaque detector = new DetectorDeJaque();
         ValidadorDeJugadas validador = new ValidadorDeJugadas(List.of(
                 new ReglaPiezaPropia(), new ReglaEnroqueSeguro(detector), new ReglaNoDejarReyEnJaque(detector)));
@@ -35,9 +43,15 @@ class AdaptadorConsolaTest {
         PrintStream salida = new PrintStream(bytes, true, StandardCharsets.UTF_8);
 
         new AdaptadorConsola(juego, new TraductorDeNotacion(), new DibujanteAscii(),
-                new Scanner(entrada), salida).ejecutar();
+                new Scanner(entrada), salida, computadora).ejecutar();
 
         return bytes.toString(StandardCharsets.UTF_8);
+    }
+
+    /** Una computadora que elige al azar con semilla fija, para que el test sea repetible. */
+    private static Optional<Computadora> computadoraAleatoria() {
+        AsesorAleatorio aleatorio = new AsesorAleatorio(new Random(1));
+        return Optional.of(new Computadora(aleatorio, aleatorio, 1));
     }
 
     @Test
@@ -182,5 +196,26 @@ class AdaptadorConsolaTest {
     void ejecutar_seTerminaLaEntrada_terminaSinError() {
         // Act & Assert
         assertDoesNotThrow(() -> ejecutarCon(""));
+    }
+
+    @Test
+    void ejecutarContraLaComputadora_despuesDeLaJugadaDelJugador_juegaLasNegrasYAvisaQuienEligio() {
+        // Act
+        String salida = ejecutarCon("e2 e4\nsalir\n", computadoraAleatoria());
+
+        // Assert
+        assertTrue(salida.contains("La computadora jugó "));
+        assertTrue(salida.contains("(eligió Aleatorio)"));
+        assertTrue(salida.indexOf("Turno de BLANCO") < salida.lastIndexOf("Turno de BLANCO"));
+    }
+
+    @Test
+    void ejecutarContraLaComputadora_deshacer_vuelveAntesDeLaJugadaDelJugador() {
+        // Act: deshace la jugada de la computadora y la del jugador, así le vuelve a tocar al jugador.
+        String salida = ejecutarCon("e2 e4\ndeshacer\nsalir\n", computadoraAleatoria());
+
+        // Assert: el último tablero dibujado tiene otra vez el peón en e2.
+        assertTrue(salida.lastIndexOf(" 2  P P P P P P P P") > salida.lastIndexOf("La computadora jugó"));
+        assertTrue(salida.endsWith("Turno de BLANCO (ejemplo: e2 e4, 'deshacer', 'rehacer', 'puntos', 'terminar' o 'salir'): "));
     }
 }

@@ -6,14 +6,15 @@ Ajedrez en Java 21 con arquitectura núcleo + adaptadores. Módulos Maven: `ajed
 
 ```bash
 mvn test                                         # todos los tests
-mvn package && java -jar ajedrez-app/target/ajedrez.jar [--gui]
+mvn package && java -jar ajedrez-app/target/ajedrez.jar [--gui] [--ia]
 ```
 
 ## Arquitectura
 - `ajedrez-nucleo` es el núcleo: Java puro, sin dependencias (solo JUnit en scope test).
 - Prohibido en el núcleo: `System.out`, `Scanner`, `javax.swing`, `java.awt`, archivos, red.
-- `ajedrez-consola` y `ajedrez-gui-swing` son adaptadores: solo usan el puerto `JuegoDeAjedrez` y los
-  datos que devuelve (`modelo`, `ResultadoJugada`). Nunca importan `reglas`, `movimiento` ni `configuracion`.
+- `ajedrez-consola` y `ajedrez-gui-swing` son adaptadores: solo usan el puerto `JuegoDeAjedrez`, la
+  `Computadora` del paquete `ia` y los datos que devuelven (`modelo`, `ResultadoJugada`, `JugadaLegal`).
+  Nunca importan `reglas`, `movimiento` ni `configuracion`.
 - Ninguna regla del ajedrez vive en un adaptador.
 
 ## Diseño

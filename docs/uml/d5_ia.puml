@@ -1,0 +1,53 @@
+@startuml d5_ia
+!include common.iuml
+top to bottom direction
+package "ajedrez-nucleo :: ia" #EAF6EA {
+  class Computadora {
+    +Computadora(asesor : AsesorDeJugadas, respaldo : AsesorDeJugadas, intentos : int)
+    +asesor() : String
+    +elegirJugada(juego : JuegoDeAjedrez) : Optional<JugadaDeLaComputadora>
+  }
+  interface AsesorDeJugadas <<Strategy>> {
+    +nombre() : String
+    +sugerirJugada(t : Tablero, turno : Color, legales : List<JugadaLegal>) : Optional<JugadaLegal>
+  }
+  class AsesorAleatorio {
+    +AsesorAleatorio(azar : Random)
+  }
+  class AsesorMinimax {
+    +AsesorMinimax(generador : GeneradorDeJugadasLegales, detector : DetectorDeJaque, profundidad : int, desempate : Random)
+  }
+  class JugadaDeLaComputadora <<record>> {
+    +jugada : JugadaLegal
+    +asesor : String
+    +deRespaldo : boolean
+  }
+}
+package "ajedrez-nucleo :: juego" #EAF6EA {
+  interface JuegoDeAjedrez <<puerto de entrada>>
+  class JugadaLegal <<record>>
+}
+package "ajedrez-nucleo :: reglas" #EAF6EA {
+  class GeneradorDeJugadasLegales
+  class DetectorDeJaque
+}
+Computadora --> "asesor" AsesorDeJugadas
+Computadora --> "respaldo" AsesorDeJugadas
+Computadora ..> JuegoDeAjedrez : jugadasLegales(), tablero()
+Computadora ..> JugadaDeLaComputadora : devuelve
+AsesorAleatorio ..|> AsesorDeJugadas
+AsesorMinimax ..|> AsesorDeJugadas
+AsesorMinimax --> GeneradorDeJugadasLegales
+AsesorMinimax --> DetectorDeJaque
+AsesorDeJugadas ..> JugadaLegal
+note bottom of Computadora
+  No le cree al asesor: si la jugada no está entre las legales
+  o no contestó, reintenta y después usa el respaldo.
+  No juega: el adaptador hace la jugada por el puerto,
+  y ahí el núcleo la vuelve a validar.
+end note
+note bottom of AsesorDeJugadas
+  Stockfish, si se suma, sería otra implementación en un
+  adaptador fuera del núcleo (decisión 29).
+end note
+@enduml

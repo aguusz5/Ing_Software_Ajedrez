@@ -383,7 +383,7 @@
           <li>Solo <code>java.util</code>: listas, mapas, <code>Optional</code>.</li>
           <li>Ningún import de <code>consola</code>, <code>gui</code>, <code>javax.swing</code>, <code>java.awt</code> ni <code>java.io</code>.</li>
         </ul>
-        <p class="nota">El núcleo no necesita pedirle nada al exterior, así que no tiene puerto de salida. <code>jugar()</code> devuelve un <code>ResultadoJugada</code> y el adaptador decide cómo mostrarlo.</p>
+        <p class="nota">Para jugar, el núcleo no necesita pedirle nada al exterior: <code>jugar()</code> devuelve un <code>ResultadoJugada</code> y el adaptador decide cómo mostrarlo. El oponente con IA tampoco lo necesita: el minimax vive en el núcleo. Si más adelante se suma Stockfish, sería un adaptador que implementa <code>AsesorDeJugadas</code>, y ese sería el primer puerto de salida.</p>
       </div>
     </div>
   </section>

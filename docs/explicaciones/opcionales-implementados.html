@@ -1,4 +1,4 @@
-<title>Opcionales 0 a 6</title>
+<title>Opcionales 0 a 7</title>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -105,17 +105,19 @@
 
   <header class="cabecera">
     <div class="eyebrow">TPO Ajedrez · Fase 5 · Opcionales</div>
-    <h1>Qué cambió con los opcionales 0 a 6</h1>
-    <p class="sello"><span>0, 1, 2 y resaltado:</span> <strong>16/10/2026</strong> <span>· 3, 4 y resto del 5:</span> <strong>21/10/2026</strong> <span>· 6:</span> <strong>27/10/2026</strong> <span>· tests en verde</span> <strong>170</strong> <span>(antes 92)</span></p>
+    <h1>Qué cambió con los opcionales 0 a 7</h1>
+    <p class="sello"><span>0, 1, 2 y resaltado:</span> <strong>16/10/2026</strong> <span>· 3, 4 y resto del 5:</span> <strong>21/10/2026</strong> <span>· 6:</span> <strong>27/10/2026</strong> <span>· 7:</span> <strong>28/10/2026</strong> <span>· tests en verde</span> <strong>191</strong> <span>(antes 92)</span></p>
     <p class="bajada">La partida ahora termina y tiene ganador: jaque mate, ahogado, los jugadores la dan por
       terminada (gana el que tiene más puntos) o uno se rinde. Cada pieza tiene un valor y los puntos se ven en
-      la consola y en la ventana. Se puede deshacer y rehacer, el peón corona al llegar al final, el rey enroca
-      y, en la ventana, al elegir una pieza se ve a dónde puede moverse.</p>
+      la consola y en la ventana. Se puede deshacer y rehacer, el peón corona al llegar al final, el rey enroca,
+      se puede jugar contra la computadora y, en la ventana, al elegir una pieza se ve a dónde puede moverse.</p>
     <div class="caja alerta">
       <span class="eyebrow">Si tenés código en curso, leé esto primero</span>
       <ul class="lista">
         <li><code>TipoDePieza</code> recibe un parámetro más: <code>new TipoDePieza(nombre, esRey, valor, reglas)</code>.</li>
         <li><code>Partida</code> recibe un parámetro más: <code>new Partida(tablero, validador, detector, generador)</code>.</li>
+        <li><code>AdaptadorConsola</code> y <code>VentanaSwing</code> reciben al final un <code>Optional&lt;Computadora&gt;</code>:
+          pasá <code>Optional.empty()</code> para jugar uno contra uno.</li>
         <li><code>JuegoDeAjedrez</code> tiene diez métodos nuevos. Cualquier clase que lo implemente tiene que sumarlos.</li>
         <li><code>ReglaAvanceDePeon</code> y <code>ReglaCapturaDePeon</code> reciben en qué puede coronar el peón:
           <code>new ReglaAvanceDePeon(coronaciones)</code>. Para el peón clásico, usá <code>TiposDePiezaEstandar.peon()</code>.</li>
@@ -374,6 +376,39 @@ public record EstadoPartida(boolean terminada, Optional&lt;Color&gt; ganador, St
         </dl>
       </article>
 
+      <article class="ficha">
+        <header><h3>7 · Oponente con IA</h3><span class="meta">la IA asesora, el núcleo decide (bonus de la Unidad 05)</span></header>
+        <dl>
+          <div><dt>Cómo se juega</dt><dd>Con <code>--ia</code> (en VS Code, el botón "Jugar contra la computadora") la
+            computadora juega las negras con un minimax, sin internet. La barra de la ventana (o la consola) dice quién
+            eligió cada jugada. Deshacer vuelve hasta que te toque a vos.</dd></div>
+          <div><dt>Qué hay</dt><dd><ul>
+            <li><span class="marca nuevo">Nuevo</span> <code>ia.AsesorDeJugadas</code> (Strategy): recibe la posición y las
+              jugadas legales y sugiere una. Es donde se enchufaría Stockfish más adelante, desde un adaptador.</li>
+            <li><span class="marca nuevo">Nuevo</span> <code>ia.AsesorAleatorio</code> (respaldo y doble de prueba) y
+              <code>ia.AsesorMinimax</code> (mira 3 jugadas adelante, evalúa con los puntos y prueba jugadas sobre el tablero
+              inmutable, sin tocar la partida).</li>
+            <li><span class="marca nuevo">Nuevo</span> <code>ia.Computadora</code>: no le cree al asesor. Si la jugada no está
+              entre las legales o no contesta, reintenta y después usa el respaldo. No juega: el adaptador hace la jugada por el
+              puerto y el núcleo la valida otra vez.</li>
+            <li><span class="marca cambia">Cambia</span> el puerto: <code>jugadasLegales()</code>, que devuelve
+              <code>JugadaLegal</code> (desde, hasta y promoción).</li>
+            <li><span class="marca cambia">Cambia</span> <code>VentanaSwing</code> (elige en segundo plano con un
+              <code>SwingWorker</code>, así la ventana no se congela mientras la computadora piensa), <code>AdaptadorConsola</code>,
+              <code>TraductorDeNotacion</code> (ganó <code>escribir</code>) y <code>Principal</code>.</li>
+          </ul></dd></div>
+          <div><dt>Tests</dt><dd><ul>
+            <li><code>AsesorAleatorioTest</code> (2) y <code>AsesorMinimaxTest</code> (5): captura una dama sin defensa, salva
+              la propia, da mate en una y evita un mate en una del rival.</li>
+            <li><code>ComputadoraTest</code> (7), con un doble de prueba: sugerencia legal, ilegal (reintenta y usa el
+              respaldo), sin respuesta, respaldo que también falla, no modifica la partida.</li>
+            <li><code>PartidaTest</code> (3), <code>AdaptadorConsolaTest</code> (2) y <code>TraductorDeNotacionTest</code> (2).</li>
+          </ul></dd></div>
+          <div><dt>Decisiones</dt><dd>27 (la IA es un asesor intercambiable y la computadora no le cree), 28 (el minimax vive
+            en el núcleo) y 29 (sin IA paga; Stockfish queda para después). La 16 sigue en pie.</dd></div>
+        </dl>
+      </article>
+
     </div>
   </section>
 
@@ -390,6 +425,7 @@ public record EstadoPartida(boolean terminada, Optional&lt;Color&gt; ganador, St
           <li>Comando <code>puntos</code>: vuelve a mostrar los puntos.</li>
           <li>Coronar: <code>e7 e8 caballo</code>. Sin la tercera palabra, corona en dama.</li>
           <li>Enrocar: <code>e1 g1</code> o <code>e1 c1</code>. La ayuda que aparece al escribir mal una jugada lo explica.</li>
+          <li>Con <code>--ia</code>: después de cada jugada tuya imprime "La computadora jugó e7 e5 (eligió Minimax)" y el tablero.</li>
           <li>Al final imprime <code>===== FIN DE LA PARTIDA =====</code>, el ganador (o "tablas") y el motivo, y sale.
             Por eso en la consola no se puede deshacer un mate; en la ventana sí.</li>
           <li>8 tests nuevos en <code>AdaptadorConsolaTest</code>: terminar, jaque mate, rendirse, deshacer, rehacer,
@@ -407,6 +443,8 @@ public record EstadoPartida(boolean terminada, Optional&lt;Color&gt; ganador, St
             así que deshacer un mate la reabre. Si no hay nada, la barra lo avisa.</li>
           <li>Cuando un peón llega al final: diálogo "Promoción" con dama, torre, alfil y caballo. Cerrarlo cancela la jugada.</li>
           <li>Enroque: al elegir el rey, la casilla del enroque aparece en azul; un clic ahí mueve rey y torre.</li>
+          <li>Con <code>--ia</code>: el título dice contra quién jugás; mientras la computadora piensa, la barra lo avisa y el
+            tablero y los botones no responden. Después dice qué jugó y quién lo eligió.</li>
           <li>Al terminar: diálogo "Fin de la partida" con el ganador y el motivo, la barra dice
             "FIN DE LA PARTIDA", el tablero deja de responder y "Terminar partida" se desactiva.</li>
           <li>Sin tests automáticos (decisión 20): <strong>falta probarla a mano</strong>.</li>
@@ -430,6 +468,9 @@ public record EstadoPartida(boolean terminada, Optional&lt;Color&gt; ganador, St
         tenía: el primero para elegir la candidata sin <code>instanceof</code>, el segundo para que la ventana pregunte
         sin conocer las reglas.</li>
       <li>El enroque salió como el plan.</li>
+      <li><strong>La IA siguió el bonus de la Unidad 05</strong>: en vez de un <code>Jugador</code> afuera del núcleo, hay un
+        <code>AsesorDeJugadas</code> en el núcleo y una <code>Computadora</code> que no le cree. El minimax quedó en el núcleo,
+        probando jugadas sobre el tablero inmutable en vez de usar <code>jugar</code> y <code>deshacer</code>.</li>
       <li>El plan ya tiene una fila "Cómo quedó" en cada opcional hecho.</li>
     </ul>
   </section>
@@ -440,14 +481,14 @@ public record EstadoPartida(boolean terminada, Optional&lt;Color&gt; ganador, St
       <table>
         <thead><tr><th scope="col">Módulo</th><th scope="col">Archivos</th></tr></thead>
         <tbody>
-          <tr><th scope="row">ajedrez-nucleo</th><td class="detalle"><span class="marca nuevo">Nuevo</span> <code>reglas/GeneradorDeJugadasLegales</code>, <code>juego/EstadoPartida</code>, <code>movimiento/JugadaConPromocion</code>, <code>movimiento/ReglaDeEnroque</code>, <code>movimiento/JugadaDeEnroque</code>, <code>reglas/ReglaEnroqueSeguro</code>
+          <tr><th scope="row">ajedrez-nucleo</th><td class="detalle"><span class="marca nuevo">Nuevo</span> <code>reglas/GeneradorDeJugadasLegales</code>, <code>juego/EstadoPartida</code>, <code>movimiento/JugadaConPromocion</code>, <code>movimiento/ReglaDeEnroque</code>, <code>movimiento/JugadaDeEnroque</code>, <code>reglas/ReglaEnroqueSeguro</code>, <code>juego/JugadaLegal</code>, el paquete <code>ia</code>
             · <span class="marca cambia">Cambia</span> <code>modelo/TipoDePieza</code>, <code>modelo/Tablero</code>, <code>configuracion/TiposDePiezaEstandar</code>, <code>juego/JuegoDeAjedrez</code>, <code>juego/Partida</code>, <code>movimiento/Jugada</code>, <code>movimiento/ReglaAvanceDePeon</code>, <code>movimiento/ReglaCapturaDePeon</code></td></tr>
-          <tr><th scope="row">tests del núcleo</th><td class="detalle"><span class="marca nuevo">Nuevo</span> <code>GeneradorDeJugadasLegalesTest</code>, <code>JugadaConPromocionTest</code>, <code>EnroqueTest</code>, <code>ReglaEnroqueSeguroTest</code>
+          <tr><th scope="row">tests del núcleo</th><td class="detalle"><span class="marca nuevo">Nuevo</span> <code>GeneradorDeJugadasLegalesTest</code>, <code>JugadaConPromocionTest</code>, <code>EnroqueTest</code>, <code>ReglaEnroqueSeguroTest</code>, <code>AsesorAleatorioTest</code>, <code>AsesorMinimaxTest</code>, <code>ComputadoraTest</code>
             · <span class="marca cambia">Cambia</span> <code>PartidaTest</code>, <code>PeonTest</code>, <code>ExtensibilidadTest</code>, <code>TipoDePiezaTest</code></td></tr>
-          <tr><th scope="row">ajedrez-consola</th><td class="detalle"><code>AdaptadorConsola</code>, <code>AdaptadorConsolaTest</code></td></tr>
+          <tr><th scope="row">ajedrez-consola</th><td class="detalle"><code>AdaptadorConsola</code>, <code>TraductorDeNotacion</code>, y sus tests</td></tr>
           <tr><th scope="row">ajedrez-gui-swing</th><td class="detalle"><code>VentanaSwing</code></td></tr>
           <tr><th scope="row">ajedrez-app</th><td class="detalle"><code>Principal</code></td></tr>
-          <tr><th scope="row">docs</th><td class="detalle"><code>uml/d2_modelo.puml</code>, <code>uml/d3_juego.puml</code>, <code>decisiones.md</code> (21 a 26), <code>estado.html</code>, <code>plan-opcionales.html</code></td></tr>
+          <tr><th scope="row">docs</th><td class="detalle"><code>uml/d1_modulos.puml</code>, <code>uml/d2_modelo.puml</code>, <code>uml/d3_juego.puml</code>, <code>uml/d4_adaptadores.puml</code>, <code>uml/d5_ia.puml</code>, <code>decisiones.md</code> (21 a 29), <code>estado.html</code>, <code>plan-opcionales.html</code></td></tr>
         </tbody>
       </table>
     </div>
@@ -455,9 +496,10 @@ public record EstadoPartida(boolean terminada, Optional&lt;Color&gt; ganador, St
 
   <section aria-labelledby="t-probar">
     <h2 id="t-probar">Cómo probarlo</h2>
-<pre><code>mvn test                                          # 143 del núcleo + 27 de la consola
+<pre><code>mvn test                                          # 160 del núcleo + 31 de la consola
 mvn package &amp;&amp; java -jar ajedrez-app/target/ajedrez.jar          # consola
-mvn package &amp;&amp; java -jar ajedrez-app/target/ajedrez.jar --gui    # ventana</code></pre>
+mvn package &amp;&amp; java -jar ajedrez-app/target/ajedrez.jar --gui    # ventana
+mvn package &amp;&amp; java -jar ajedrez-app/target/ajedrez.jar --gui --ia   # contra la computadora</code></pre>
     <p>Para ver un mate rápido en la consola: <code>f2 f3</code>, <code>e7 e5</code>, <code>g2 g4</code>,
       <code>d8 h4</code>. Para ver el botón Rendirse en la ventana: <code>e2 e4</code>, <code>f7 f6</code>,
       <code>d1 h5</code> (las negras quedan en jaque). Para coronar rápido en la consola: <code>a2 a4</code>,
@@ -471,12 +513,11 @@ mvn package &amp;&amp; java -jar ajedrez-app/target/ajedrez.jar --gui    # venta
     <h2 id="t-pendiente">Lo que falta</h2>
     <ul class="lista">
       <li>Probar la ventana a mano: un mate, un "terminar", una rendición, los colores del resaltado, Deshacer y
-        Rehacer (también después de un mate), el diálogo de promoción y el enroque.</li>
+        Rehacer (también después de un mate), el diálogo de promoción, el enroque y una partida contra la computadora.</li>
       <li>Confirmar en la pestaña <strong>Actions</strong> de GitHub que el CI quedó en verde con los push del 21/10.</li>
       <li>Avisarle al profesor cómo quedaron las reglas, sobre todo que el ahogado es tablas.</li>
       <li>Que otro integrante lo revise y lo pueda explicar: la defensa es individual.</li>
-      <li>Siguiente: <strong>7 · Oponente con IA</strong> y <strong>10 · Menú de inicio</strong> en la ventana.
-        La captura al paso quedó descartada por el profesor.</li>
+      <li>Siguiente: <strong>10 · Menú de inicio</strong> en la ventana. La captura al paso quedó descartada por el profesor.</li>
     </ul>
   </section>
 

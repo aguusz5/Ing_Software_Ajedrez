@@ -17,6 +17,13 @@ package "ajedrez-nucleo :: juego" #EAF6EA {
     +rehacer() : boolean
     +destinosLegales(desde : Posicion) : List<Posicion>
     +destinosIlegales(desde : Posicion) : List<Posicion>
+    +jugadasLegales() : List<JugadaLegal>
+  }
+  class JugadaLegal <<record>> {
+    +desde : Posicion
+    +hasta : Posicion
+    +promocion : Optional<String>
+    +{static} de(j : Jugada) : JugadaLegal
   }
   class Partida {
     +Partida(tablero : Tablero, validador : ValidadorDeJugadas, detector : DetectorDeJaque, generador : GeneradorDeJugadasLegales)
@@ -72,6 +79,7 @@ Partida -down--> ValidadorDeJugadas
 Partida -down---> DetectorDeJaque
 Partida -down--> GeneradorDeJugadasLegales
 Partida --> EstadoPartida
+JuegoDeAjedrez ..> JugadaLegal : devuelve
 ReglaPiezaPropia ..|> ReglaDeValidacion
 ReglaNoDejarReyEnJaque ..|> ReglaDeValidacion
 ReglaNoDejarReyEnJaque --> DetectorDeJaque

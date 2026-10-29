@@ -46,4 +46,16 @@ class TraductorDeNotacionTest {
         // Act & Assert
         assertEquals(new Posicion(9, 9), traductor.leer("j10", new Tablero(10, 10)));
     }
+
+    @Test
+    void escribir_columna4Fila1_devuelveE2() {
+        // Act & Assert
+        assertEquals("e2", traductor.escribir(new Posicion(4, 1)));
+    }
+
+    @Test
+    void escribir_columna9Fila9_devuelveJ10() {
+        // Act & Assert
+        assertEquals("j10", traductor.escribir(new Posicion(9, 9)));
+    }
 }

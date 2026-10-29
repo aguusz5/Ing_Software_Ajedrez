@@ -20,7 +20,9 @@ import java.awt.geom.Rectangle2D;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.ExecutionException;
 
 import javax.swing.BorderFactory;
 import javax.swing.Icon;
@@ -31,10 +33,14 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
+import javax.swing.SwingWorker;
 import javax.swing.border.Border;
 
+import ia.Computadora;
+import ia.JugadaDeLaComputadora;
 import juego.EstadoPartida;
 import juego.JuegoDeAjedrez;
+import juego.JugadaLegal;
 import juego.ResultadoJugada;
 import modelo.Pieza;
 import modelo.Posicion;
@@ -44,9 +50,11 @@ import modelo.Tablero;
  * Adaptador gráfico: una grilla de ancho x alto botones. El primer clic elige la pieza y el
  * segundo, el destino; la jugada se le pide al núcleo por el puerto JuegoDeAjedrez.
  * No contiene reglas del ajedrez: si la jugada no vale, muestra el motivo que da el núcleo.
+ * Si recibe una Computadora, las negras las juega ella y la barra avisa quién eligió cada jugada.
  */
 public final class VentanaSwing {
 
+    private static final modelo.Color COLOR_DE_LA_COMPUTADORA = modelo.Color.NEGRO;
     private static final Color CASILLA_CLARA = new Color(240, 217, 181);
     private static final Color CASILLA_OSCURA = new Color(181, 136, 99);
     private static final Color CASILLA_ELEGIDA = new Color(246, 246, 105);
@@ -63,6 +71,7 @@ public final class VentanaSwing {
 
     private final JuegoDeAjedrez juego;
     private final GlifosDePieza glifos;
+    private final Optional<Computadora> computadora;
     private final JFrame ventana = new JFrame("Ajedrez");
     private final JLabel estado = new JLabel(" ", SwingConstants.CENTER);
     private final JButton terminar = new JButton("Terminar partida");
@@ -73,10 +82,15 @@ public final class VentanaSwing {
     private Posicion origen; // null mientras no se eligió ninguna pieza
     private String mensaje = "";
     private boolean finAnunciado = false;
+    private boolean pensando = false; // mientras la computadora elige, el tablero y los botones no responden
 
-    public VentanaSwing(JuegoDeAjedrez juego, GlifosDePieza glifos) {
+    /** Sin computadora se juega uno contra uno. */
+    public VentanaSwing(JuegoDeAjedrez juego, GlifosDePieza glifos, Optional<Computadora> computadora) {
         this.juego = juego;
         this.glifos = glifos;
+        this.computadora = computadora;
+        computadora.ifPresent(elegida ->
+                ventana.setTitle("Ajedrez — contra la computadora (" + elegida.asesor() + ")"));
         ventana.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         ventana.add(crearGrilla(), BorderLayout.CENTER);
         ventana.add(crearBarraInferior(), BorderLayout.SOUTH);
@@ -119,8 +133,8 @@ public final class VentanaSwing {
             repintar();
         });
         // Deshacer también vale con la partida terminada: deshacer un mate o una rendición la reabre.
-        deshacer.addActionListener(evento -> volverA(juego.deshacer(), "No hay nada para deshacer"));
-        rehacer.addActionListener(evento -> volverA(juego.rehacer(), "No hay nada para rehacer"));
+        deshacer.addActionListener(evento -> volverA(deshacerTurno(), "No hay nada para deshacer"));
+        rehacer.addActionListener(evento -> volverA(rehacerTurno(), "No hay nada para rehacer"));
         JPanel botones = new JPanel();
         botones.add(deshacer);
         botones.add(rehacer);
@@ -133,8 +147,8 @@ public final class VentanaSwing {
     }
 
     private void alHacerClic(Posicion posicion) {
-        if (juego.estado().terminada()) {
-            return; // partida cerrada: el tablero queda solo para mirar
+        if (juego.estado().terminada() || pensando) {
+            return; // partida cerrada o turno de la computadora: el tablero queda solo para mirar
         }
         if (origen == null) {
             if (juego.tablero().piezaEn(posicion).isPresent()) {
@@ -147,6 +161,7 @@ public final class VentanaSwing {
             origen = null;
         }
         repintar();
+        pensarSiLeToca();
     }
 
     /** Si el núcleo dice que la jugada corona, se pregunta en qué; cerrar el diálogo cancela la jugada. */
@@ -168,6 +183,74 @@ public final class VentanaSwing {
         origen = null;
         mensaje = cambio ? "" : sinCambios;
         repintar();
+        pensarSiLeToca();
+    }
+
+    /** Contra la computadora, deshacer vuelve hasta que le toque al jugador: su jugada y la de la computadora. */
+    private boolean deshacerTurno() {
+        boolean cambio = juego.deshacer();
+        if (cambio && leTocaALaComputadora()) {
+            juego.deshacer();
+        }
+        return cambio;
+    }
+
+    private boolean rehacerTurno() {
+        boolean cambio = juego.rehacer();
+        if (cambio && leTocaALaComputadora()) {
+            juego.rehacer();
+        }
+        return cambio;
+    }
+
+    private boolean leTocaALaComputadora() {
+        return computadora.isPresent() && !juego.estado().terminada()
+                && juego.turnoActual() == COLOR_DE_LA_COMPUTADORA;
+    }
+
+    /** La computadora elige en segundo plano (el minimax puede tardar un momento) y juega cuando termina. */
+    private void pensarSiLeToca() {
+        if (pensando || !leTocaALaComputadora()) {
+            return;
+        }
+        pensando = true;
+        mensaje = "Piensa la computadora (" + computadora.get().asesor() + ")…";
+        repintar();
+        new SwingWorker<Optional<JugadaDeLaComputadora>, Void>() {
+            @Override
+            protected Optional<JugadaDeLaComputadora> doInBackground() {
+                return computadora.get().elegirJugada(juego);
+            }
+
+            @Override
+            protected void done() {
+                pensando = false;
+                try {
+                    get().ifPresent(VentanaSwing.this::jugarLaDeLaComputadora);
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                } catch (ExecutionException e) {
+                    mensaje = "La computadora no pudo elegir una jugada: " + e.getCause().getMessage();
+                }
+                repintar();
+            }
+        }.execute();
+    }
+
+    /** La jugada la hace el núcleo por el puerto, como cualquier otra; la barra dice quién la eligió. */
+    private void jugarLaDeLaComputadora(JugadaDeLaComputadora elegida) {
+        JugadaLegal jugada = elegida.jugada();
+        ResultadoJugada resultado = jugada.promocion()
+                .map(tipo -> juego.jugar(jugada.desde(), jugada.hasta(), tipo))
+                .orElseGet(() -> juego.jugar(jugada.desde(), jugada.hasta()));
+        String jaque = describir(resultado);
+        mensaje = "La computadora jugó " + casilla(jugada.desde()) + " " + casilla(jugada.hasta())
+                + " (eligió " + elegida.asesor() + (elegida.deRespaldo() ? ", de respaldo" : "") + ")"
+                + (jaque.isEmpty() ? "" : "  —  " + jaque);
+    }
+
+    private static String casilla(Posicion posicion) {
+        return (char) ('a' + posicion.columna()) + String.valueOf(posicion.fila() + 1);
     }
 
     private String describir(ResultadoJugada resultado) {
@@ -200,8 +283,10 @@ public final class VentanaSwing {
         });
         String puntos = "Blancas " + juego.puntos(modelo.Color.BLANCO)
                 + " · Negras " + juego.puntos(modelo.Color.NEGRO) + "  —  ";
-        terminar.setEnabled(!terminada);
-        rendirse.setVisible(!terminada && enJaque);
+        terminar.setEnabled(!terminada && !pensando);
+        deshacer.setEnabled(!pensando);
+        rehacer.setEnabled(!pensando);
+        rendirse.setVisible(!terminada && enJaque && !pensando);
         if (terminada) {
             estado.setText(puntos + "FIN DE LA PARTIDA  —  " + resultado(fin));
             anunciarFin(fin);

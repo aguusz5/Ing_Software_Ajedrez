@@ -5,13 +5,17 @@ package "ajedrez-nucleo :: juego (solo el puerto)" #EAF6EA {
   interface JuegoDeAjedrez <<puerto de entrada>>
   class Partida
 }
+package "ajedrez-nucleo :: ia" #EAF6EA {
+  class Computadora
+}
 package "ajedrez-consola (adaptador)" #E8F1FA {
   class AdaptadorConsola {
-    +AdaptadorConsola(juego, traductor, dibujante, entrada : Scanner, salida : PrintStream)
+    +AdaptadorConsola(juego, traductor, dibujante, entrada : Scanner, salida : PrintStream, computadora : Optional<Computadora>)
     +ejecutar()
   }
   class TraductorDeNotacion {
     +leer(texto : String, t : Tablero) : Posicion
+    +escribir(p : Posicion) : String
   }
   class DibujanteAscii {
     +dibujar(t : Tablero) : String
@@ -19,7 +23,7 @@ package "ajedrez-consola (adaptador)" #E8F1FA {
 }
 package "ajedrez-gui-swing (adaptador)" #E8F1FA {
   class VentanaSwing {
-    +VentanaSwing(juego : JuegoDeAjedrez, glifos : GlifosDePieza)
+    +VentanaSwing(juego : JuegoDeAjedrez, glifos : GlifosDePieza, computadora : Optional<Computadora>)
     +mostrar()
   }
   class GlifosDePieza {
@@ -37,7 +41,10 @@ AdaptadorConsola --> TraductorDeNotacion
 AdaptadorConsola --> DibujanteAscii
 VentanaSwing --> JuegoDeAjedrez
 VentanaSwing --> GlifosDePieza
+AdaptadorConsola --> "0..1" Computadora
+VentanaSwing --> "0..1" Computadora
 Principal ..> Partida : new + inyecta
+Principal ..> Computadora : new + inyecta (con --ia)
 Principal ..> AdaptadorConsola : new + inyecta
 Principal ..> VentanaSwing : new + inyecta
 @enduml

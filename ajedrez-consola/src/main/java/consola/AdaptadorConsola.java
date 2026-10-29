@@ -1,9 +1,13 @@
 package consola;
 
 import java.io.PrintStream;
+import java.util.Optional;
 import java.util.Scanner;
 
+import ia.Computadora;
+import ia.JugadaDeLaComputadora;
 import juego.JuegoDeAjedrez;
+import juego.JugadaLegal;
 import juego.ResultadoJugada;
 import modelo.Color;
 import modelo.Posicion;
@@ -12,8 +16,11 @@ import modelo.Posicion;
  * Adaptador de consola: lee jugadas del teclado, se las pasa al núcleo por el puerto
  * JuegoDeAjedrez y muestra la respuesta. No contiene ninguna regla del ajedrez.
  * Recibe la entrada y la salida por constructor, así en los tests se usa un texto armado.
+ * Si recibe una Computadora, las negras las juega ella y se avisa quién eligió cada jugada.
  */
 public final class AdaptadorConsola {
+
+    private static final Color COLOR_DE_LA_COMPUTADORA = Color.NEGRO;
 
     private static final String COMANDO_SALIR = "salir";
     private static final String COMANDO_TERMINAR = "terminar";
@@ -27,19 +34,28 @@ public final class AdaptadorConsola {
     private final DibujanteAscii dibujante;
     private final Scanner entrada;
     private final PrintStream salida;
+    private final Optional<Computadora> computadora;
 
+    /** Sin computadora se juega uno contra uno. */
     public AdaptadorConsola(JuegoDeAjedrez juego, TraductorDeNotacion traductor, DibujanteAscii dibujante,
-                            Scanner entrada, PrintStream salida) {
+                            Scanner entrada, PrintStream salida, Optional<Computadora> computadora) {
         this.juego = juego;
         this.traductor = traductor;
         this.dibujante = dibujante;
         this.entrada = entrada;
         this.salida = salida;
+        this.computadora = computadora;
     }
 
     public void ejecutar() {
         dibujar();
         while (!juego.estado().terminada()) {
+            if (leTocaALaComputadora()) {
+                if (!jugarComputadora()) {
+                    return;
+                }
+                continue;
+            }
             // En jaque se ofrece rendirse; el comando igual funciona en cualquier momento.
             String rendirse = juego.estaEnJaque(juego.turnoActual()) ? "'" + COMANDO_RENDIRSE + "', " : "";
             salida.print("Turno de " + juego.turnoActual() + " (ejemplo: e2 e4, " + rendirse
@@ -57,9 +73,9 @@ public final class AdaptadorConsola {
             } else if (linea.equalsIgnoreCase(COMANDO_RENDIRSE)) {
                 juego.rendirse();
             } else if (linea.equalsIgnoreCase(COMANDO_DESHACER)) {
-                redibujarSi(juego.deshacer(), "No hay nada para deshacer");
+                redibujarSi(deshacerTurno(), "No hay nada para deshacer");
             } else if (linea.equalsIgnoreCase(COMANDO_REHACER)) {
-                redibujarSi(juego.rehacer(), "No hay nada para rehacer");
+                redibujarSi(rehacerTurno(), "No hay nada para rehacer");
             } else if (linea.equalsIgnoreCase(COMANDO_PUNTOS)) {
                 mostrarPuntos();
             } else {
@@ -67,6 +83,49 @@ public final class AdaptadorConsola {
             }
         }
         anunciarFin();
+    }
+
+    private boolean leTocaALaComputadora() {
+        return computadora.isPresent() && !juego.estado().terminada()
+                && juego.turnoActual() == COLOR_DE_LA_COMPUTADORA;
+    }
+
+    /**
+     * Le pide la jugada a la computadora y la hace por el puerto, como cualquier otra.
+     * Devuelve false si el núcleo la rechazó, para no quedar pidiéndole jugadas para siempre.
+     */
+    private boolean jugarComputadora() {
+        salida.println("Piensa la computadora (" + computadora.get().asesor() + ")...");
+        Optional<JugadaDeLaComputadora> elegida = computadora.get().elegirJugada(juego);
+        if (elegida.isEmpty()) {
+            return false;
+        }
+        JugadaLegal jugada = elegida.get().jugada();
+        ResultadoJugada resultado = jugada.promocion()
+                .map(tipo -> juego.jugar(jugada.desde(), jugada.hasta(), tipo))
+                .orElseGet(() -> juego.jugar(jugada.desde(), jugada.hasta()));
+        salida.println("La computadora jugó " + traductor.escribir(jugada.desde()) + " "
+                + traductor.escribir(jugada.hasta()) + " (eligió " + elegida.get().asesor()
+                + (elegida.get().deRespaldo() ? ", de respaldo" : "") + ")");
+        mostrar(resultado);
+        return resultado.valida();
+    }
+
+    /** Contra la computadora, deshacer vuelve hasta que le toque al jugador: su jugada y la de la computadora. */
+    private boolean deshacerTurno() {
+        boolean cambio = juego.deshacer();
+        if (cambio && leTocaALaComputadora()) {
+            juego.deshacer();
+        }
+        return cambio;
+    }
+
+    private boolean rehacerTurno() {
+        boolean cambio = juego.rehacer();
+        if (cambio && leTocaALaComputadora()) {
+            juego.rehacer();
+        }
+        return cambio;
     }
 
     private void anunciarFin() {

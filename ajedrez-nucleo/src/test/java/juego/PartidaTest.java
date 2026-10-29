@@ -600,6 +600,38 @@ class PartidaTest {
         assertEquals("La partida terminó", resultado.motivo());
     }
 
+    // --- Jugadas legales como datos (para la IA) ---
+
+    @Test
+    void jugadasLegales_partidaNueva_lasVeinteDeLasBlancas() {
+        // Act & Assert
+        assertEquals(20, partida.jugadasLegales().size());
+    }
+
+    @Test
+    void jugadasLegales_peonQueLlegaAlFinal_unaPorCadaTipoDeCoronacion() {
+        // Arrange
+        Partida partida = partidaConPeonEnE7();
+
+        // Act
+        List<String> coronaciones = partida.jugadasLegales().stream()
+                .filter(jugada -> jugada.hasta().equals(casilla("e8")))
+                .flatMap(jugada -> jugada.promocion().stream())
+                .toList();
+
+        // Assert
+        assertEquals(List.of("dama", "torre", "alfil", "caballo"), coronaciones);
+    }
+
+    @Test
+    void jugadasLegales_partidaTerminada_vacio() {
+        // Arrange
+        partida.terminar();
+
+        // Act & Assert
+        assertTrue(partida.jugadasLegales().isEmpty());
+    }
+
     // --- Enroque ---
 
     /** Rey blanco en e1 con la torre de h1, y rey negro en a8. */

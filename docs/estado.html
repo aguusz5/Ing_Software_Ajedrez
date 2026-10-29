@@ -183,15 +183,15 @@
   <header class="cabecera">
     <div class="eyebrow">TPO Ajedrez · Ingeniería de Software</div>
     <h1>Dónde estamos</h1>
-    <p class="sello"><span>Última actualización</span> <time datetime="2026-10-27">27 de octubre de 2026</time></p>
+    <p class="sello"><span>Última actualización</span> <time datetime="2026-10-28">28 de octubre de 2026</time></p>
     <p class="bajada">El alcance obligatorio está completo y probado: las seis piezas, turnos, captura,
       validación y jaque, jugables por consola y por ventana. Por calendario el roadmap nos ubica en la
-      fase 3, así que vamos adelantados: ya están los opcionales 0 a 6.</p>
+      fase 3, así que vamos adelantados: ya están los opcionales 0 a 7.</p>
     <div class="siguiente">
       <span class="eyebrow">Lo próximo</span>
       <p>La partida ya termina y anuncia al ganador (mate, ahogado, por puntos o porque uno se rinde),
-        se puede deshacer y rehacer, el peón corona y el rey enroca. Sigue el <strong>oponente con IA</strong>
-        y, con él, un <strong>menú de inicio</strong> en la ventana.</p>
+        se puede deshacer y rehacer, el peón corona, el rey enroca y se puede jugar contra la computadora
+        (un minimax, sin internet). Sigue el <strong>menú de inicio</strong> en la ventana.</p>
     </div>
   </header>
 
@@ -242,7 +242,7 @@
             <th scope="row">F5 · Opcionales</th>
             <td class="fechas">02/11 – 12/11</td>
             <td><span class="estado parcial">En curso</span></td>
-            <td class="detalle">Adelantada: los opcionales 0 a 6 están hechos. Ver la tabla de opcionales más abajo.</td>
+            <td class="detalle">Adelantada: los opcionales 0 a 7 están hechos. Ver la tabla de opcionales más abajo.</td>
           </tr>
           <tr>
             <th scope="row">F6 · Cierre y defensa</th>
@@ -382,7 +382,7 @@
           <tr>
             <th scope="row">Base: generador de jugadas legales</th>
             <td><span class="estado hecho">Hecho</span></td>
-            <td class="detalle"><code>reglas.GeneradorDeJugadasLegales</code>, con tests. Lo usan el mate, el ahogado y el resaltado de la ventana; lo va a usar la IA.</td>
+            <td class="detalle"><code>reglas.GeneradorDeJugadasLegales</code>, con tests. Lo usan el mate, el ahogado, el resaltado de la ventana y el minimax.</td>
           </tr>
           <tr>
             <th scope="row">Valor de las piezas y puntos</th>
@@ -416,8 +416,13 @@
           </tr>
           <tr>
             <th scope="row">Oponente con IA</th>
-            <td><span class="estado pendiente">Sin empezar</span></td>
-            <td class="detalle">Sería otro adaptador sobre el mismo puerto.</td>
+            <td><span class="estado hecho">Hecho</span></td>
+            <td class="detalle">La IA asesora y el núcleo valida, como en el bonus de la Unidad 05. <code>AsesorDeJugadas</code> (Strategy) con dos implementaciones en el núcleo: aleatoria y minimax de profundidad 3, sin internet. <code>Computadora</code> no le cree al asesor: si la jugada no es legal o no contesta, reintenta y usa el respaldo. Con <code>--ia</code> la computadora juega las negras en la ventana y en la consola. La ventana falta probarla a mano.</td>
+          </tr>
+          <tr>
+            <th scope="row">Stockfish como asesor (dificultades)</th>
+            <td><span class="estado pendiente">Para más adelante</span></td>
+            <td class="detalle">Opción gratuita y sin internet para tener muchos niveles de dificultad. Sería un adaptador fuera del núcleo que implemente <code>AsesorDeJugadas</code> (decisión 29).</td>
           </tr>
           <tr>
             <th scope="row">Menú de inicio en la ventana</th>
@@ -446,7 +451,8 @@
       <li>Avisarle al profesor cómo quedaron las reglas de fin: puntos por material, ahogado = tablas, final por "terminar" o rendición.</li>
       <li>Probar la ventana a mano (no tiene tests automáticos): resaltado, Deshacer y Rehacer (también después de un mate o una rendición) y el diálogo de promoción.</li>
       <li>Probar el enroque en la ventana: con el rey sin mover, las casillas del enroque se pintan de azul, o de naranja si el rey cruzaría una casilla atacada.</li>
-      <li>Implementar el oponente con IA (opcional 7) y el menú de inicio de la ventana (uno contra uno o contra la IA, reiniciar, volver al menú).</li>
+      <li>Probar contra la computadora en la ventana (botón "Jugar contra la computadora" de VS Code).</li>
+      <li>Implementar el menú de inicio de la ventana (opcional 10): uno contra uno o contra la computadora, reiniciar y volver al menú.</li>
       <li>Decidir si las tablas por 50 jugadas o repetición (opcional 8) entran antes del congelamiento del 12/11.</li>
       <li>Que cada integrante lea el código de los otros paquetes: la defensa es individual y puede pedir agregar una pieza o cambiar el tamaño del tablero.</li>
     </ol>
@@ -470,6 +476,14 @@
   <section aria-labelledby="t-historial">
     <h2 id="t-historial">Historial</h2>
     <ol class="historial" reversed>
+      <li>
+        <time datetime="2026-10-28">28/10/2026</time>
+        <ul>
+          <li>Opcional 7: oponente con IA, siguiendo el bonus de la Unidad 05 (la IA asesora, el núcleo decide) y las dificultades del plan de acción. Paquete <code>ia</code> en el núcleo: <code>AsesorDeJugadas</code> (Strategy), <code>AsesorAleatorio</code>, <code>AsesorMinimax</code> y <code>Computadora</code>. El puerto suma <code>jugadasLegales()</code> y el record <code>JugadaLegal</code>. Sin IA paga: todo corre en la compu. Stockfish queda anotado como opción para más adelante.</li>
+          <li>Ventana y consola con <code>--ia</code>: la computadora juega las negras, la ventana elige en segundo plano y avisa quién eligió cada jugada; deshacer vuelve hasta el turno del jugador. Botón "Jugar contra la computadora" en VS Code.</li>
+          <li>21 tests nuevos: <code>AsesorAleatorioTest</code> (2), <code>AsesorMinimaxTest</code> (5), <code>ComputadoraTest</code> (7), 3 en <code>PartidaTest</code>, 2 en <code>AdaptadorConsolaTest</code> y 2 en <code>TraductorDeNotacionTest</code>. Decisiones 27 a 29; la 16 queda revisada. UML <code>d1</code>, <code>d3</code>, <code>d4</code> y nuevo <code>d5_ia</code>. 191 tests en verde.</li>
+        </ul>
+      </li>
       <li>
         <time datetime="2026-10-27">27/10/2026</time>
         <ul>

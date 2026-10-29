@@ -172,6 +172,9 @@ se revierte, no se borra: se marca como reemplazada y se dice por cuál.
   enterarse de algo que no pidió.
 - **Cuándo se rompería:** con un oponente de IA o una partida en red, donde aparecen jugadas que la
   interfaz no inició y alguien tiene que avisarle que redibuje.
+- **Revisada con la IA (28/10):** sigue sin hacer falta. La ventana y la consola le piden la jugada a la
+  computadora apenas juega la persona y redibujan con el resultado: la jugada la inicia el mismo
+  adaptador que la muestra. Ver la decisión 27.
 
 ---
 
@@ -307,3 +310,59 @@ se revierte, no se borra: se marca como reemplazada y se dice por cuál.
   `destinosLegales`, y en la consola se escribe `e1 g1`.
 - **Cuándo se rompería:** con variantes donde el rey no termina a dos casillas o la torre no salta a
   su lado (ajedrez 960). Ahí `ReglaDeEnroque` tendría que recibir también las casillas de llegada.
+
+### 27. La IA es un asesor intercambiable y la computadora no le cree
+
+- **Qué:** `ia.AsesorDeJugadas` (patrón Strategy) sugiere una jugada a partir de la posición y la lista de
+  jugadas legales. Tiene dos implementaciones en el núcleo: `AsesorAleatorio` y `AsesorMinimax`.
+  `ia.Computadora` le pide la jugada al asesor y comprueba que esté entre las legales. Si no está o no
+  contestó, vuelve a pedir hasta `intentos` veces y después le pide al respaldo; si el respaldo tampoco
+  sirve, toma la primera legal. No juega: el adaptador hace la jugada por el puerto y ahí el núcleo la
+  vuelve a validar. El puerto ganó `jugadasLegales()`, que devuelve `JugadaLegal` (desde, hasta y
+  promoción), para que el asesor elija sin conocer las reglas. La ventana y la consola reciben la
+  computadora por constructor (es opcional) y juegan con ella las negras. Contra la computadora, deshacer
+  vuelve hasta que le toque a la persona.
+- **Por qué:** el plan de acción pedía dificultades de IA intercambiables (Strategy), y el bonus de la
+  Unidad 05 mostró la idea de que la IA asesora y el núcleo decide. Hay dos implementaciones y un consumidor
+  polimórfico (la computadora usa una como asesor y otra como respaldo), así que la interfaz se justifica.
+  Desconfiar del asesor deja todo listo para un motor externo, que puede fallar o no contestar.
+  `Computadora` no juega para que la ventana pueda elegir en segundo plano sin que la partida cambie
+  mientras la está dibujando.
+- **Cuándo se rompería:** si la computadora tuviera que jugar sin un adaptador que se lo pida (dos
+  computadoras entre sí, o una partida en red). Ahí aparecen jugadas que nadie pidió y vuelve el Observer
+  (decisión 16).
+
+### 28. El minimax vive en el núcleo y prueba jugadas sobre el tablero inmutable
+
+- **Qué:** `AsesorMinimax` (minimax en su forma negamax, profundidad 3 en `Principal`) recibe el
+  `GeneradorDeJugadasLegales` y el `DetectorDeJaque` por constructor y prueba cada jugada con `aplicarEn`.
+  Evalúa cada posición con `puntosDe`, los propios menos los del rival; el mate vale 10.000 y el ahogado 0.
+  Entre jugadas igual de buenas elige con un `Random` inyectado, para no jugar siempre la misma partida.
+- **Por qué:** el plan proponía un minimax afuera del núcleo que probara jugadas con `jugar` y `deshacer`
+  sobre la partida real. Eso cambia la partida mientras la ventana la puede estar dibujando y borra lo que
+  había para rehacer; con el tablero inmutable (decisión 7) probar una jugada no tiene efectos. Además,
+  afuera del núcleo no podría usar el generador, porque los adaptadores no importan `reglas`. Reutiliza los
+  puntos que pidió el profesor (decisión 22). Con profundidad 3 tarda menos de medio segundo en una
+  apertura y ve si el rival tiene un mate en la jugada siguiente; con 2 no lo ve. Juega cualquier tablero y
+  cualquier pieza (10x10, el canciller), porque usa las mismas reglas que la partida.
+- **Cuándo se rompería:** si hiciera falta mirar más lejos: cada nivel multiplica el tiempo, y habría que
+  sumar poda alfa-beta. Como solo cuenta material, en posiciones tranquilas elige casi al azar. Si se suma
+  Stockfish (decisión 29), las dificultades pasarían a ser niveles de Stockfish y el minimax quedaría de
+  respaldo para los tableros que Stockfish no entiende.
+
+### 29. Sin IA paga: el oponente corre en la compu, y Stockfish queda para después
+
+- **Qué:** la computadora usa solo asesores que corren en la compu y sin internet (el aleatorio y el
+  minimax). No integramos el modelo de lenguaje del bonus de la Unidad 05 ni ninguna API paga. Como opción
+  para más adelante queda Stockfish, un motor de ajedrez gratuito con niveles de dificultad (Skill Level de
+  0 a 20, o un Elo objetivo).
+- **Por qué:** una API de IA cobra por jugada, necesita una clave y conexión, y los modelos de lenguaje
+  juegan flojo y sin niveles de dificultad. Del bonus sí tomamos el diseño: la IA asesora y el núcleo
+  decide. Stockfish entraría sin tocar el núcleo, como un adaptador fuera de él que implemente
+  `AsesorDeJugadas`. Ese adaptador arrancaría el programa como un proceso aparte, le hablaría en su
+  protocolo de texto (UCI) y convertiría el tablero a FEN. Eso lo convertiría en el primer puerto de salida
+  (decisión 3). Stockfish es GPL, pero usarlo sin modificarlo y como programa aparte no obliga a que nuestro
+  código lo sea; cada integrante se baja el ejecutable y no se sube al repositorio.
+- **Cuándo se rompería:** si se quiere un rival más fuerte o con más niveles: se suma el adaptador de
+  Stockfish. Stockfish solo entiende el ajedrez clásico de 8x8; en un 10x10 o con piezas nuevas el adaptador
+  devolvería vacío y la computadora jugaría con el respaldo, así que conviene conservar el minimax.

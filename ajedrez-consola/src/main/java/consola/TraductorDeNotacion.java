@@ -4,7 +4,7 @@ import modelo.Posicion;
 import modelo.Tablero;
 
 /**
- * Traduce lo que escribe el usuario ("e2") a una Posicion del núcleo (columna 4, fila 1).
+ * Traduce lo que escribe el usuario ("e2") a una Posicion del núcleo (columna 4, fila 1), y al revés.
  * No asume 8x8: qué letras y números valen depende del tablero que recibe.
  */
 public final class TraductorDeNotacion {
@@ -21,5 +21,10 @@ public final class TraductorDeNotacion {
             throw new IllegalArgumentException("La casilla '" + texto + "' está fuera del tablero");
         }
         return posicion;
+    }
+
+    /** Para mostrar la jugada de la computadora: la columna 4, fila 1 se escribe "e2". */
+    public String escribir(Posicion posicion) {
+        return (char) ('a' + posicion.columna()) + String.valueOf(posicion.fila() + 1);
     }
 }

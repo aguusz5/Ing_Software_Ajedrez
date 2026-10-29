@@ -14,13 +14,18 @@ package "ajedrez-gui-swing\n(adaptador)" as gui #E8F1FA {
 package "ajedrez-nucleo  (NÚCLEO — Java puro, sin dependencias)" as core #EAF6EA {
   interface "JuegoDeAjedrez\n(puerto de entrada)" as IN
   [Partida + reglas + piezas + tablero] as G
+  [Computadora + minimax + aleatorio] as IA
 }
 Principal ..> AdaptadorConsola : crea e inyecta
 Principal ..> VentanaSwing : crea e inyecta
 Principal ..> G : crea e inyecta
+Principal ..> IA : crea e inyecta
 AdaptadorConsola --> IN : usa
 VentanaSwing --> IN : usa
+AdaptadorConsola --> IA : usa
+VentanaSwing --> IA : usa
 G ..|> IN
+IA --> IN : jugadasLegales()
 note bottom of core
   Las flechas de dependencia apuntan SIEMPRE hacia el núcleo.
   ajedrez-nucleo no tiene en su pom.xml ninguna dependencia
@@ -28,5 +33,6 @@ note bottom of core
   el núcleo importe Swing, consola o IO.
   El núcleo no necesita nada del exterior, así que no hay
   puerto de salida: jugar() devuelve un ResultadoJugada y listo.
+  La IA (minimax) también vive en el núcleo.
 end note
 @enduml

@@ -53,4 +53,7 @@ public interface JuegoDeAjedrez {
 
     /** Casillas que la pieza alcanza por su movimiento pero que no son legales (dejarían a su rey en jaque). */
     List<Posicion> destinosIlegales(Posicion desde);
+
+    /** Todas las jugadas legales del que mueve, como datos. Vacío si la partida terminó. La IA elige entre estas. */
+    List<JugadaLegal> jugadasLegales();
 }
