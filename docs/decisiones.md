@@ -366,3 +366,42 @@ se revierte, no se borra: se marca como reemplazada y se dice por cuál.
 - **Cuándo se rompería:** si se quiere un rival más fuerte o con más niveles: se suma el adaptador de
   Stockfish. Stockfish solo entiende el ajedrez clásico de 8x8; en un 10x10 o con piezas nuevas el adaptador
   devolvería vacío y la computadora jugaría con el respaldo, así que conviene conservar el minimax.
+
+### 30. `reiniciar()` en el puerto, no una fábrica de partidas
+
+- **Qué:** el menú empieza partidas nuevas con `JuegoDeAjedrez.reiniciar()`. `Partida` guarda el tablero
+  que recibe por constructor y vuelve a él: le toca a las blancas, la partida está en curso y no queda nada
+  para deshacer ni rehacer. Se reutiliza la misma `Partida` para cualquier modo; contra quién se juega lo
+  decide la ventana con la `Computadora` de la dificultad elegida.
+- **Por qué:** con el tablero inmutable (decisión 7), volver al principio es guardar una referencia. La
+  alternativa era que `Principal` le pasara a la ventana una fábrica de partidas: más indirección para lo
+  mismo, y la ventana tendría que cambiar de `JuegoDeAjedrez` en medio del juego.
+- **Cuándo se rompería:** si el menú tuviera que elegir otra configuración de partida (otro tamaño de
+  tablero, otra posición inicial). Ahí sí hace falta una fábrica.
+
+### 31. La ventana tiene dos pantallas y arma sus propias partes visuales
+
+- **Qué:** `VentanaSwing` muestra dos pantallas con un `CardLayout`: `PanelDelMenu` (uno contra uno, contra
+  la computadora con dificultad y color, volver a la partida, cómo se juega, salir) y `PanelDeLaPartida`
+  (botones Menú, Reiniciar, Deshacer, Rehacer, Terminar y Rendirse; tablero; estado). `PanelDelTablero`
+  acomoda las casillas a mano: calcula el lado más grande que entra a lo ancho y a lo alto, así las casillas
+  quedan siempre cuadradas y el tablero centrado, con margen si sobra lugar. `DibujoDePieza` dibuja cada
+  pieza a la escala de su casilla. Con negras contra la computadora, el tablero se da vuelta. Las dificultades
+  (`Dificultad`: nombre, descripción y `Computadora`) las arma `Principal`: fácil (aleatorio), medio (minimax
+  de 2) y difícil (minimax de 3).
+- **Por qué:** con `GridLayout` las casillas tomaban la forma de la ventana y el tablero se deformaba. La
+  ventana se partió en clases chicas porque con el menú pasaba las 600 líneas. Las pantallas y el tablero son
+  partes de la vista, sin comportamiento intercambiable, así que la ventana las crea con `new`; lo que sí puede
+  cambiar (el juego, los glifos, las dificultades) llega por constructor desde `Principal`, como pide la regla
+  de inyección (decisión 4).
+- **Cuándo se rompería:** si alguna pantalla tuviera que reemplazarse por otra implementación (por ejemplo,
+  un tablero 3D). Ahí esa pantalla pasaría a inyectarse.
+
+### 32. La interfaz principal es la ventana; la consola se va a sacar
+
+- **Qué:** el grupo decidió el 28/10 centrarse en la ventana. La consola sigue andando, pero no se le suman
+  funciones nuevas (el menú es solo de la ventana) y se va a sacar más adelante.
+- **Por qué:** nadie la usa para jugar y mantener dos interfaces duplica el trabajo de cada opcional.
+- **Cuándo se rompería:** la consola es la segunda interfaz sobre el mismo puerto, la prueba de que el núcleo
+  no depende de cómo se juega (decisiones 1 y 2). Si se saca, esa prueba queda en los tests del núcleo, que lo
+  usan sin ninguna interfaz. Si en la defensa se quiere mostrar un segundo adaptador, conviene conservarla.

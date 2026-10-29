@@ -113,7 +113,7 @@
     <p class="bajada">El alcance obligatorio está completo, así que la fase 5 puede arrancar ya, tres semanas antes
       de lo que marca el roadmap. Este plan ordena los opcionales de la consigna más el pedido nuevo del
       profesor: <strong>el valor de las piezas y ganar por puntos</strong>.</p>
-    <p class="nota">Al 28/10 están hechos los opcionales 0 a 7. La captura al paso (9) quedó descartada por
+    <p class="nota">Al 28/10 están hechos los opcionales 0 a 7 y el 10. La captura al paso (9) quedó descartada por
       indicación del profesor, y el grupo sumó un menú de inicio para la ventana (10). Cada ficha dice cómo quedó, y el detalle de lo
       que cambió está en <a href="explicaciones/opcionales-implementados.html">opcionales-implementados.html</a>.</p>
     <div class="caja">
@@ -208,7 +208,7 @@
           <tr><td class="num">7</td><th scope="row"><a href="#f-ia">Oponente con IA</a></th><td><span class="prio p3">Media</span></td><td>Medio</td><td class="detalle">0, 1, 2 (minimax: 3)</td><td>P2</td><td><strong>Hecho</strong></td></tr>
           <tr><td class="num">8</td><th scope="row"><a href="#f-tablas">Tablas: 50 jugadas y repetición</a></th><td><span class="prio p3">Si sobra tiempo</span></td><td>Medio</td><td class="detalle">2, 3</td><td>P4</td><td>Sin empezar</td></tr>
           <tr><td class="num">9</td><th scope="row"><a href="#f-alpaso">Captura al paso</a></th><td><span class="prio p3">Si sobra tiempo</span></td><td>Alto</td><td class="detalle">—</td><td>P3</td><td>Descartada por el profesor</td></tr>
-          <tr><td class="num">10</td><th scope="row"><a href="#f-menu">Menú de inicio en la ventana</a></th><td><span class="prio p2">Alta</span></td><td>Medio</td><td class="detalle">3 (contra la IA: 7)</td><td>P5</td><td>Sin empezar</td></tr>
+          <tr><td class="num">10</td><th scope="row"><a href="#f-menu">Menú de inicio en la ventana</a></th><td><span class="prio p2">Alta</span></td><td>Medio</td><td class="detalle">3 (contra la IA: 7)</td><td>P5</td><td><strong>Hecho</strong></td></tr>
           <tr><td class="num">11</td><th scope="row"><a href="#f-stockfish">Stockfish como asesor (dificultades)</a></th><td><span class="prio p3">Para más adelante</span></td><td>Medio</td><td class="detalle">7</td><td>P2</td><td>Para más adelante</td></tr>
         </tbody>
       </table>
@@ -225,7 +225,7 @@
           <tr><th scope="row">E0 · Contrato</th><td class="fechas">16/10 – 18/10</td><td class="detalle">Contrato ampliado commiteado. Preguntas al profesor enviadas.</td></tr>
           <tr><th scope="row">E1 · Puntos y fin de partida</th><td class="fechas">19/10 – 25/10</td><td class="detalle">Opcionales 0, 1, 2 y 3. Desde acá la partida termina y tiene un ganador.</td></tr>
           <tr><th scope="row">E2 · Jugadas especiales y GUI</th><td class="fechas">26/10 – 01/11</td><td class="detalle">Opcionales 4, 5 y 6. Se ve todo lo anterior en la consola y en la ventana.</td></tr>
-          <tr><th scope="row">E3 · IA</th><td class="fechas">02/11 – 08/11</td><td class="detalle">Opcional 7 (adelantado: hecho el 28/10) y el menú de inicio (10). Si queda tiempo, el 8.</td></tr>
+          <tr><th scope="row">E3 · IA</th><td class="fechas">02/11 – 08/11</td><td class="detalle">Opcional 7 y el menú de inicio (10), adelantados: hechos el 28/10. Si queda tiempo, el 8.</td></tr>
           <tr><th scope="row">E4 · Margen y congelamiento</th><td class="fechas">09/11 – 12/11</td><td class="detalle">Margen para lo que se atrase y para probar la ventana a mano. El 12/11 se congela: lo que no esté terminado, no entra.</td></tr>
           <tr><th scope="row">F6 · Cierre</th><td class="fechas">13/11 – 20/11</td><td class="detalle">UML contra el código, documento de justificación, PPTX y simulacro (sin cambios).</td></tr>
         </tbody>
@@ -238,7 +238,7 @@
     <p>Los adaptadores solo pueden usar <code>JuegoDeAjedrez</code> (decisión 2). Todo lo nuevo que necesitan
       la consola, la GUI y la IA entra por acá. Se commitea primero, con los métodos lanzando
       <code>UnsupportedOperationException</code>, y el UML se actualiza en el mismo commit.
-      Así quedó al 28/10, con los opcionales 0 a 7:</p>
+      Así quedó al 28/10, con los opcionales 0 a 7 y el 10:</p>
 <pre><code>public interface JuegoDeAjedrez {
     // --- lo que existía antes de los opcionales ---
     ResultadoJugada jugar(Posicion desde, Posicion hasta);
@@ -269,6 +269,10 @@
     // --- agregado con el opcional 7 ---
     /** Todas las jugadas legales del que mueve, como datos: la IA elige entre estas. */
     List&lt;JugadaLegal&gt; jugadasLegales();
+
+    // --- agregado con el opcional 10 ---
+    /** Vuelve a la posición inicial: le toca a las blancas, en curso y sin nada para deshacer. */
+    void reiniciar();
 }
 
 /** Record en el paquete juego: desde, hasta y, si corona, en qué. */
@@ -278,7 +282,7 @@ public record JugadaLegal(Posicion desde, Posicion hasta, Optional&lt;String&gt;
 public record EstadoPartida(boolean terminada, Optional&lt;Color&gt; ganador, String motivo) { }</code></pre>
     <p class="nota">Frente al contrato original se sumaron <code>rendirse</code>, <code>destinosIlegales</code> y
       <code>opcionesDeCoronacion</code>. El enroque entró por <code>jugar</code> sin tocar el puerto. La IA necesitó
-      <code>jugadasLegales()</code> (ver la ficha 7). El menú de inicio va a sumar <code>reiniciar()</code>.</p>
+      <code>jugadasLegales()</code> (ver la ficha 7) y el menú de inicio, <code>reiniciar()</code>.</p>
   </section>
 
   <section aria-labelledby="t-fichas">
@@ -567,6 +571,12 @@ public record EstadoPartida(boolean terminada, Optional&lt;Color&gt; ganador, St
             pase a la ventana una fábrica de partidas: el método es más simple y lo comparten consola y ventana.
             Se rompería si el menú tuviera que elegir otra configuración (por ejemplo, el tamaño del tablero):
             ahí sí hace falta la fábrica.</dd></div>
+          <div><dt>Cómo quedó</dt><dd>Como el plan, y más. El menú también ofrece elegir el color (con negras el
+            tablero se da vuelta y la computadora mueve primero), volver a la partida y una ayuda de cómo se juega.
+            Al terminar, un diálogo ofrece jugar de nuevo o volver al menú. Además se arregló el tablero: ahora queda
+            siempre cuadrado y centrado (<code>PanelDelTablero</code>), con coordenadas y piezas dibujadas a escala.
+            <code>VentanaSwing</code> se partió en pantallas (decisiones 30 y 31). La consola no tiene menú: el grupo
+            decidió sacarla más adelante (decisión 32).</dd></div>
         </dl>
       </article>
 

@@ -1,4 +1,4 @@
-<title>Opcionales 0 a 7</title>
+<title>Opcionales 0 a 7 y 10</title>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -105,8 +105,8 @@
 
   <header class="cabecera">
     <div class="eyebrow">TPO Ajedrez · Fase 5 · Opcionales</div>
-    <h1>Qué cambió con los opcionales 0 a 7</h1>
-    <p class="sello"><span>0, 1, 2 y resaltado:</span> <strong>16/10/2026</strong> <span>· 3, 4 y resto del 5:</span> <strong>21/10/2026</strong> <span>· 6:</span> <strong>27/10/2026</strong> <span>· 7:</span> <strong>28/10/2026</strong> <span>· tests en verde</span> <strong>191</strong> <span>(antes 92)</span></p>
+    <h1>Qué cambió con los opcionales 0 a 7 y el 10</h1>
+    <p class="sello"><span>0, 1, 2 y resaltado:</span> <strong>16/10/2026</strong> <span>· 3, 4 y resto del 5:</span> <strong>21/10/2026</strong> <span>· 6:</span> <strong>27/10/2026</strong> <span>· 7 y 10:</span> <strong>28/10/2026</strong> <span>· tests en verde</span> <strong>194</strong> <span>(antes 92)</span></p>
     <p class="bajada">La partida ahora termina y tiene ganador: jaque mate, ahogado, los jugadores la dan por
       terminada (gana el que tiene más puntos) o uno se rinde. Cada pieza tiene un valor y los puntos se ven en
       la consola y en la ventana. Se puede deshacer y rehacer, el peón corona al llegar al final, el rey enroca,
@@ -379,9 +379,9 @@ public record EstadoPartida(boolean terminada, Optional&lt;Color&gt; ganador, St
       <article class="ficha">
         <header><h3>7 · Oponente con IA</h3><span class="meta">la IA asesora, el núcleo decide (bonus de la Unidad 05)</span></header>
         <dl>
-          <div><dt>Cómo se juega</dt><dd>Con <code>--ia</code> (en VS Code, el botón "Jugar contra la computadora") la
-            computadora juega las negras con un minimax, sin internet. La barra de la ventana (o la consola) dice quién
-            eligió cada jugada. Deshacer vuelve hasta que te toque a vos.</dd></div>
+          <div><dt>Cómo se juega</dt><dd>En la ventana, desde el menú de inicio (opcional 10): fácil, medio o difícil,
+            con blancas o con negras. En la consola, con <code>--ia</code> la computadora juega las negras en difícil. Todo
+            corre en la compu, sin internet. Deshacer vuelve hasta que te toque a vos.</dd></div>
           <div><dt>Qué hay</dt><dd><ul>
             <li><span class="marca nuevo">Nuevo</span> <code>ia.AsesorDeJugadas</code> (Strategy): recibe la posición y las
               jugadas legales y sugiere una. Es donde se enchufaría Stockfish más adelante, desde un adaptador.</li>
@@ -406,6 +406,41 @@ public record EstadoPartida(boolean terminada, Optional&lt;Color&gt; ganador, St
           </ul></dd></div>
           <div><dt>Decisiones</dt><dd>27 (la IA es un asesor intercambiable y la computadora no le cree), 28 (el minimax vive
             en el núcleo) y 29 (sin IA paga; Stockfish queda para después). La 16 sigue en pie.</dd></div>
+        </dl>
+      </article>
+
+      <article class="ficha">
+        <header><h3>10 · Menú de inicio</h3><span class="meta">pedido del grupo; todo adaptador, salvo <code>reiniciar()</code></span></header>
+        <dl>
+          <div><dt>El menú</dt><dd><ul>
+            <li><strong>Uno contra uno</strong>: dos personas en la misma compu.</li>
+            <li><strong>Contra la computadora</strong>: fácil (juega cualquier jugada legal), medio (minimax de 2 jugadas)
+              o difícil (minimax de 3), y con qué color jugás. Con negras, el tablero se da vuelta y la computadora mueve
+              primero.</li>
+            <li><strong>Volver a la partida</strong>: aparece cuando ya hay una partida empezada.</li>
+            <li><strong>Cómo se juega</strong> (una ayuda corta) y <strong>Salir</strong>.</li>
+          </ul></dd></div>
+          <div><dt>En la partida</dt><dd><ul>
+            <li>Botones nuevos: <strong>Menú</strong> (vuelve sin perder la partida) y <strong>Reiniciar</strong> (pide
+              confirmación y empieza de nuevo con el mismo modo).</li>
+            <li>Al terminar, el diálogo ofrece <strong>jugar de nuevo</strong>, <strong>volver al menú</strong> o
+              <strong>ver el tablero</strong>. Contra la computadora dice "¡Ganaste!" o "Ganó la computadora".</li>
+            <li>El tablero queda siempre cuadrado y centrado, sea cual sea el tamaño de la ventana; lo que sobra queda como
+              margen. Tiene coordenadas (1 a 8 y a a h) y las piezas se dibujan a escala.</li>
+          </ul></dd></div>
+          <div><dt>Qué hay</dt><dd><ul>
+            <li><span class="marca nuevo">Nuevo</span> en el puerto: <code>reiniciar()</code>. <code>Partida</code> guarda el
+              tablero con el que empezó y vuelve a él.</li>
+            <li><span class="marca nuevo">Nuevo</span> <code>gui.PanelDelMenu</code>, <code>gui.PanelDeLaPartida</code> (lo que
+              antes hacía <code>VentanaSwing</code>), <code>gui.PanelDelTablero</code> (acomoda las casillas para que queden
+              cuadradas), <code>gui.DibujoDePieza</code> y <code>gui.Dificultad</code>.</li>
+            <li><span class="marca cambia">Cambia</span> <code>VentanaSwing</code>: ahora solo cambia entre el menú y la
+              partida, y recibe las dificultades. <code>Principal</code> arma las tres dificultades.</li>
+          </ul></dd></div>
+          <div><dt>Tests</dt><dd>3 en <code>PartidaTest</code> para <code>reiniciar()</code>. La ventana no tiene tests
+            automáticos (decisión 20); las proporciones se revisaron dibujando las pantallas en imágenes de varios tamaños.</dd></div>
+          <div><dt>Decisiones</dt><dd>30 (<code>reiniciar()</code> en el puerto), 31 (dos pantallas y tablero proporcionado) y
+            32 (la consola se va a sacar).</dd></div>
         </dl>
       </article>
 
@@ -443,10 +478,12 @@ public record EstadoPartida(boolean terminada, Optional&lt;Color&gt; ganador, St
             así que deshacer un mate la reabre. Si no hay nada, la barra lo avisa.</li>
           <li>Cuando un peón llega al final: diálogo "Promoción" con dama, torre, alfil y caballo. Cerrarlo cancela la jugada.</li>
           <li>Enroque: al elegir el rey, la casilla del enroque aparece en azul; un clic ahí mueve rey y torre.</li>
-          <li>Con <code>--ia</code>: el título dice contra quién jugás; mientras la computadora piensa, la barra lo avisa y el
-            tablero y los botones no responden. Después dice qué jugó y quién lo eligió.</li>
-          <li>Al terminar: diálogo "Fin de la partida" con el ganador y el motivo, la barra dice
-            "FIN DE LA PARTIDA", el tablero deja de responder y "Terminar partida" se desactiva.</li>
+          <li>Arranca en el menú de inicio. Contra la computadora, el título dice la dificultad y tu color; mientras
+            piensa, la barra lo avisa y el tablero y los botones no responden. Después dice qué jugó.</li>
+          <li>Botones <strong>Menú</strong> y <strong>Reiniciar</strong>. El tablero queda siempre cuadrado, con coordenadas.</li>
+          <li>Al terminar: diálogo "Fin de la partida" con el ganador y el motivo, y las opciones jugar de nuevo, volver
+            al menú o ver el tablero. La barra dice "FIN DE LA PARTIDA", el tablero deja de responder y "Terminar partida"
+            se desactiva.</li>
           <li>Sin tests automáticos (decisión 20): <strong>falta probarla a mano</strong>.</li>
         </ul>
       </article>
@@ -471,6 +508,8 @@ public record EstadoPartida(boolean terminada, Optional&lt;Color&gt; ganador, St
       <li><strong>La IA siguió el bonus de la Unidad 05</strong>: en vez de un <code>Jugador</code> afuera del núcleo, hay un
         <code>AsesorDeJugadas</code> en el núcleo y una <code>Computadora</code> que no le cree. El minimax quedó en el núcleo,
         probando jugadas sobre el tablero inmutable en vez de usar <code>jugar</code> y <code>deshacer</code>.</li>
+      <li><strong>El menú hace más que lo planeado</strong>: elegir color, volver a la partida, ayuda y opciones al terminar.
+        Además se arregló el tablero, que se deformaba con el tamaño de la ventana.</li>
       <li>El plan ya tiene una fila "Cómo quedó" en cada opcional hecho.</li>
     </ul>
   </section>
@@ -486,7 +525,7 @@ public record EstadoPartida(boolean terminada, Optional&lt;Color&gt; ganador, St
           <tr><th scope="row">tests del núcleo</th><td class="detalle"><span class="marca nuevo">Nuevo</span> <code>GeneradorDeJugadasLegalesTest</code>, <code>JugadaConPromocionTest</code>, <code>EnroqueTest</code>, <code>ReglaEnroqueSeguroTest</code>, <code>AsesorAleatorioTest</code>, <code>AsesorMinimaxTest</code>, <code>ComputadoraTest</code>
             · <span class="marca cambia">Cambia</span> <code>PartidaTest</code>, <code>PeonTest</code>, <code>ExtensibilidadTest</code>, <code>TipoDePiezaTest</code></td></tr>
           <tr><th scope="row">ajedrez-consola</th><td class="detalle"><code>AdaptadorConsola</code>, <code>TraductorDeNotacion</code>, y sus tests</td></tr>
-          <tr><th scope="row">ajedrez-gui-swing</th><td class="detalle"><code>VentanaSwing</code></td></tr>
+          <tr><th scope="row">ajedrez-gui-swing</th><td class="detalle"><span class="marca nuevo">Nuevo</span> <code>PanelDelMenu</code>, <code>PanelDeLaPartida</code>, <code>PanelDelTablero</code>, <code>DibujoDePieza</code>, <code>Dificultad</code> · <span class="marca cambia">Cambia</span> <code>VentanaSwing</code></td></tr>
           <tr><th scope="row">ajedrez-app</th><td class="detalle"><code>Principal</code></td></tr>
           <tr><th scope="row">docs</th><td class="detalle"><code>uml/d1_modulos.puml</code>, <code>uml/d2_modelo.puml</code>, <code>uml/d3_juego.puml</code>, <code>uml/d4_adaptadores.puml</code>, <code>uml/d5_ia.puml</code>, <code>decisiones.md</code> (21 a 29), <code>estado.html</code>, <code>plan-opcionales.html</code></td></tr>
         </tbody>
@@ -496,10 +535,9 @@ public record EstadoPartida(boolean terminada, Optional&lt;Color&gt; ganador, St
 
   <section aria-labelledby="t-probar">
     <h2 id="t-probar">Cómo probarlo</h2>
-<pre><code>mvn test                                          # 160 del núcleo + 31 de la consola
-mvn package &amp;&amp; java -jar ajedrez-app/target/ajedrez.jar          # consola
-mvn package &amp;&amp; java -jar ajedrez-app/target/ajedrez.jar --gui    # ventana
-mvn package &amp;&amp; java -jar ajedrez-app/target/ajedrez.jar --gui --ia   # contra la computadora</code></pre>
+<pre><code>mvn test                                          # 163 del núcleo + 31 de la consola
+mvn package &amp;&amp; java -jar ajedrez-app/target/ajedrez.jar --gui    # ventana: arranca en el menú
+mvn package &amp;&amp; java -jar ajedrez-app/target/ajedrez.jar          # consola (se va a sacar)</code></pre>
     <p>Para ver un mate rápido en la consola: <code>f2 f3</code>, <code>e7 e5</code>, <code>g2 g4</code>,
       <code>d8 h4</code>. Para ver el botón Rendirse en la ventana: <code>e2 e4</code>, <code>f7 f6</code>,
       <code>d1 h5</code> (las negras quedan en jaque). Para coronar rápido en la consola: <code>a2 a4</code>,
@@ -513,11 +551,13 @@ mvn package &amp;&amp; java -jar ajedrez-app/target/ajedrez.jar --gui --ia   # c
     <h2 id="t-pendiente">Lo que falta</h2>
     <ul class="lista">
       <li>Probar la ventana a mano: un mate, un "terminar", una rendición, los colores del resaltado, Deshacer y
-        Rehacer (también después de un mate), el diálogo de promoción, el enroque y una partida contra la computadora.</li>
+        Rehacer (también después de un mate), el diálogo de promoción, el enroque, el menú (las tres dificultades y jugar
+        con negras), Reiniciar, Menú, y agrandar y achicar la ventana.</li>
       <li>Confirmar en la pestaña <strong>Actions</strong> de GitHub que el CI quedó en verde con los push del 21/10.</li>
       <li>Avisarle al profesor cómo quedaron las reglas, sobre todo que el ahogado es tablas.</li>
       <li>Que otro integrante lo revise y lo pueda explicar: la defensa es individual.</li>
-      <li>Siguiente: <strong>10 · Menú de inicio</strong> en la ventana. La captura al paso quedó descartada por el profesor.</li>
+      <li>Decidir si entran las tablas por 50 jugadas o repetición (opcional 8). Stockfish (11) queda para más adelante,
+        y la consola se va a sacar (decisión 32).</li>
     </ul>
   </section>
 

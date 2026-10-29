@@ -23,8 +23,22 @@ package "ajedrez-consola (adaptador)" #E8F1FA {
 }
 package "ajedrez-gui-swing (adaptador)" #E8F1FA {
   class VentanaSwing {
-    +VentanaSwing(juego : JuegoDeAjedrez, glifos : GlifosDePieza, computadora : Optional<Computadora>)
+    +VentanaSwing(juego : JuegoDeAjedrez, glifos : GlifosDePieza, dificultades : List<Dificultad>)
     +mostrar()
+  }
+  class Dificultad <<record>> {
+    +nombre : String
+    +descripcion : String
+    +computadora : Computadora
+  }
+  class PanelDelMenu <<pantalla>>
+  class PanelDeLaPartida <<pantalla>>
+  class PanelDelTablero {
+    ~setInvertido(invertido : boolean)
+    ~mostrar(p : Posicion, pieza : Optional<DibujoDePieza>, fondo : Color, borde : Border)
+  }
+  class DibujoDePieza <<record>> {
+    ~dibujar(g : Graphics, ancho : int, alto : int)
   }
   class GlifosDePieza {
     +glifoDe(p : Pieza) : String
@@ -39,12 +53,23 @@ Partida ..|> JuegoDeAjedrez
 AdaptadorConsola --> JuegoDeAjedrez
 AdaptadorConsola --> TraductorDeNotacion
 AdaptadorConsola --> DibujanteAscii
-VentanaSwing --> JuegoDeAjedrez
-VentanaSwing --> GlifosDePieza
+VentanaSwing *-- PanelDelMenu
+VentanaSwing *-- PanelDeLaPartida
+PanelDelMenu --> "*" Dificultad : las ofrece
+PanelDeLaPartida --> JuegoDeAjedrez
+PanelDeLaPartida --> GlifosDePieza
+PanelDeLaPartida --> "0..1" Computadora : la del modo elegido
+PanelDeLaPartida *-- PanelDelTablero
+PanelDelTablero ..> DibujoDePieza
+Dificultad --> Computadora
 AdaptadorConsola --> "0..1" Computadora
-VentanaSwing --> "0..1" Computadora
 Principal ..> Partida : new + inyecta
-Principal ..> Computadora : new + inyecta (con --ia)
+Principal ..> Computadora : new (una por dificultad)
+Principal ..> Dificultad : new
 Principal ..> AdaptadorConsola : new + inyecta
 Principal ..> VentanaSwing : new + inyecta
+note bottom of PanelDelTablero
+  Acomoda las casillas a mano: el lado más grande que entra
+  a lo ancho y a lo alto. Siempre cuadradas y centradas.
+end note
 @enduml

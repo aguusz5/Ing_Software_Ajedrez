@@ -28,18 +28,19 @@ public final class Partida implements JuegoDeAjedrez {
     // Para deshacer/rehacer alcanza con guardar fotos: el tablero es inmutable (decisión 7).
     private final Deque<Foto> pasado = new ArrayDeque<>();
     private final Deque<Foto> futuro = new ArrayDeque<>();
+    // También por ser inmutable, para reiniciar alcanza con guardar el tablero con el que se empezó.
+    private final Tablero inicial;
     private Tablero tablero;
     private Color turno;
     private EstadoPartida estado;
 
     public Partida(Tablero tablero, ValidadorDeJugadas validador, DetectorDeJaque detector,
                    GeneradorDeJugadasLegales generador) {
-        this.tablero = tablero;
+        this.inicial = tablero;
         this.validador = validador;
         this.detector = detector;
         this.generador = generador;
-        this.turno = Color.BLANCO;
-        this.estado = EstadoPartida.enCurso();
+        reiniciar();
     }
 
     @Override
@@ -197,6 +198,15 @@ public final class Partida implements JuegoDeAjedrez {
                 .distinct()
                 .filter(destino -> !legales.contains(destino))
                 .toList();
+    }
+
+    @Override
+    public void reiniciar() {
+        tablero = inicial;
+        turno = Color.BLANCO;
+        estado = EstadoPartida.enCurso();
+        pasado.clear();
+        futuro.clear();
     }
 
     @Override

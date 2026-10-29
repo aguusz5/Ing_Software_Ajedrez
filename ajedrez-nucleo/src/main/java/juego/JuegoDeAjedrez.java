@@ -56,4 +56,7 @@ public interface JuegoDeAjedrez {
 
     /** Todas las jugadas legales del que mueve, como datos. Vacío si la partida terminó. La IA elige entre estas. */
     List<JugadaLegal> jugadasLegales();
+
+    /** Vuelve a la posición inicial: le toca a las blancas, la partida está en curso y no hay nada para deshacer. */
+    void reiniciar();
 }

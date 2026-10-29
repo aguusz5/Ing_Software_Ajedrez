@@ -600,6 +600,49 @@ class PartidaTest {
         assertEquals("La partida terminó", resultado.motivo());
     }
 
+    // --- Reiniciar (menú de inicio) ---
+
+    @Test
+    void reiniciar_despuesDeVariasJugadas_vuelveALaPosicionInicialConTurnoDeBlancas() {
+        // Arrange
+        Tablero inicial = partida.tablero();
+        jugarValidas("e2 e4", "e7 e5", "g1 f3");
+
+        // Act
+        partida.reiniciar();
+
+        // Assert
+        assertSame(inicial, partida.tablero());
+        assertEquals(Color.BLANCO, partida.turnoActual());
+    }
+
+    @Test
+    void reiniciar_unaPartidaTerminada_laVuelveAPonerEnCurso() {
+        // Arrange
+        jugarValidas("f2 f3", "e7 e5", "g2 g4", "d8 h4");
+
+        // Act
+        partida.reiniciar();
+
+        // Assert
+        assertFalse(partida.estado().terminada());
+        assertEquals(20, partida.jugadasLegales().size());
+    }
+
+    @Test
+    void reiniciar_conJugadasParaDeshacerYRehacer_noDejaNadaParaDeshacerNiRehacer() {
+        // Arrange
+        jugarValidas("e2 e4", "e7 e5");
+        partida.deshacer();
+
+        // Act
+        partida.reiniciar();
+
+        // Assert
+        assertFalse(partida.deshacer());
+        assertFalse(partida.rehacer());
+    }
+
     // --- Jugadas legales como datos (para la IA) ---
 
     @Test

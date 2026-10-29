@@ -186,12 +186,13 @@
     <p class="sello"><span>Última actualización</span> <time datetime="2026-10-28">28 de octubre de 2026</time></p>
     <p class="bajada">El alcance obligatorio está completo y probado: las seis piezas, turnos, captura,
       validación y jaque, jugables por consola y por ventana. Por calendario el roadmap nos ubica en la
-      fase 3, así que vamos adelantados: ya están los opcionales 0 a 7.</p>
+      fase 3, así que vamos adelantados: ya están los opcionales 0 a 7 y el menú de inicio.</p>
     <div class="siguiente">
       <span class="eyebrow">Lo próximo</span>
       <p>La partida ya termina y anuncia al ganador (mate, ahogado, por puntos o porque uno se rinde),
-        se puede deshacer y rehacer, el peón corona, el rey enroca y se puede jugar contra la computadora
-        (un minimax, sin internet). Sigue el <strong>menú de inicio</strong> en la ventana.</p>
+        se puede deshacer y rehacer, el peón corona, el rey enroca y la ventana arranca en un menú para jugar
+        uno contra uno o contra la computadora, en tres dificultades. Sigue <strong>probar la ventana a mano</strong>
+        y decidir si entran las tablas por 50 jugadas o repetición.</p>
     </div>
   </header>
 
@@ -242,7 +243,7 @@
             <th scope="row">F5 · Opcionales</th>
             <td class="fechas">02/11 – 12/11</td>
             <td><span class="estado parcial">En curso</span></td>
-            <td class="detalle">Adelantada: los opcionales 0 a 7 están hechos. Ver la tabla de opcionales más abajo.</td>
+            <td class="detalle">Adelantada: los opcionales 0 a 7 y el menú de inicio están hechos. Ver la tabla de opcionales más abajo.</td>
           </tr>
           <tr>
             <th scope="row">F6 · Cierre y defensa</th>
@@ -426,8 +427,8 @@
           </tr>
           <tr>
             <th scope="row">Menú de inicio en la ventana</th>
-            <td><span class="estado pendiente">Sin empezar</span></td>
-            <td class="detalle">Pedido del grupo: que la ventana no abra directo en el tablero. Elegir uno contra uno o contra la IA, reiniciar la partida y volver al menú.</td>
+            <td><span class="estado hecho">Hecho</span></td>
+            <td class="detalle">La ventana arranca en un menú: uno contra uno, contra la computadora (fácil, medio o difícil, con blancas o negras), volver a la partida, cómo se juega y salir. En la partida, botones Menú y Reiniciar, y al terminar se ofrece jugar de nuevo o volver al menú. El tablero queda siempre cuadrado y centrado, sea cual sea el tamaño de la ventana. <code>reiniciar()</code> en el puerto.</td>
           </tr>
           <tr>
             <th scope="row">Tablas por 50 jugadas o repetición</th>
@@ -451,8 +452,8 @@
       <li>Avisarle al profesor cómo quedaron las reglas de fin: puntos por material, ahogado = tablas, final por "terminar" o rendición.</li>
       <li>Probar la ventana a mano (no tiene tests automáticos): resaltado, Deshacer y Rehacer (también después de un mate o una rendición) y el diálogo de promoción.</li>
       <li>Probar el enroque en la ventana: con el rey sin mover, las casillas del enroque se pintan de azul, o de naranja si el rey cruzaría una casilla atacada.</li>
-      <li>Probar contra la computadora en la ventana (botón "Jugar contra la computadora" de VS Code).</li>
-      <li>Implementar el menú de inicio de la ventana (opcional 10): uno contra uno o contra la computadora, reiniciar y volver al menú.</li>
+      <li>Probar la ventana a mano (botón "Jugar en la ventana" de VS Code): el menú, las tres dificultades, jugar con negras (el tablero se da vuelta y la computadora mueve primero), Reiniciar, Menú y Volver a la partida, y agrandar y achicar la ventana.</li>
+      <li>Sacar la consola cuando el grupo lo decida (decisión 32): el módulo <code>ajedrez-consola</code>, sus tests, la rama de <code>Principal</code>, el UML y el README.</li>
       <li>Decidir si las tablas por 50 jugadas o repetición (opcional 8) entran antes del congelamiento del 12/11.</li>
       <li>Que cada integrante lea el código de los otros paquetes: la defensa es individual y puede pedir agregar una pieza o cambiar el tamaño del tablero.</li>
     </ol>
@@ -476,6 +477,14 @@
   <section aria-labelledby="t-historial">
     <h2 id="t-historial">Historial</h2>
     <ol class="historial" reversed>
+      <li>
+        <time datetime="2026-10-28">28/10/2026</time>
+        <ul>
+          <li>Opcional 10: menú de inicio. La ventana tiene dos pantallas: el menú (uno contra uno; contra la computadora en fácil, medio o difícil, con blancas o negras; volver a la partida; cómo se juega; salir) y la partida (botones Menú y Reiniciar, y al terminar se ofrece jugar de nuevo o volver al menú). Con negras, el tablero se da vuelta y la computadora mueve primero.</li>
+          <li>El tablero queda siempre cuadrado y centrado: <code>PanelDelTablero</code> acomoda las casillas a mano y <code>DibujoDePieza</code> dibuja las piezas a escala. Se suman coordenadas alrededor del tablero. <code>VentanaSwing</code> se partió en pantallas.</li>
+          <li><code>reiniciar()</code> en el puerto, con 3 tests en <code>PartidaTest</code>. Decisiones 30 a 32 (la 32: la consola se va a sacar). UML <code>d3</code> y <code>d4</code>. 194 tests en verde.</li>
+        </ul>
+      </li>
       <li>
         <time datetime="2026-10-28">28/10/2026</time>
         <ul>

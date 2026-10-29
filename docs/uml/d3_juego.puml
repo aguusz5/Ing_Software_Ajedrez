@@ -18,6 +18,7 @@ package "ajedrez-nucleo :: juego" #EAF6EA {
     +destinosLegales(desde : Posicion) : List<Posicion>
     +destinosIlegales(desde : Posicion) : List<Posicion>
     +jugadasLegales() : List<JugadaLegal>
+    +reiniciar()
   }
   class JugadaLegal <<record>> {
     +desde : Posicion

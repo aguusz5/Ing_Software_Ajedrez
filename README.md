@@ -9,12 +9,13 @@ núcleo por una única interfaz.
 ```bash
 mvn package                                      # compila, corre los tests y arma el jar
 java -jar ajedrez-app/target/ajedrez.jar         # consola: escribí "e2 e4"; "salir" para terminar
-java -jar ajedrez-app/target/ajedrez.jar --gui   # ventana: clic en la pieza y clic en el destino
-java -jar ajedrez-app/target/ajedrez.jar --gui --ia   # contra la computadora (juega las negras)
+java -jar ajedrez-app/target/ajedrez.jar --gui   # ventana: arranca en el menú de inicio
 mvn test                                         # solo los tests
 ```
 
-Contra la computadora juega un minimax que mira 3 jugadas hacia adelante. Corre en la compu, sin internet.
+La ventana arranca en un menú: uno contra uno, o contra la computadora en fácil (juega al azar), medio o
+difícil (un minimax que mira 2 o 3 jugadas hacia adelante), con blancas o con negras. Todo corre en la compu,
+sin internet. En la consola, `--ia` hace que las negras las juegue la computadora en difícil.
 
 ## La arquitectura en un dibujo
 
@@ -49,7 +50,7 @@ respuesta. **Ninguna regla del ajedrez vive en un adaptador.**
 | núcleo › `juego` | La puerta de entrada al núcleo | `JuegoDeAjedrez` (puerto), `Partida`, `ResultadoJugada`, `JugadaLegal` |
 | núcleo › `ia` | El oponente con IA | `Computadora`, `AsesorDeJugadas` (Strategy), `AsesorMinimax`, `AsesorAleatorio` |
 | consola › `consola` | Jugar escribiendo `e2 e4` | `AdaptadorConsola`, `TraductorDeNotacion`, `DibujanteAscii` |
-| gui › `gui` | Jugar con clics | `VentanaSwing`, `GlifosDePieza` |
+| gui › `gui` | Jugar con clics | `VentanaSwing`, `PanelDelMenu`, `PanelDeLaPartida`, `PanelDelTablero`, `GlifosDePieza` |
 | app › `app` | Arranque (raíz de composición) | `Principal` |
 
 ## Las piezas no son clases: son listas de reglas
@@ -93,7 +94,7 @@ Una pieza nueva no toca código existente: es un `new TipoDePieza("canciller", f
 - **Nada de `8` suelto:** el tamaño lo sabe el tablero. Hay un test que juega en 10x10.
 
 Del alcance opcional ya están el jaque mate y el ahogado, los puntos, rendirse, deshacer/rehacer, la
-promoción, el enroque y el oponente con IA. El avance está en [docs/estado.html](docs/estado.html).
+promoción, el enroque, el oponente con IA y el menú de inicio. El avance está en [docs/estado.html](docs/estado.html).
 
 ## Para profundizar (orden de lectura sugerido)
 
