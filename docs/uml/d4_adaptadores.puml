@@ -23,7 +23,7 @@ package "ajedrez-consola (adaptador)" #E8F1FA {
 }
 package "ajedrez-gui-swing (adaptador)" #E8F1FA {
   class VentanaSwing {
-    +VentanaSwing(juego : JuegoDeAjedrez, glifos : GlifosDePieza, dificultades : List<Dificultad>)
+    +VentanaSwing(juego : JuegoDeAjedrez, temas : List<Tema>, dificultades : List<Dificultad>)
     +mostrar()
   }
   class Dificultad <<record>> {
@@ -31,14 +31,53 @@ package "ajedrez-gui-swing (adaptador)" #E8F1FA {
     +descripcion : String
     +computadora : Computadora
   }
-  class PanelDelMenu <<pantalla>>
-  class PanelDeLaPartida <<pantalla>>
+  class PanelDelMenu <<pantalla>> {
+    ~usarTema(t : Tema)
+  }
+  class PanelDeLaPartida <<pantalla>> {
+    ~usarTema(t : Tema)
+  }
   class PanelDelTablero {
     ~setInvertido(invertido : boolean)
+    ~usarColores(coordenadas : Color, marco : Color)
     ~mostrar(p : Posicion, pieza : Optional<DibujoDePieza>, fondo : Color, borde : Border)
   }
-  class DibujoDePieza <<record>> {
-    ~dibujar(g : Graphics, ancho : int, alto : int)
+  interface Tema <<Strategy>> {
+    +nombre() : String
+    +epigrafe() : String
+    +paleta() : Paleta
+    +bando(c : Color) : String
+    +nombreDe(tipo : String, c : Color) : String
+    +dibujoDe(p : Pieza) : DibujoDePieza
+    +pintarFondo(g : Graphics2D, ancho : int, alto : int)
+  }
+  class TemaClasico {
+    +TemaClasico(glifos : GlifosDePieza)
+  }
+  class TemaStarWars {
+    +TemaStarWars(glifos : GlifosDePieza, personajes : PersonajesDeStarWars)
+  }
+  class Paleta <<record>> {
+    +casillaClara, casillaOscura : Color
+    +texto, titulo, epigrafe, marco : Color
+  }
+  interface DibujoDePieza {
+    +nombre() : String
+    +dibujar(g : Graphics, ancho : int, alto : int)
+  }
+  class DibujoDeGlifo <<record>> {
+    +glifo : String
+    +relleno, trazo : Color
+  }
+  class DibujoDePersonaje <<record>> {
+    +brillo : Color
+  }
+  class PersonajesDeStarWars {
+    ~personajeDe(tipo : String, bando : Color) : Optional<Personaje>
+  }
+  class Personaje {
+    ~nombre() : String
+    ~dibujar(g : Graphics2D, brillo : Color)
   }
   class GlifosDePieza {
     +glifoDe(p : Pieza) : String
@@ -57,10 +96,23 @@ VentanaSwing *-- PanelDelMenu
 VentanaSwing *-- PanelDeLaPartida
 PanelDelMenu --> "*" Dificultad : las ofrece
 PanelDeLaPartida --> JuegoDeAjedrez
-PanelDeLaPartida --> GlifosDePieza
+PanelDeLaPartida --> Tema : el elegido en el menú
+PanelDelMenu --> "*" Tema : los ofrece
 PanelDeLaPartida --> "0..1" Computadora : la del modo elegido
 PanelDeLaPartida *-- PanelDelTablero
 PanelDelTablero ..> DibujoDePieza
+TemaClasico ..|> Tema
+TemaStarWars ..|> Tema
+Tema ..> Paleta
+Tema ..> DibujoDePieza : crea
+DibujoDeGlifo ..|> DibujoDePieza
+DibujoDePersonaje ..|> DibujoDePieza
+DibujoDePersonaje --> Personaje
+DibujoDePersonaje --> DibujoDeGlifo : insignia
+TemaClasico --> GlifosDePieza
+TemaStarWars --> GlifosDePieza
+TemaStarWars --> PersonajesDeStarWars
+PersonajesDeStarWars --> "12" Personaje
 Dificultad --> Computadora
 AdaptadorConsola --> "0..1" Computadora
 Principal ..> Partida : new + inyecta
@@ -68,8 +120,15 @@ Principal ..> Computadora : new (una por dificultad)
 Principal ..> Dificultad : new
 Principal ..> AdaptadorConsola : new + inyecta
 Principal ..> VentanaSwing : new + inyecta
+Principal ..> TemaStarWars : new
+Principal ..> TemaClasico : new
 note bottom of PanelDelTablero
   Acomoda las casillas a mano: el lado más grande que entra
   a lo ancho y a lo alto. Siempre cuadradas y centradas.
+end note
+note bottom of PersonajesDeStarWars
+  Rebelión (blancas): Luke, Leia, Yoda, Chewbacca, R2-D2, piloto.
+  Imperio (negras): Palpatine, Vader, Guardia Imperial, Boba Fett,
+  Estrella de la Muerte, stormtrooper. Dibujados con figuras.
 end note
 @enduml

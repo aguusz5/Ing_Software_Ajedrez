@@ -183,7 +183,7 @@
   <header class="cabecera">
     <div class="eyebrow">TPO Ajedrez · Ingeniería de Software</div>
     <h1>Dónde estamos</h1>
-    <p class="sello"><span>Última actualización</span> <time datetime="2026-10-28">28 de octubre de 2026</time></p>
+    <p class="sello"><span>Última actualización</span> <time datetime="2026-10-31">31 de octubre de 2026</time></p>
     <p class="bajada">El alcance obligatorio está completo y probado: las seis piezas, turnos, captura,
       validación y jaque, jugables por consola y por ventana. Por calendario el roadmap nos ubica en la
       fase 3, así que vamos adelantados: ya están los opcionales 0 a 7 y el menú de inicio.</p>
@@ -431,6 +431,11 @@
             <td class="detalle">La ventana arranca en un menú: uno contra uno, contra la computadora (fácil, medio o difícil, con blancas o negras), volver a la partida, cómo se juega y salir. En la partida, botones Menú y Reiniciar, y al terminar se ofrece jugar de nuevo o volver al menú. El tablero queda siempre cuadrado y centrado, sea cual sea el tamaño de la ventana. <code>reiniciar()</code> en el puerto.</td>
           </tr>
           <tr>
+            <th scope="row">Tema Star Wars en la ventana</th>
+            <td><span class="estado hecho">Hecho</span></td>
+            <td class="detalle">Agregado por el grupo, fuera del roadmap. La ventana tiene temas intercambiables (<code>Tema</code>, Strategy) que se eligen en el menú: Star Wars, el que se ve al abrir, y Clásico. En Star Wars la Rebelión (blancas: Luke, Leia, Yoda, Chewbacca, R2-D2, pilotos) juega contra el Imperio (negras: Palpatine, Vader, Guardia Imperial, Boba Fett, Estrella de la Muerte, stormtroopers) sobre un fondo de estrellas. Cada personaje tiene un brillo de su bando y una insignia con la pieza; al pasar el mouse dice quién es. Dibujos hechos con figuras, sin imágenes.</td>
+          </tr>
+          <tr>
             <th scope="row">Tablas por 50 jugadas o repetición</th>
             <td><span class="estado pendiente">Sin empezar</span></td>
             <td class="detalle">Si sobra tiempo. La repetición puede usar las fotos de deshacer.</td>
@@ -453,6 +458,7 @@
       <li>Probar la ventana a mano (no tiene tests automáticos): resaltado, Deshacer y Rehacer (también después de un mate o una rendición) y el diálogo de promoción.</li>
       <li>Probar el enroque en la ventana: con el rey sin mover, las casillas del enroque se pintan de azul, o de naranja si el rey cruzaría una casilla atacada.</li>
       <li>Probar la ventana a mano (botón "Jugar en la ventana" de VS Code): el menú, las tres dificultades, jugar con negras (el tablero se da vuelta y la computadora mueve primero), Reiniciar, Menú y Volver a la partida, y agrandar y achicar la ventana.</li>
+      <li>Probar el tema Star Wars a mano: elegirlo y volver al clásico desde el menú (también con una partida empezada), que se distingan los dos bandos en casillas claras y oscuras, el diálogo de promoción con los nombres de los personajes y el nombre al dejar el mouse sobre una pieza.</li>
       <li>Sacar la consola cuando el grupo lo decida (decisión 32): el módulo <code>ajedrez-consola</code>, sus tests, la rama de <code>Principal</code>, el UML y el README.</li>
       <li>Decidir si las tablas por 50 jugadas o repetición (opcional 8) entran antes del congelamiento del 12/11.</li>
       <li>Que cada integrante lea el código de los otros paquetes: la defensa es individual y puede pedir agregar una pieza o cambiar el tamaño del tablero.</li>
@@ -477,6 +483,14 @@
   <section aria-labelledby="t-historial">
     <h2 id="t-historial">Historial</h2>
     <ol class="historial" reversed>
+      <li>
+        <time datetime="2026-10-31">31/10/2026</time>
+        <ul>
+          <li>Tema Star Wars en la ventana: la Rebelión (blancas) contra el Imperio (negras) en el espacio, con un personaje por pieza, brillo azul o rojo según el bando y una insignia con el símbolo de la pieza. El menú suma la opción "Tema" para volver al clásico; la barra de estado y los diálogos usan los nombres del tema ("Rebelión 39 · Imperio 39", "¡Imperio en jaque!", "Darth Vader (dama)").</li>
+          <li><code>Tema</code> (Strategy) con <code>TemaStarWars</code> y <code>TemaClasico</code>; <code>DibujoDePieza</code> pasó a ser interfaz, con <code>DibujoDeGlifo</code> y <code>DibujoDePersonaje</code>; <code>PersonajesDeStarWars</code> dibuja los 12 personajes con figuras. <code>VentanaSwing</code> recibe la lista de temas en lugar de los glifos.</li>
+          <li>Primeros tests de la ventana: <code>TemaStarWarsTest</code> (6). Decisión 33; revisiones en 18 y 31. UML <code>d4_adaptadores</code>. 200 tests en verde.</li>
+        </ul>
+      </li>
       <li>
         <time datetime="2026-10-28">28/10/2026</time>
         <ul>

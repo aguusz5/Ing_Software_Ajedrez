@@ -3,6 +3,8 @@ package gui;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.FlowLayout;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -24,7 +26,6 @@ import juego.EstadoPartida;
 import juego.JuegoDeAjedrez;
 import juego.JugadaLegal;
 import juego.ResultadoJugada;
-import modelo.Pieza;
 import modelo.Posicion;
 import modelo.Tablero;
 
@@ -33,11 +34,10 @@ import modelo.Tablero;
  * elige la pieza y el segundo, el destino; la jugada se le pide al núcleo por el puerto JuegoDeAjedrez.
  * No contiene reglas del ajedrez: si la jugada no vale, muestra el motivo que da el núcleo.
  * Contra la computadora, ella juega el color que no eligió el jugador y la barra avisa qué jugó.
+ * Cómo se ve (fondo, casillas, piezas, nombres de los bandos) lo decide el tema elegido en el menú.
  */
 final class PanelDeLaPartida extends JPanel {
 
-    private static final Color CASILLA_CLARA = new Color(240, 217, 181);
-    private static final Color CASILLA_OSCURA = new Color(181, 136, 99);
     private static final Color CASILLA_ELEGIDA = new Color(246, 246, 105);
     private static final Color CASILLA_LEGAL = new Color(110, 160, 230);
     private static final Color CASILLA_ILEGAL = new Color(240, 150, 60);
@@ -49,7 +49,6 @@ final class PanelDeLaPartida extends JPanel {
             BorderFactory.createEmptyBorder(GROSOR_BORDE, GROSOR_BORDE, GROSOR_BORDE, GROSOR_BORDE);
 
     private final JuegoDeAjedrez juego;
-    private final GlifosDePieza glifos;
     private final Runnable alVolverAlMenu;
     private final PanelDelTablero tablero;
     private final JLabel estado = new JLabel(" ", SwingConstants.CENTER);
@@ -59,6 +58,7 @@ final class PanelDeLaPartida extends JPanel {
     private final JButton rehacer = new JButton("Rehacer");
     private final JButton terminar = new JButton("Terminar partida");
     private final JButton rendirse = new JButton("Rendirse");
+    private Tema tema; // cambia cuando se elige otro en el menú
     // Contra quién se juega. Vacío: uno contra uno. Cambia cada vez que se elige una partida en el menú.
     private Optional<Computadora> computadora = Optional.empty();
     private modelo.Color colorDeLaComputadora = modelo.Color.NEGRO;
@@ -67,10 +67,9 @@ final class PanelDeLaPartida extends JPanel {
     private boolean finAnunciado = false;
     private boolean pensando = false; // mientras la computadora elige, el tablero y los botones no responden
 
-    PanelDeLaPartida(JuegoDeAjedrez juego, GlifosDePieza glifos, Runnable alVolverAlMenu) {
+    PanelDeLaPartida(JuegoDeAjedrez juego, Tema tema, Runnable alVolverAlMenu) {
         super(new BorderLayout());
         this.juego = juego;
-        this.glifos = glifos;
         this.alVolverAlMenu = alVolverAlMenu;
         Tablero inicial = juego.tablero();
         this.tablero = new PanelDelTablero(inicial.ancho(), inicial.alto(), this::alHacerClic);
@@ -78,7 +77,22 @@ final class PanelDeLaPartida extends JPanel {
         add(crearBarraDeBotones(), BorderLayout.NORTH);
         add(tablero, BorderLayout.CENTER);
         add(estado, BorderLayout.SOUTH);
+        usarTema(tema);
+    }
+
+    /** Cambia cómo se ve la partida; la partida en sí sigue igual. */
+    void usarTema(Tema nuevo) {
+        tema = nuevo;
+        estado.setForeground(tema.paleta().texto());
+        tablero.usarColores(tema.paleta().texto(), tema.paleta().marco());
         repintar();
+        repaint();
+    }
+
+    /** El fondo lo pinta el tema; la barra, el tablero y el estado son transparentes y se ven encima. */
+    @Override
+    protected void paintComponent(Graphics graficos) {
+        tema.pintarFondo((Graphics2D) graficos, getWidth(), getHeight());
     }
 
     /** Partida nueva entre dos personas en la misma compu, con las blancas abajo. */
@@ -122,6 +136,7 @@ final class PanelDeLaPartida extends JPanel {
         });
         // Alineada a la izquierda: cuando aparece Rendirse (al final), los demás botones no se mueven.
         JPanel barra = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 6));
+        barra.setOpaque(false);
         for (JButton boton : List.of(menu, reiniciar, deshacer, rehacer, terminar, rendirse)) {
             boton.setFocusPainted(false);
             barra.add(boton);
@@ -163,8 +178,10 @@ final class PanelDeLaPartida extends JPanel {
             mensaje = describir(juego.jugar(origen, destino));
             return;
         }
+        // Los botones dicen cómo se llama cada pieza en el tema: "dama" o "Princesa Leia (dama)".
+        Object[] nombres = opciones.stream().map(tipo -> tema.nombreDe(tipo, juego.turnoActual())).toArray();
         int elegida = JOptionPane.showOptionDialog(this, "¿En qué pieza corona el peón?", "Promoción",
-                JOptionPane.DEFAULT_OPTION, JOptionPane.QUESTION_MESSAGE, null, opciones.toArray(), opciones.get(0));
+                JOptionPane.DEFAULT_OPTION, JOptionPane.QUESTION_MESSAGE, null, nombres, nombres[0]);
         if (elegida != JOptionPane.CLOSED_OPTION) {
             mensaje = describir(juego.jugar(origen, destino, opciones.get(elegida)));
         }
@@ -250,11 +267,12 @@ final class PanelDeLaPartida extends JPanel {
         if (!resultado.valida()) {
             return "Jugada inválida: " + resultado.motivo();
         }
-        return resultado.colorEnJaque().map(color -> "¡Jaque al rey " + color + "!").orElse("");
+        return resultado.colorEnJaque().map(color -> "¡" + tema.bando(color) + " en jaque!").orElse("");
     }
 
     private void repintar() {
         Tablero actual = juego.tablero();
+        Paleta paleta = tema.paleta();
         EstadoPartida fin = juego.estado();
         boolean terminada = fin.terminada();
         if (terminada) {
@@ -270,10 +288,10 @@ final class PanelDeLaPartida extends JPanel {
                 Posicion posicion = new Posicion(columna, fila);
                 // El resaltado se mezcla con el color de la casilla (así se sigue viendo el damero) y la
                 // casilla se enmarca con un borde del mismo tono, para distinguir casillas vecinas.
-                Color base = (columna + fila) % 2 == 0 ? CASILLA_OSCURA : CASILLA_CLARA;
+                Color base = (columna + fila) % 2 == 0 ? paleta.casillaOscura() : paleta.casillaClara();
                 Color tinte = resaltado(posicion, reyEnJaque, legales, ilegales);
                 tablero.mostrar(posicion,
-                        actual.piezaEn(posicion).map(this::dibujoDe),
+                        actual.piezaEn(posicion).map(tema::dibujoDe),
                         tinte == null ? base : mezclar(base, tinte, OPACIDAD_RESALTADO),
                         tinte == null ? SIN_BORDE : BorderFactory.createLineBorder(tinte.darker(), GROSOR_BORDE));
             }
@@ -284,8 +302,8 @@ final class PanelDeLaPartida extends JPanel {
         rehacer.setEnabled(!pensando);
         terminar.setEnabled(!terminada && !pensando);
         rendirse.setVisible(!terminada && enJaque && !pensando);
-        String puntos = "Blancas " + juego.puntos(modelo.Color.BLANCO)
-                + " · Negras " + juego.puntos(modelo.Color.NEGRO) + "  —  ";
+        String puntos = tema.bando(modelo.Color.BLANCO) + " " + juego.puntos(modelo.Color.BLANCO)
+                + " · " + tema.bando(modelo.Color.NEGRO) + " " + juego.puntos(modelo.Color.NEGRO) + "  —  ";
         if (terminada) {
             estado.setText(puntos + "FIN DE LA PARTIDA  —  " + resultado(fin));
             anunciarFin(fin);
@@ -297,15 +315,16 @@ final class PanelDeLaPartida extends JPanel {
 
     private String turno() {
         modelo.Color turno = juego.turnoActual();
+        String bando = tema.bando(turno);
         if (computadora.isEmpty()) {
-            return "Turno de " + turno;
+            return "Turno: " + bando;
         }
-        return turno == colorDeLaComputadora ? "Turno de la computadora (" + turno + ")" : "Tu turno (" + turno + ")";
+        return turno == colorDeLaComputadora ? "Turno de la computadora (" + bando + ")" : "Tu turno (" + bando + ")";
     }
 
     /** Contra la computadora se habla en segunda persona: "Ganaste" o "Ganó la computadora". */
     private String resultado(EstadoPartida fin) {
-        return fin.ganador().map(color -> computadora.isEmpty() ? "Ganador: " + color
+        return fin.ganador().map(color -> computadora.isEmpty() ? "Ganador: " + tema.bando(color)
                         : color == colorDeLaComputadora ? "Ganó la computadora" : "¡Ganaste!")
                 .orElse("Tablas");
     }
@@ -327,13 +346,6 @@ final class PanelDeLaPartida extends JPanel {
                 alVolverAlMenu.run();
             }
         });
-    }
-
-    private DibujoDePieza dibujoDe(Pieza pieza) {
-        boolean esBlanca = pieza.color() == modelo.Color.BLANCO;
-        return new DibujoDePieza(glifos.glifoDe(pieza),
-                esBlanca ? Color.WHITE : Color.BLACK,
-                esBlanca ? Color.BLACK : Color.WHITE);
     }
 
     /** Prioridad: elegida > rey en jaque > destino legal > destino ilegal. null = sin resaltar. */

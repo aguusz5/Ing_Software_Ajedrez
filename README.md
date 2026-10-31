@@ -17,6 +17,10 @@ La ventana arranca en un menú: uno contra uno, o contra la computadora en fáci
 difícil (un minimax que mira 2 o 3 jugadas hacia adelante), con blancas o con negras. Todo corre en la compu,
 sin internet. En la consola, `--ia` hace que las negras las juegue la computadora en difícil.
 
+La ventana tiene dos temas, que se eligen en el menú: **Star Wars** (el que se ve al abrir: la Rebelión, con
+blancas, contra el Imperio, con negras, en el espacio) y **Clásico** (tablero de madera y símbolos de ajedrez).
+El tema cambia solo cómo se ve; las reglas son las mismas.
+
 ## La arquitectura en un dibujo
 
 ```
@@ -50,7 +54,7 @@ respuesta. **Ninguna regla del ajedrez vive en un adaptador.**
 | núcleo › `juego` | La puerta de entrada al núcleo | `JuegoDeAjedrez` (puerto), `Partida`, `ResultadoJugada`, `JugadaLegal` |
 | núcleo › `ia` | El oponente con IA | `Computadora`, `AsesorDeJugadas` (Strategy), `AsesorMinimax`, `AsesorAleatorio` |
 | consola › `consola` | Jugar escribiendo `e2 e4` | `AdaptadorConsola`, `TraductorDeNotacion`, `DibujanteAscii` |
-| gui › `gui` | Jugar con clics | `VentanaSwing`, `PanelDelMenu`, `PanelDeLaPartida`, `PanelDelTablero`, `GlifosDePieza` |
+| gui › `gui` | Jugar con clics | `VentanaSwing`, `PanelDelMenu`, `PanelDeLaPartida`, `PanelDelTablero`, `Tema` (Strategy: `TemaStarWars`, `TemaClasico`), `PersonajesDeStarWars`, `GlifosDePieza` |
 | app › `app` | Arranque (raíz de composición) | `Principal` |
 
 ## Las piezas no son clases: son listas de reglas

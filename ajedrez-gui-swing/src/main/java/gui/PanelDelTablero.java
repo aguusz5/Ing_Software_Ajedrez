@@ -23,7 +23,8 @@ import modelo.Posicion;
  * El tablero en pantalla: casillas que siempre quedan cuadradas, sea cual sea el tamaño de la ventana.
  * Ocupa todo el lugar que puede sin deformarse y queda centrado; lo que sobra es margen. Al costado y
  * abajo muestra las coordenadas, y se puede dar vuelta para que el que juega con negras las tenga abajo.
- * No sabe nada de reglas: la partida le dice qué mostrar en cada casilla.
+ * Es transparente: alrededor de las casillas se ve el fondo del tema. Al pasar el mouse por una pieza
+ * dice cómo se llama. No sabe nada de reglas: la partida le dice qué mostrar en cada casilla.
  */
 final class PanelDelTablero extends JPanel {
 
@@ -31,13 +32,13 @@ final class PanelDelTablero extends JPanel {
     private static final int LADO_PREFERIDO = 64;
     /** Lugar para las coordenadas alrededor del tablero, medido en casillas. */
     private static final double MARGEN = 0.4;
-    private static final Color COLOR_DE_COORDENADAS = new Color(70, 70, 70);
-    private static final Color COLOR_DEL_MARCO = new Color(90, 60, 40);
 
     private final int columnas;
     private final int filas;
     private final Map<Posicion, Casilla> casillas = new HashMap<>();
     private boolean invertido = false;
+    private Color colorDeCoordenadas = Color.DARK_GRAY;
+    private Color colorDelMarco = Color.DARK_GRAY;
     // Dónde quedó el tablero en el último acomodo, para dibujar las coordenadas y el marco en el mismo lugar.
     private int lado;
     private int izquierda;
@@ -45,6 +46,7 @@ final class PanelDelTablero extends JPanel {
 
     PanelDelTablero(int columnas, int filas, Consumer<Posicion> alHacerClic) {
         super(null); // sin LayoutManager: las casillas se acomodan en doLayout
+        setOpaque(false);
         this.columnas = columnas;
         this.filas = filas;
         for (int columna = 0; columna < columnas; columna++) {
@@ -68,10 +70,18 @@ final class PanelDelTablero extends JPanel {
         repaint();
     }
 
+    /** Los colores de las coordenadas y del marco, que dependen del fondo del tema. */
+    void usarColores(Color coordenadas, Color marco) {
+        colorDeCoordenadas = coordenadas;
+        colorDelMarco = marco;
+        repaint();
+    }
+
     /** Qué se ve en una casilla: la pieza (o ninguna), el color de fondo y el borde. */
     void mostrar(Posicion posicion, Optional<DibujoDePieza> pieza, Color fondo, Border borde) {
         Casilla casilla = casillas.get(posicion);
         casilla.pieza = pieza;
+        casilla.setToolTipText(pieza.map(DibujoDePieza::nombre).orElse(null));
         casilla.setBackground(fondo);
         casilla.setBorder(borde);
         casilla.repaint();
@@ -106,10 +116,10 @@ final class PanelDelTablero extends JPanel {
         super.paintComponent(graficos);
         Graphics2D g = (Graphics2D) graficos.create();
         g.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
-        g.setColor(COLOR_DEL_MARCO);
+        g.setColor(colorDelMarco);
         g.drawRect(izquierda - 2, arriba - 2, columnas * lado + 3, filas * lado + 3);
         g.drawRect(izquierda - 1, arriba - 1, columnas * lado + 1, filas * lado + 1);
-        g.setColor(COLOR_DE_COORDENADAS);
+        g.setColor(colorDeCoordenadas);
         g.setFont(getFont().deriveFont(Font.BOLD, Math.max(10f, lado * 0.24f)));
         FontMetrics medidas = g.getFontMetrics();
         int margen = (int) (lado * MARGEN);

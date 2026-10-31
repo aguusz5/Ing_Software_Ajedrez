@@ -197,6 +197,8 @@ se revierte, no se borra: se marca como reemplazada y se dice por cuál.
 - **Cuándo se rompería:** si dos piezas compartieran la inicial: el canciller del test de extensibilidad
   se ve como una C, igual que el caballo en la consola. Ahí haría falta que el tipo de pieza tenga un
   símbolo propio.
+- **Revisión (31/10):** con los temas (decisión 33) se mantiene: el tema Star Wars dibuja con su símbolo,
+  en los colores del bando, cualquier pieza que no tenga personaje.
 
 ---
 
@@ -396,6 +398,8 @@ se revierte, no se borra: se marca como reemplazada y se dice por cuál.
   de inyección (decisión 4).
 - **Cuándo se rompería:** si alguna pantalla tuviera que reemplazarse por otra implementación (por ejemplo,
   un tablero 3D). Ahí esa pantalla pasaría a inyectarse.
+- **Revisión (31/10):** los glifos ya no llegan sueltos a la ventana: llegan dentro de los temas
+  (decisión 33), que también vienen de `Principal`.
 
 ### 32. La interfaz principal es la ventana; la consola se va a sacar
 
@@ -405,3 +409,26 @@ se revierte, no se borra: se marca como reemplazada y se dice por cuál.
 - **Cuándo se rompería:** la consola es la segunda interfaz sobre el mismo puerto, la prueba de que el núcleo
   no depende de cómo se juega (decisiones 1 y 2). Si se saca, esa prueba queda en los tests del núcleo, que lo
   usan sin ninguna interfaz. Si en la defensa se quiere mostrar un segundo adaptador, conviene conservarla.
+
+### 33. La ventana tiene temas intercambiables, y el de Star Wars se dibuja con figuras
+
+- **Qué:** cómo se ve la ventana lo decide un `Tema` (patrón Strategy): fondo, colores (`Paleta`), cómo se
+  dibuja cada pieza y cómo se llaman los bandos. Hay dos: `TemaStarWars` (el que se ve al abrir) y
+  `TemaClasico` (el de antes). Los crea `Principal` y se elige en el menú; la ventana se lo pasa a las dos
+  pantallas. `DibujoDePieza` pasó a ser una interfaz con dos implementaciones: `DibujoDeGlifo` (el símbolo,
+  como antes) y `DibujoDePersonaje`. En Star Wars las blancas son la Rebelión (Luke, Leia, Yoda,
+  Chewbacca, R2-D2 y pilotos) y las negras el Imperio (Palpatine, Vader, Guardia Imperial, Boba Fett,
+  Estrella de la Muerte y stormtroopers). Cada personaje lleva un brillo de su bando (azul o rojo) y una
+  insignia con el símbolo clásico de la pieza. Los personajes son dibujos hechos con figuras (`Personaje`:
+  capas de elipses, polígonos y curvas en una caja de 100 x 100), no imágenes.
+- **Por qué:** el grupo quería darle identidad al juego sin perder el ajedrez clásico. Con el tema como
+  Strategy, sumar un tema es una clase nueva y una línea en `Principal`, sin tocar las pantallas; y las
+  dos implementaciones justifican la interfaz (antes, con un solo aspecto, no hacía falta). Los dibujos
+  con figuras escalan con la casilla, no agregan archivos al jar y evitan usar imágenes con derechos de
+  autor. El brillo resuelve que un stormtrooper (blanco) es del bando negro; la insignia, que no hay que
+  memorizar qué personaje es qué pieza. Los temas no tocan el núcleo: la partida y sus mensajes (por
+  ejemplo, "gana BLANCO por puntos") son los mismos con cualquier tema.
+- **Cuándo se rompería:** si los temas necesitaran cambiar algo más que el aspecto (sonidos, animaciones,
+  otra forma de mostrar el tablero); ahí el `Tema` crecería demasiado y convendría partirlo. Si se
+  quisieran personajes más detallados, dibujarlos con figuras deja de alcanzar y habría que cargar
+  imágenes propias desde los recursos del jar.

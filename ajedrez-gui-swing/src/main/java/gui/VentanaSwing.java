@@ -15,14 +15,15 @@ import juego.JuegoDeAjedrez;
  * desde ahí se elige uno contra uno o contra la computadora, y desde la partida se puede volver al menú
  * sin perderla. La ventana solo cambia de pantalla: jugar lo hace PanelDeLaPartida, por el puerto
  * JuegoDeAjedrez. Las pantallas son partes de la vista, así que las crea la ventana; lo que tiene
- * comportamiento propio (el juego, los glifos, las dificultades) llega por constructor desde Principal.
+ * comportamiento propio (el juego, los temas, las dificultades) llega por constructor desde Principal.
+ * Cuando en el menú se elige otro tema, la ventana se lo pasa a las dos pantallas.
  */
 public final class VentanaSwing {
 
     private static final String TITULO = "Ajedrez";
     private static final String MENU = "menú";
     private static final String PARTIDA = "partida";
-    private static final Dimension TAMANO_MINIMO = new Dimension(600, 520);
+    private static final Dimension TAMANO_MINIMO = new Dimension(600, 560); // que el menú entre entero
 
     private final JFrame ventana = new JFrame(TITULO);
     private final CardLayout pantallas = new CardLayout();
@@ -31,11 +32,14 @@ public final class VentanaSwing {
     private final PanelDeLaPartida partida;
     private String tituloDeLaPartida = TITULO;
 
-    /** Si no hay ninguna dificultad, el menú no ofrece jugar contra la computadora. */
-    public VentanaSwing(JuegoDeAjedrez juego, GlifosDePieza glifos, List<Dificultad> dificultades) {
-        partida = new PanelDeLaPartida(juego, glifos, this::mostrarMenu);
-        menu = new PanelDelMenu(dificultades, this::unoContraUno, this::contraLaComputadora,
-                this::volverALaPartida, this::salir);
+    /**
+     * El primer tema de la lista es el que se ve al abrir. Si no hay ninguna dificultad, el menú no
+     * ofrece jugar contra la computadora.
+     */
+    public VentanaSwing(JuegoDeAjedrez juego, List<Tema> temas, List<Dificultad> dificultades) {
+        partida = new PanelDeLaPartida(juego, temas.get(0), this::mostrarMenu);
+        menu = new PanelDelMenu(dificultades, temas, this::unoContraUno, this::contraLaComputadora,
+                this::usarTema, this::volverALaPartida, this::salir);
         contenido.add(menu, MENU);
         contenido.add(partida, PARTIDA);
         ventana.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -57,8 +61,12 @@ public final class VentanaSwing {
 
     private void contraLaComputadora(Dificultad dificultad, modelo.Color colorDelJugador) {
         partida.empezarContraLaComputadora(dificultad.computadora(), colorDelJugador);
-        mostrarPartida(TITULO + " — contra la computadora (" + dificultad.nombre() + "), jugás con "
-                + colorDelJugador);
+        mostrarPartida(TITULO + " — contra la computadora (" + dificultad.nombre() + ")");
+    }
+
+    private void usarTema(Tema tema) {
+        menu.usarTema(tema);
+        partida.usarTema(tema);
     }
 
     private void volverALaPartida() {

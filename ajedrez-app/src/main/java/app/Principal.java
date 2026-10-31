@@ -13,6 +13,10 @@ import consola.DibujanteAscii;
 import consola.TraductorDeNotacion;
 import gui.Dificultad;
 import gui.GlifosDePieza;
+import gui.PersonajesDeStarWars;
+import gui.Tema;
+import gui.TemaClasico;
+import gui.TemaStarWars;
 import gui.VentanaSwing;
 import ia.AsesorAleatorio;
 import ia.AsesorMinimax;
@@ -29,8 +33,9 @@ import reglas.ValidadorDeJugadas;
 
 /**
  * Raíz de composición: el único lugar que conoce todas las clases concretas, las crea con new
- * y las conecta. Con --gui se abre la ventana, que arranca en el menú de inicio. Sin argumentos se
- * juega por consola; ahí, con --ia, las negras las juega la computadora en la dificultad más alta.
+ * y las conecta. Con --gui se abre la ventana, que arranca en el menú de inicio con el tema Star Wars
+ * (el clásico se elige en el menú). Sin argumentos se juega por consola; ahí, con --ia, las negras las
+ * juega la computadora en la dificultad más alta.
  */
 public final class Principal {
 
@@ -55,7 +60,9 @@ public final class Principal {
         JuegoDeAjedrez juego = new Partida(tablero, validador, detector, generador);
         List<Dificultad> dificultades = crearDificultades(generador, detector);
         if (opciones.contains("--gui")) {
-            SwingUtilities.invokeLater(() -> new VentanaSwing(juego, new GlifosDePieza(), dificultades).mostrar());
+            GlifosDePieza glifos = new GlifosDePieza();
+            List<Tema> temas = List.of(new TemaStarWars(glifos, new PersonajesDeStarWars()), new TemaClasico(glifos));
+            SwingUtilities.invokeLater(() -> new VentanaSwing(juego, temas, dificultades).mostrar());
         } else {
             Optional<Computadora> computadora = opciones.contains("--ia")
                     ? Optional.of(dificultades.get(dificultades.size() - 1).computadora())
