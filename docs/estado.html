@@ -354,7 +354,7 @@
           <tr>
             <th scope="row">Tests unitarios del núcleo</th>
             <td><span class="estado parcial">En curso</span></td>
-            <td class="detalle">146 tests en verde: 120 del núcleo y 26 de la consola.</td>
+            <td class="detalle">202 tests en verde: 163 del núcleo, 31 de la consola y 8 de la ventana.</td>
           </tr>
           <tr>
             <th scope="row">Documento de justificación</th>
@@ -489,6 +489,7 @@
           <li>Tema Star Wars en la ventana: la Rebelión (blancas) contra el Imperio (negras) en el espacio, con un personaje por pieza, brillo azul o rojo según el bando y una insignia con el símbolo de la pieza. El menú suma la opción "Tema" para volver al clásico; la barra de estado y los diálogos usan los nombres del tema ("Rebelión 39 · Imperio 39", "¡Imperio en jaque!", "Darth Vader (dama)").</li>
           <li><code>Tema</code> (Strategy) con <code>TemaStarWars</code> y <code>TemaClasico</code>; <code>DibujoDePieza</code> pasó a ser interfaz, con <code>DibujoDeGlifo</code> y <code>DibujoDePersonaje</code>; <code>PersonajesDeStarWars</code> dibuja los 12 personajes con figuras. <code>VentanaSwing</code> recibe la lista de temas en lugar de los glifos.</li>
           <li>Primeros tests de la ventana: <code>TemaStarWarsTest</code> (6). Decisión 33; revisiones en 18 y 31. UML <code>d4_adaptadores</code>. 200 tests en verde.</li>
+          <li>Revisión de la ventana en los dos temas: el tamaño mínimo pasó a 600 x 640 porque con 560 el menú se cortaba ("Salir" quedaba afuera, sobre todo con "Volver a la partida"); los botones de tema muestran el foco del teclado como los demás; cada casilla se anuncia con su coordenada ("e4") para los lectores de pantalla. <code>PanelDelTableroTest</code> (2). 202 tests en verde.</li>
         </ul>
       </li>
       <li>

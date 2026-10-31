@@ -53,6 +53,9 @@ final class PanelDelTablero extends JPanel {
             for (int fila = 0; fila < filas; fila++) {
                 Posicion posicion = new Posicion(columna, fila);
                 Casilla casilla = new Casilla();
+                // Para los lectores de pantalla: la casilla se llama por su coordenada y la pieza que tiene
+                // la dice la descripción, que Swing toma del texto al pasar el mouse.
+                casilla.getAccessibleContext().setAccessibleName(coordenada(posicion));
                 casilla.addActionListener(evento -> alHacerClic.accept(posicion));
                 casillas.put(posicion, casilla);
                 add(casilla);
@@ -99,6 +102,11 @@ final class PanelDelTablero extends JPanel {
                 izquierda + columnaEnPantalla(posicion.columna()) * lado,
                 arriba + filaEnPantalla(posicion.fila()) * lado,
                 lado, lado));
+    }
+
+    /** "e4": la letra de la columna y el número de la fila, como las coordenadas del borde. */
+    private static String coordenada(Posicion posicion) {
+        return (char) ('a' + posicion.columna()) + String.valueOf(posicion.fila() + 1);
     }
 
     private int columnaEnPantalla(int columna) {

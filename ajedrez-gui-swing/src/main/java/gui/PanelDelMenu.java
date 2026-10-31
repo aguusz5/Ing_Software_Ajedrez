@@ -176,7 +176,6 @@ final class PanelDelMenu extends JPanel {
         for (Tema opcion : temas) {
             JRadioButton boton = comun(new JRadioButton(opcion.nombre(), opcion == temas.get(0)));
             boton.setOpaque(false);
-            boton.setFocusPainted(false);
             boton.addActionListener(evento -> alElegirTema.accept(opcion));
             grupo.add(boton);
             fila.add(boton);

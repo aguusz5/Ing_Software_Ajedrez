@@ -23,7 +23,8 @@ public final class VentanaSwing {
     private static final String TITULO = "Ajedrez";
     private static final String MENU = "menú";
     private static final String PARTIDA = "partida";
-    private static final Dimension TAMANO_MINIMO = new Dimension(600, 560); // que el menú entre entero
+    /** Que el menú entre entero, con "Volver a la partida" y el epígrafe; incluye el borde de la ventana. */
+    private static final Dimension TAMANO_MINIMO = new Dimension(600, 640);
 
     private final JFrame ventana = new JFrame(TITULO);
     private final CardLayout pantallas = new CardLayout();
