@@ -1,7 +1,7 @@
 @startuml d4_adaptadores
 !include common.iuml
 top to bottom direction
-package "ajedrez-nucleo :: juego (solo el puerto)" #EAF6EA {
+package "ajedrez-nucleo :: juego (el puerto y quien lo implementa)" #EAF6EA {
   interface JuegoDeAjedrez <<puerto de entrada>>
   class Partida
 }
@@ -33,9 +33,12 @@ package "ajedrez-gui-swing (adaptador)" #E8F1FA {
   }
   class PanelDelMenu <<pantalla>> {
     ~usarTema(t : Tema)
+    ~permitirVolverALaPartida()
   }
   class PanelDeLaPartida <<pantalla>> {
     ~usarTema(t : Tema)
+    ~empezarUnoContraUno()
+    ~empezarContraLaComputadora(c : Computadora, colorDelJugador : Color)
   }
   class PanelDelTablero {
     ~setInvertido(invertido : boolean)
@@ -66,18 +69,26 @@ package "ajedrez-gui-swing (adaptador)" #E8F1FA {
     +dibujar(g : Graphics, ancho : int, alto : int)
   }
   class DibujoDeGlifo <<record>> {
+    +nombre : String
     +glifo : String
     +relleno, trazo : Color
   }
   class DibujoDePersonaje <<record>> {
+    +nombre : String
     +brillo : Color
   }
   class PersonajesDeStarWars {
     ~personajeDe(tipo : String, bando : Color) : Optional<Personaje>
   }
   class Personaje {
+    ~{static} LADO : double
+    ~Personaje(nombre : String, capas : List<Capa>)
     ~nombre() : String
     ~dibujar(g : Graphics2D, brillo : Color)
+  }
+  class "Personaje.Capa" as Capa <<record>> {
+    +forma : Shape
+    +pintura : Paint
   }
   class GlifosDePieza {
     +glifoDe(p : Pieza) : String
@@ -113,18 +124,29 @@ TemaClasico --> GlifosDePieza
 TemaStarWars --> GlifosDePieza
 TemaStarWars --> PersonajesDeStarWars
 PersonajesDeStarWars --> "12" Personaje
+Personaje *-- "1..*" Capa
 Dificultad --> Computadora
 AdaptadorConsola --> "0..1" Computadora
 Principal ..> Partida : new + inyecta
 Principal ..> Computadora : new (una por dificultad)
 Principal ..> Dificultad : new
 Principal ..> AdaptadorConsola : new + inyecta
+Principal ..> TraductorDeNotacion : new
+Principal ..> DibujanteAscii : new
 Principal ..> VentanaSwing : new + inyecta
 Principal ..> TemaStarWars : new
 Principal ..> TemaClasico : new
+Principal ..> GlifosDePieza : new
+Principal ..> PersonajesDeStarWars : new
 note bottom of PanelDelTablero
   Acomoda las casillas a mano: el lado más grande que entra
   a lo ancho y a lo alto. Siempre cuadradas y centradas.
+end note
+note top of PanelDelMenu
+  Las pantallas las crea VentanaSwing, y el tablero, PanelDeLaPartida.
+  Ninguno conoce a quien lo creó: avisan lo que se eligió o se
+  clickeó con callbacks (Runnable, Consumer, BiConsumer)
+  que reciben por constructor.
 end note
 note bottom of PersonajesDeStarWars
   Rebelión (blancas): Luke, Leia, Yoda, Chewbacca, R2-D2, piloto.

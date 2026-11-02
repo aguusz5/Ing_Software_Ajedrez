@@ -41,10 +41,10 @@ package "ajedrez-nucleo :: modelo" #EAF6EA {
     +jugadasCandidatas(t : Tablero, desde : Posicion) : List<Jugada>
   }
   class TipoDePieza {
-    +nombre : String
-    +esRey : boolean
-    +valor : int
-    +TipoDePieza(nombre, esRey, valor, reglas : List<ReglaDeMovimiento>)
+    +TipoDePieza(nombre : String, esRey : boolean, valor : int, reglas : List<ReglaDeMovimiento>)
+    +nombre() : String
+    +esRey() : boolean
+    +valor() : int
     +reglas() : List<ReglaDeMovimiento>
   }
 }

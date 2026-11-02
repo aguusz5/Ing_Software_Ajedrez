@@ -33,7 +33,7 @@ package "ajedrez-nucleo :: reglas" #EAF6EA {
 }
 Computadora --> "asesor" AsesorDeJugadas
 Computadora --> "respaldo" AsesorDeJugadas
-Computadora ..> JuegoDeAjedrez : jugadasLegales(), tablero()
+Computadora ..> JuegoDeAjedrez : jugadasLegales(), tablero(), turnoActual()
 Computadora ..> JugadaDeLaComputadora : devuelve
 AsesorAleatorio ..|> AsesorDeJugadas
 AsesorMinimax ..|> AsesorDeJugadas
@@ -42,7 +42,8 @@ AsesorMinimax --> DetectorDeJaque
 AsesorDeJugadas ..> JugadaLegal
 note bottom of Computadora
   No le cree al asesor: si la jugada no está entre las legales
-  o no contestó, reintenta y después usa el respaldo.
+  o no contestó, reintenta y después usa el respaldo. Si el
+  respaldo tampoco sirve, toma la primera jugada legal.
   No juega: el adaptador hace la jugada por el puerto,
   y ahí el núcleo la vuelve a validar.
 end note

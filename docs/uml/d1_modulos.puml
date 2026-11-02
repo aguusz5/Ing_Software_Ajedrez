@@ -25,12 +25,14 @@ VentanaSwing --> IN : usa
 AdaptadorConsola --> IA : usa
 VentanaSwing --> IA : usa
 G ..|> IN
-IA --> IN : jugadasLegales()
+IA --> IN : jugadasLegales(), tablero(), turnoActual()
 note bottom of core
   Las flechas de dependencia apuntan SIEMPRE hacia el núcleo.
   ajedrez-nucleo no tiene en su pom.xml ninguna dependencia
   (salvo JUnit en scope test): el compilador impide que
-  el núcleo importe Swing, consola o IO.
+  el núcleo importe clases de la consola o de la ventana.
+  Swing, System.out y los archivos vienen con el JDK: que el
+  núcleo no los use es una regla del proyecto, no del compilador.
   El núcleo no necesita nada del exterior, así que no hay
   puerto de salida: jugar() devuelve un ResultadoJugada y listo.
   La IA (minimax) también vive en el núcleo.

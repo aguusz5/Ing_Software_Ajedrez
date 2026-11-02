@@ -27,7 +27,14 @@ package "ajedrez-nucleo :: juego" #EAF6EA {
     +{static} de(j : Jugada) : JugadaLegal
   }
   class Partida {
+    -pasado : Deque<Foto>
+    -futuro : Deque<Foto>
     +Partida(tablero : Tablero, validador : ValidadorDeJugadas, detector : DetectorDeJaque, generador : GeneradorDeJugadasLegales)
+  }
+  class "Partida.Foto" as Foto <<record privado>> <<Memento>> {
+    +tablero : Tablero
+    +turno : Color
+    +estado : EstadoPartida
   }
   class EstadoPartida <<record>> {
     +terminada : boolean
@@ -80,6 +87,7 @@ Partida -down--> ValidadorDeJugadas
 Partida -down---> DetectorDeJaque
 Partida -down--> GeneradorDeJugadasLegales
 Partida --> EstadoPartida
+Partida *-- "0..*" Foto : pasado y futuro
 JuegoDeAjedrez ..> JugadaLegal : devuelve
 ReglaPiezaPropia ..|> ReglaDeValidacion
 ReglaNoDejarReyEnJaque ..|> ReglaDeValidacion
@@ -93,4 +101,9 @@ JuegoDeAjedrez -[hidden]down-> ReglaPiezaPropia
 JuegoDeAjedrez -[hidden]down-> ValidadorDeJugadas
 ResultadoJugada -[hidden]down-> ReglaNoDejarReyEnJaque
 ResultadoJugada -[hidden]down-> DetectorDeJaque
+note right of Foto
+  Memento (decisión 24): antes de cada cambio, Partida apila
+  una foto en el pasado. deshacer() y rehacer() mueven fotos
+  entre las dos pilas; no se calcula la inversa de la jugada.
+end note
 @enduml
