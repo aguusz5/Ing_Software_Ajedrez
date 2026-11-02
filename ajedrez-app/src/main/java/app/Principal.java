@@ -1,10 +1,14 @@
 package app;
 
+import java.awt.image.BufferedImage;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.List;
 import java.util.Optional;
 import java.util.Random;
 import java.util.Scanner;
 
+import javax.imageio.ImageIO;
 import javax.swing.SwingUtilities;
 
 import configuracion.TableroEstandar;
@@ -44,6 +48,8 @@ public final class Principal {
     private static final int PROFUNDIDAD_DIFICIL = 3;
     /** Los asesores de la computadora siempre devuelven una jugada legal: con un intento alcanza. */
     private static final int INTENTOS = 1;
+    /** El póster de fondo del tema Star Wars, en los recursos del módulo de la ventana (paquete gui). */
+    private static final String FONDO_STAR_WARS = "fondo-star-wars.jpg";
 
     private Principal() {
     }
@@ -61,7 +67,9 @@ public final class Principal {
         List<Dificultad> dificultades = crearDificultades(generador, detector);
         if (opciones.contains("--gui")) {
             GlifosDePieza glifos = new GlifosDePieza();
-            List<Tema> temas = List.of(new TemaStarWars(glifos, new PersonajesDeStarWars()), new TemaClasico(glifos));
+            List<Tema> temas = List.of(
+                    new TemaStarWars(glifos, new PersonajesDeStarWars(), cargarImagen(FONDO_STAR_WARS)),
+                    new TemaClasico(glifos));
             SwingUtilities.invokeLater(() -> new VentanaSwing(juego, temas, dificultades).mostrar());
         } else {
             Optional<Computadora> computadora = opciones.contains("--ia")
@@ -69,6 +77,15 @@ public final class Principal {
                     : Optional.empty();
             new AdaptadorConsola(juego, new TraductorDeNotacion(), new DibujanteAscii(),
                     new Scanner(System.in), System.out, computadora).ejecutar();
+        }
+    }
+
+    /** Una imagen de los recursos de la ventana. Si no está o no se puede leer, vacía: el tema se arregla sin ella. */
+    private static Optional<BufferedImage> cargarImagen(String nombre) {
+        try (InputStream entrada = TemaStarWars.class.getResourceAsStream(nombre)) {
+            return entrada == null ? Optional.empty() : Optional.ofNullable(ImageIO.read(entrada));
+        } catch (IOException e) {
+            return Optional.empty();
         }
     }
 

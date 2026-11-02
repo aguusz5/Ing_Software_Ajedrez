@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.awt.image.BufferedImage;
 import java.util.List;
+import java.util.Optional;
 
 import org.junit.jupiter.api.Test;
 
@@ -23,7 +24,7 @@ class TemaStarWarsTest {
             new TipoDePieza("canciller", false, 8, List.of((tablero, desde, pieza) -> List.of()));
 
     private final PersonajesDeStarWars personajes = new PersonajesDeStarWars();
-    private final TemaStarWars tema = new TemaStarWars(new GlifosDePieza(), personajes);
+    private final TemaStarWars tema = new TemaStarWars(new GlifosDePieza(), personajes, Optional.empty());
 
     @Test
     void personajeDe_cadaPiezaEstandarDeCadaBando_tienePersonaje() {
@@ -78,6 +79,45 @@ class TemaStarWarsTest {
 
         // Assert
         assertTrue(pixelesPintados(imagen) > lado * lado / 3, "el casco debería ocupar buena parte de la caja");
+    }
+
+    @Test
+    void pintarFondo_conImagenMasAnchaQueLaVentana_laCubreEnteraSinDejarHuecos() {
+        // Arrange
+        BufferedImage roja = new BufferedImage(16, 9, BufferedImage.TYPE_INT_RGB);
+        pintarDe(roja, java.awt.Color.RED);
+        TemaStarWars conImagen = new TemaStarWars(new GlifosDePieza(), personajes, Optional.of(roja));
+        BufferedImage ventana = new BufferedImage(60, 80, BufferedImage.TYPE_INT_RGB);
+
+        // Act
+        conImagen.pintarFondo(ventana.createGraphics(), ventana.getWidth(), ventana.getHeight());
+
+        // Assert
+        for (int[] esquina : new int[][] {{0, 0}, {59, 0}, {0, 79}, {59, 79}}) {
+            assertEquals(java.awt.Color.RED.getRGB(), ventana.getRGB(esquina[0], esquina[1]),
+                    "la esquina " + esquina[0] + "," + esquina[1] + " debería tener la imagen");
+        }
+    }
+
+    @Test
+    void pintarFondo_sinImagen_pintaElEspacioOscuro() {
+        // Arrange
+        BufferedImage ventana = new BufferedImage(60, 80, BufferedImage.TYPE_INT_RGB);
+        pintarDe(ventana, java.awt.Color.WHITE);
+
+        // Act
+        tema.pintarFondo(ventana.createGraphics(), ventana.getWidth(), ventana.getHeight());
+
+        // Assert
+        java.awt.Color esquina = new java.awt.Color(ventana.getRGB(0, ventana.getHeight() - 1));
+        assertTrue(esquina.getRed() + esquina.getGreen() + esquina.getBlue() < 3 * 60, "el espacio es casi negro");
+    }
+
+    private static void pintarDe(BufferedImage imagen, java.awt.Color color) {
+        java.awt.Graphics2D g = imagen.createGraphics();
+        g.setColor(color);
+        g.fillRect(0, 0, imagen.getWidth(), imagen.getHeight());
+        g.dispose();
     }
 
     private static int pixelesPintados(BufferedImage imagen) {

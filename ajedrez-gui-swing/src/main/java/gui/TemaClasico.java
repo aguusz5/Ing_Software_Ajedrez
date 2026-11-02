@@ -11,7 +11,8 @@ public final class TemaClasico implements Tema {
     private static final Color FONDO = new Color(245, 238, 226);
     private static final Paleta PALETA = new Paleta(
             new Color(240, 217, 181), new Color(181, 136, 99),
-            new Color(60, 60, 60), new Color(40, 30, 20), new Color(120, 90, 60), new Color(90, 60, 40));
+            new Color(60, 60, 60), new Color(40, 30, 20), new Color(120, 90, 60), new Color(90, 60, 40),
+            new Color(0, 0, 0, 0)); // el fondo es liso: el menú no necesita velo
 
     private final GlifosDePieza glifos;
 

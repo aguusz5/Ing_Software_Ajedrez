@@ -58,11 +58,12 @@ package "ajedrez-gui-swing (adaptador)" #E8F1FA {
     +TemaClasico(glifos : GlifosDePieza)
   }
   class TemaStarWars {
-    +TemaStarWars(glifos : GlifosDePieza, personajes : PersonajesDeStarWars)
+    +TemaStarWars(glifos : GlifosDePieza, personajes : PersonajesDeStarWars, imagenDeFondo : Optional<BufferedImage>)
   }
   class Paleta <<record>> {
     +casillaClara, casillaOscura : Color
     +texto, titulo, epigrafe, marco : Color
+    +fondoDelMenu : Color
   }
   interface DibujoDePieza {
     +nombre() : String
@@ -134,7 +135,7 @@ Principal ..> AdaptadorConsola : new + inyecta
 Principal ..> TraductorDeNotacion : new
 Principal ..> DibujanteAscii : new
 Principal ..> VentanaSwing : new + inyecta
-Principal ..> TemaStarWars : new
+Principal ..> TemaStarWars : new + le pasa el póster
 Principal ..> TemaClasico : new
 Principal ..> GlifosDePieza : new
 Principal ..> PersonajesDeStarWars : new
@@ -152,5 +153,7 @@ note bottom of PersonajesDeStarWars
   Rebelión (blancas): Luke, Leia, Yoda, Chewbacca, R2-D2, piloto.
   Imperio (negras): Palpatine, Vader, Guardia Imperial, Boba Fett,
   Estrella de la Muerte, stormtrooper. Dibujados con figuras.
+  El fondo es un póster (gui/fondo-star-wars.jpg, en los recursos):
+  lo lee Principal; si no está, TemaStarWars dibuja el espacio.
 end note
 @enduml

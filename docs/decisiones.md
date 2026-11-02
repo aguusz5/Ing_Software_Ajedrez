@@ -432,3 +432,12 @@ se revierte, no se borra: se marca como reemplazada y se dice por cuál.
   otra forma de mostrar el tablero); ahí el `Tema` crecería demasiado y convendría partirlo. Si se
   quisieran personajes más detallados, dibujarlos con figuras deja de alcanzar y habría que cargar
   imágenes propias desde los recursos del jar.
+- **Revisión (02/11):** el fondo de Star Wars pasó a ser una imagen: el arte de un póster de la película,
+  achicado a 1920 x 1080 (`gui/fondo-star-wars.jpg`, en los recursos del módulo de la ventana). La lee
+  `Principal` y se la pasa a `TemaStarWars` por constructor (`Optional`); si falta o no se puede leer, el
+  tema dibuja el espacio como antes. Cubre la ventana sin deformarse y queda pegada a la derecha, donde
+  están los personajes. Para que el menú se lea encima, la `Paleta` suma `fondoDelMenu`: un velo oscuro
+  detrás de las opciones (transparente en el clásico). Las piezas siguen dibujadas con figuras. El grupo
+  eligió la imagen a sabiendas de que tiene derechos de autor y de que el repositorio es público: se usa
+  en un trabajo práctico, sin fines comerciales. Si hubiera que sacarla, alcanza con borrar el archivo y
+  el tema vuelve solo al fondo dibujado.

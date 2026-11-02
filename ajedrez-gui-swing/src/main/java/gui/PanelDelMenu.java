@@ -1,5 +1,6 @@
 package gui;
 
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
@@ -7,6 +8,8 @@ import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.GridBagLayout;
+import java.awt.Rectangle;
+import java.awt.RenderingHints;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.BiConsumer;
@@ -33,7 +36,11 @@ final class PanelDelMenu extends JPanel {
 
     private static final int ANCHO = 380;
     private static final int ALTO_DE_BOTON = 42;
+    /** Cuánto se pasa el velo de la columna de opciones, para que no quede pegado a los textos. */
+    private static final int MARGEN_DEL_VELO = 18;
+    private static final int REDONDEO_DEL_VELO = 24;
 
+    private final JPanel columna = new JPanel();
     /** Los textos comunes: al cambiar de tema toman su color de texto. */
     private final List<JComponent> textos = new ArrayList<>();
     private final JLabel epigrafe = texto(" ", Font.ITALIC, 14f);
@@ -50,7 +57,6 @@ final class PanelDelMenu extends JPanel {
                  BiConsumer<Dificultad, modelo.Color> alElegirContraLaComputadora, Consumer<Tema> alElegirTema,
                  Runnable alVolverALaPartida, Runnable alSalir) {
         super(new GridBagLayout()); // centra la columna en la ventana, sea del tamaño que sea
-        JPanel columna = new JPanel();
         columna.setLayout(new BoxLayout(columna, BoxLayout.Y_AXIS));
         columna.setOpaque(false);
 
@@ -109,6 +115,23 @@ final class PanelDelMenu extends JPanel {
     @Override
     protected void paintComponent(Graphics graficos) {
         tema.pintarFondo((Graphics2D) graficos, getWidth(), getHeight());
+        pintarVelo((Graphics2D) graficos);
+    }
+
+    /** Detrás de la columna de opciones, el fondo del menú del tema: así se leen sobre cualquier imagen. */
+    private void pintarVelo(Graphics2D graficos) {
+        Color velo = tema.paleta().fondoDelMenu();
+        if (velo.getAlpha() == 0) {
+            return;
+        }
+        Graphics2D g = (Graphics2D) graficos.create();
+        g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        g.setColor(velo);
+        Rectangle zona = columna.getBounds();
+        g.fillRoundRect(zona.x - MARGEN_DEL_VELO, zona.y - MARGEN_DEL_VELO,
+                zona.width + 2 * MARGEN_DEL_VELO, zona.height + 2 * MARGEN_DEL_VELO,
+                REDONDEO_DEL_VELO, REDONDEO_DEL_VELO);
+        g.dispose();
     }
 
     /** Desde que hay una partida empezada, el menú ofrece volver a ella. */

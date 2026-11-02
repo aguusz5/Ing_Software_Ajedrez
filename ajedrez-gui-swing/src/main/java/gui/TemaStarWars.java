@@ -7,6 +7,8 @@ import java.awt.RadialGradientPaint;
 import java.awt.RenderingHints;
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.Point2D;
+import java.awt.image.BufferedImage;
+import java.util.Optional;
 
 import modelo.Pieza;
 
@@ -14,7 +16,8 @@ import modelo.Pieza;
  * Tema Star Wars: la Rebelión (blancas) contra el Imperio (negras), en el espacio. Cada pieza es un
  * personaje con el brillo de su bando, azul la Rebelión y rojo el Imperio, y una insignia con el símbolo
  * de la pieza. Una pieza sin personaje (una pieza nueva del núcleo) se dibuja con su símbolo, en los
- * colores del bando: así se ve sin tocar este tema.
+ * colores del bando: así se ve sin tocar este tema. El fondo es la imagen que llega por constructor (el
+ * póster); si no llega, se dibuja el espacio con estrellas.
  */
 public final class TemaStarWars implements Tema {
 
@@ -25,7 +28,8 @@ public final class TemaStarWars implements Tema {
             new Color(205, 215, 235),
             new Color(255, 232, 31),   // el amarillo del título de las películas
             new Color(75, 213, 238),   // el celeste de "Hace mucho tiempo..."
-            new Color(90, 140, 200));
+            new Color(90, 140, 200),
+            new Color(4, 6, 18, 200)); // el menú se lee aunque abajo estén los personajes del póster
     private static final Color ESPACIO_ARRIBA = new Color(12, 14, 34);
     private static final Color ESPACIO_ABAJO = new Color(2, 2, 8);
     private static final Color NEBULOSA_VIOLETA = new Color(110, 50, 160, 70);
@@ -37,10 +41,13 @@ public final class TemaStarWars implements Tema {
 
     private final GlifosDePieza glifos;
     private final PersonajesDeStarWars personajes;
+    private final Optional<BufferedImage> imagenDeFondo;
 
-    public TemaStarWars(GlifosDePieza glifos, PersonajesDeStarWars personajes) {
+    public TemaStarWars(GlifosDePieza glifos, PersonajesDeStarWars personajes,
+                        Optional<BufferedImage> imagenDeFondo) {
         this.glifos = glifos;
         this.personajes = personajes;
+        this.imagenDeFondo = imagenDeFondo;
     }
 
     @Override
@@ -82,12 +89,32 @@ public final class TemaStarWars implements Tema {
                 .orElseGet(() -> new DibujoDeGlifo(tipo, glifo, rebelde ? Color.WHITE : Color.BLACK, brillo));
     }
 
-    /** El espacio: un degradé casi negro, dos nebulosas, estrellas y un planeta en la esquina. */
+    /** La imagen, si llegó; si no, el espacio dibujado. */
     @Override
     public void pintarFondo(Graphics2D g, int ancho, int alto) {
         if (ancho <= 0 || alto <= 0) {
             return;
         }
+        imagenDeFondo.ifPresentOrElse(imagen -> pintarImagen(g, imagen, ancho, alto),
+                () -> pintarEspacio(g, ancho, alto));
+    }
+
+    /**
+     * La imagen cubre todo sin deformarse: se agranda hasta tapar el ancho y el alto, y lo que sobra se
+     * corta. Queda pegada a la derecha, donde el póster tiene los personajes, y centrada en el alto.
+     */
+    private static void pintarImagen(Graphics2D g, BufferedImage imagen, int ancho, int alto) {
+        double escala = Math.max((double) ancho / imagen.getWidth(), (double) alto / imagen.getHeight());
+        int anchoEscalado = (int) Math.ceil(imagen.getWidth() * escala);
+        int altoEscalado = (int) Math.ceil(imagen.getHeight() * escala);
+        Graphics2D fondo = (Graphics2D) g.create();
+        fondo.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+        fondo.drawImage(imagen, ancho - anchoEscalado, (alto - altoEscalado) / 2, anchoEscalado, altoEscalado, null);
+        fondo.dispose();
+    }
+
+    /** El espacio: un degradé casi negro, dos nebulosas, estrellas y un planeta en la esquina. */
+    private static void pintarEspacio(Graphics2D g, int ancho, int alto) {
         Graphics2D fondo = (Graphics2D) g.create();
         fondo.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         fondo.setPaint(new GradientPaint(0, 0, ESPACIO_ARRIBA, 0, alto, ESPACIO_ABAJO));

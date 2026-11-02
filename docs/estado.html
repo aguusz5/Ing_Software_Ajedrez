@@ -183,7 +183,7 @@
   <header class="cabecera">
     <div class="eyebrow">TPO Ajedrez · Ingeniería de Software</div>
     <h1>Dónde estamos</h1>
-    <p class="sello"><span>Última actualización</span> <time datetime="2026-10-31">31 de octubre de 2026</time></p>
+    <p class="sello"><span>Última actualización</span> <time datetime="2026-11-02">2 de noviembre de 2026</time></p>
     <p class="bajada">El alcance obligatorio está completo y probado: las seis piezas, turnos, captura,
       validación y jaque, jugables por consola y por ventana. Por calendario el roadmap nos ubica en la
       fase 3, así que vamos adelantados: ya están los opcionales 0 a 7 y el menú de inicio.</p>
@@ -354,7 +354,7 @@
           <tr>
             <th scope="row">Tests unitarios del núcleo</th>
             <td><span class="estado parcial">En curso</span></td>
-            <td class="detalle">202 tests en verde: 163 del núcleo, 31 de la consola y 8 de la ventana.</td>
+            <td class="detalle">204 tests en verde: 163 del núcleo, 31 de la consola y 10 de la ventana.</td>
           </tr>
           <tr>
             <th scope="row">Documento de justificación</th>
@@ -433,7 +433,7 @@
           <tr>
             <th scope="row">Tema Star Wars en la ventana</th>
             <td><span class="estado hecho">Hecho</span></td>
-            <td class="detalle">Agregado por el grupo, fuera del roadmap. La ventana tiene temas intercambiables (<code>Tema</code>, Strategy) que se eligen en el menú: Star Wars, el que se ve al abrir, y Clásico. En Star Wars la Rebelión (blancas: Luke, Leia, Yoda, Chewbacca, R2-D2, pilotos) juega contra el Imperio (negras: Palpatine, Vader, Guardia Imperial, Boba Fett, Estrella de la Muerte, stormtroopers) sobre un fondo de estrellas. Cada personaje tiene un brillo de su bando y una insignia con la pieza; al pasar el mouse dice quién es. Dibujos hechos con figuras, sin imágenes.</td>
+            <td class="detalle">Agregado por el grupo, fuera del roadmap. La ventana tiene temas intercambiables (<code>Tema</code>, Strategy) que se eligen en el menú: Star Wars, el que se ve al abrir, y Clásico. En Star Wars la Rebelión (blancas: Luke, Leia, Yoda, Chewbacca, R2-D2, pilotos) juega contra el Imperio (negras: Palpatine, Vader, Guardia Imperial, Boba Fett, Estrella de la Muerte, stormtroopers) sobre un fondo de estrellas. Cada personaje tiene un brillo de su bando y una insignia con la pieza; al pasar el mouse dice quién es. Las piezas están dibujadas con figuras; el fondo es el póster de la película (si falta el archivo, se dibuja el espacio).</td>
           </tr>
           <tr>
             <th scope="row">Tablas por 50 jugadas o repetición</th>
@@ -483,6 +483,15 @@
   <section aria-labelledby="t-historial">
     <h2 id="t-historial">Historial</h2>
     <ol class="historial" reversed>
+      <li>
+        <time datetime="2026-11-02">02/11/2026</time>
+        <ul>
+          <li>Tema Star Wars con el póster de la película de fondo (<code>gui/fondo-star-wars.jpg</code>, 1920 x 1080). Cubre la ventana sin deformarse, pegado a la derecha donde están los personajes; maximizada se ve entero al costado del tablero. Un velo oscuro detrás de las opciones del menú hace que se lean encima de la imagen.</li>
+          <li><code>Principal</code> lee la imagen de los recursos y se la pasa a <code>TemaStarWars</code> por constructor; si falta, el tema dibuja el espacio como antes. <code>Paleta</code> suma <code>fondoDelMenu</code>. Revisión de la decisión 33 (la imagen tiene derechos de autor y el repositorio es público: lo eligió el grupo). UML <code>d4_adaptadores</code>.</li>
+          <li>UML revisado contra el código: nota de <code>d1</code> corregida (el compilador no impide usar Swing en el núcleo: es una regla del proyecto), <code>TipoDePieza</code> con sus métodos, el Memento de <code>Partida</code> en <code>d3</code>, los métodos de las pantallas y todo lo que crea <code>Principal</code> en <code>d4</code>.</li>
+          <li>2 tests nuevos en <code>TemaStarWarsTest</code> (con imagen y sin imagen). 204 tests en verde.</li>
+        </ul>
+      </li>
       <li>
         <time datetime="2026-10-31">31/10/2026</time>
         <ul>
