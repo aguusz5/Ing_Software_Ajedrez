@@ -2,10 +2,20 @@
 !include common.iuml
 top to bottom direction
 package "ajedrez-nucleo :: ia" #EAF6EA {
+  class ContraLaComputadora {
+    +ContraLaComputadora(juego : JuegoDeAjedrez, computadora : Computadora, colorDeLaComputadora : Color)
+    +colorDeLaComputadora() : Color
+    +asesor() : String
+    +leToca() : boolean
+    +elegirJugada() : Optional<JugadaDeLaComputadora>
+    +jugar(elegida : JugadaDeLaComputadora) : ResultadoJugada
+    +deshacer() : boolean
+    +rehacer() : boolean
+  }
   class Computadora {
     +Computadora(asesor : AsesorDeJugadas, respaldo : AsesorDeJugadas, intentos : int)
     +asesor() : String
-    +elegirJugada(juego : JuegoDeAjedrez) : Optional<JugadaDeLaComputadora>
+    +elegirJugada(t : Tablero, turno : Color, legales : List<JugadaLegal>) : Optional<JugadaDeLaComputadora>
   }
   interface AsesorDeJugadas <<Strategy>> {
     +nombre() : String
@@ -31,9 +41,16 @@ package "ajedrez-nucleo :: reglas" #EAF6EA {
   class GeneradorDeJugadasLegales
   class DetectorDeJaque
 }
+ContraLaComputadora --> JuegoDeAjedrez : juega por el puerto
+ContraLaComputadora --> Computadora
+ContraLaComputadora ..> JugadaDeLaComputadora : elige y juega
+package "ajedrez-nucleo :: movimiento" #EAF6EA {
+  interface Jugada
+}
+JugadaDeLaComputadora --> JugadaLegal
+AsesorMinimax ..> Jugada : prueba cada una con aplicarEn()
 Computadora --> "asesor" AsesorDeJugadas
 Computadora --> "respaldo" AsesorDeJugadas
-Computadora ..> JuegoDeAjedrez : jugadasLegales(), tablero(), turnoActual()
 Computadora ..> JugadaDeLaComputadora : devuelve
 AsesorAleatorio ..|> AsesorDeJugadas
 AsesorMinimax ..|> AsesorDeJugadas
@@ -44,11 +61,20 @@ note bottom of Computadora
   No le cree al asesor: si la jugada no está entre las legales
   o no contestó, reintenta y después usa el respaldo. Si el
   respaldo tampoco sirve, toma la primera jugada legal.
-  No juega: el adaptador hace la jugada por el puerto,
-  y ahí el núcleo la vuelve a validar.
+  No conoce la partida: recibe el tablero, el turno y las legales
+  (ISP, decisión 27). No juega.
+end note
+note top of ContraLaComputadora
+  Las reglas de jugar contra la computadora, iguales para la
+  consola y la ventana (decisión 34): le toca si la partida sigue
+  y es el turno de su color; juega por el puerto (y el núcleo la
+  valida); deshacer y rehacer vuelven hasta el turno de la persona.
+  Elegir no modifica la partida: la ventana elige en segundo plano.
 end note
 note bottom of AsesorDeJugadas
-  Stockfish, si se suma, sería otra implementación en un
-  adaptador fuera del núcleo (decisión 29).
+  Strategy interna, no un puerto: el aleatorio y el minimax no usan
+  infraestructura (decisión 35). Stockfish, si se suma, sería otra
+  implementación en un adaptador fuera del núcleo, y ahí esta
+  interfaz pasaría a ser el primer puerto de salida (decisión 29).
 end note
 @enduml

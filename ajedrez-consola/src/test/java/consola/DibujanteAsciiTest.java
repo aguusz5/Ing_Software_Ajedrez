@@ -13,8 +13,11 @@ class DibujanteAsciiTest {
 
     @Test
     void dibujar_posicionInicial_muestraCadaPiezaConSuInicial() {
+        // Arrange
+        Tablero tablero = new TableroEstandar().crearTablero();
+
         // Act
-        String[] lineas = dibujante.dibujar(new TableroEstandar().crearTablero()).split("\n");
+        String[] lineas = dibujante.dibujar(tablero).split("\n");
 
         // Assert
         assertEquals(" 8  t c a d r a c t", lineas[0]);
@@ -26,8 +29,11 @@ class DibujanteAsciiTest {
 
     @Test
     void dibujar_tableroDe10x10_numeraFilasConDosDigitosYUsaDiezColumnas() {
+        // Arrange
+        Tablero tablero = new Tablero(10, 10);
+
         // Act
-        String[] lineas = dibujante.dibujar(new Tablero(10, 10)).split("\n");
+        String[] lineas = dibujante.dibujar(tablero).split("\n");
 
         // Assert
         assertEquals("10  . . . . . . . . . .", lineas[0]);

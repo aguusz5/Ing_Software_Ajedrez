@@ -2,7 +2,8 @@
 
 Ajedrez en Java 21 con arquitectura **núcleo + adaptadores**. Las reglas del juego viven en un solo
 módulo que no sabe nada de pantallas ni teclados. La consola y la ventana Swing se "enchufan" a ese
-núcleo por una única interfaz.
+núcleo por el puerto `JuegoDeAjedrez`; para jugar contra la computadora usan además `ContraLaComputadora`,
+que también es del núcleo.
 
 ## Cómo correrlo
 
@@ -52,7 +53,7 @@ respuesta. **Ninguna regla del ajedrez vive en un adaptador.**
 | núcleo › `configuracion` | Arma el ajedrez clásico | `TiposDePiezaEstandar` (las 6 piezas), `TableroEstandar` (posición inicial) |
 | núcleo › `reglas` | Qué jugadas se permiten | `ValidadorDeJugadas`, `ReglaPiezaPropia`, `ReglaNoDejarReyEnJaque`, `DetectorDeJaque` |
 | núcleo › `juego` | La puerta de entrada al núcleo | `JuegoDeAjedrez` (puerto), `Partida`, `ResultadoJugada`, `JugadaLegal` |
-| núcleo › `ia` | El oponente con IA | `Computadora`, `AsesorDeJugadas` (Strategy), `AsesorMinimax`, `AsesorAleatorio` |
+| núcleo › `ia` | El oponente con IA | `ContraLaComputadora` (las reglas de jugar contra ella), `Computadora`, `AsesorDeJugadas` (Strategy), `AsesorMinimax`, `AsesorAleatorio` |
 | consola › `consola` | Jugar escribiendo `e2 e4` | `AdaptadorConsola`, `TraductorDeNotacion`, `DibujanteAscii` |
 | gui › `gui` | Jugar con clics | `VentanaSwing`, `PanelDelMenu`, `PanelDeLaPartida`, `PanelDelTablero`, `Tema` (Strategy: `TemaStarWars`, `TemaClasico`), `PersonajesDeStarWars`, `GlifosDePieza` |
 | app › `app` | Arranque (raíz de composición) | `Principal` |

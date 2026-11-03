@@ -77,17 +77,27 @@ class PartidaTest {
     }
 
     @Test
-    void partidaNueva_empiezanLasBlancasYNadieEstaEnJaque() {
-        // Act & Assert
-        assertEquals(Color.BLANCO, partida.turnoActual());
+    void turnoActual_partidaNueva_sonLasBlancasYNadieEstaEnJaque() {
+        // Arrange
+        Partida partida = partidaSobre(new TableroEstandar().crearTablero());
+
+        // Act
+        Color turno = partida.turnoActual();
+
+        // Assert
+        assertEquals(Color.BLANCO, turno);
         assertFalse(partida.estaEnJaque(Color.BLANCO));
         assertFalse(partida.estaEnJaque(Color.NEGRO));
     }
 
     @Test
     void jugar_movimientoValido_mueveLaPiezaYPasaElTurno() {
+        // Arrange
+        Posicion desde = casilla("e2");
+        Posicion hasta = casilla("e4");
+
         // Act
-        ResultadoJugada resultado = jugar("e2", "e4");
+        ResultadoJugada resultado = partida.jugar(desde, hasta);
 
         // Assert
         assertTrue(resultado.valida());
@@ -99,10 +109,14 @@ class PartidaTest {
 
     @Test
     void jugar_dosJugadasValidas_elTurnoVuelveALasBlancas() {
+        // Arrange: ya jugaron las blancas.
+        jugarValidas("e2 e4");
+
         // Act
-        jugarValidas("e2 e4", "e7 e5");
+        ResultadoJugada resultado = jugar("e7", "e5");
 
         // Assert
+        assertTrue(resultado.valida());
         assertEquals(Color.BLANCO, partida.turnoActual());
     }
 
@@ -122,8 +136,12 @@ class PartidaTest {
 
     @Test
     void jugar_destinoQueLaPiezaNoPuedeAlcanzar_esRechazado() {
+        // Arrange: el peón de e2 avanza a lo sumo dos casillas.
+        Posicion desde = casilla("e2");
+        Posicion hasta = casilla("e5");
+
         // Act
-        ResultadoJugada resultado = jugar("e2", "e5");
+        ResultadoJugada resultado = partida.jugar(desde, hasta);
 
         // Assert
         assertFalse(resultado.valida());
@@ -132,8 +150,12 @@ class PartidaTest {
 
     @Test
     void jugar_desdeUnaCasillaVacia_esRechazado() {
+        // Arrange
+        Posicion desde = casilla("e4");
+        Posicion hasta = casilla("e5");
+
         // Act
-        ResultadoJugada resultado = jugar("e4", "e5");
+        ResultadoJugada resultado = partida.jugar(desde, hasta);
 
         // Assert
         assertFalse(resultado.valida());
@@ -142,8 +164,12 @@ class PartidaTest {
 
     @Test
     void jugar_sobreUnaPiezaPropia_esRechazado() {
-        // Act: la torre de a1 no puede "capturar" a su propio peón de a2.
-        ResultadoJugada resultado = jugar("a1", "a2");
+        // Arrange: la torre de a1 no puede "capturar" a su propio peón de a2.
+        Posicion desde = casilla("a1");
+        Posicion hasta = casilla("a2");
+
+        // Act
+        ResultadoJugada resultado = partida.jugar(desde, hasta);
 
         // Assert
         assertFalse(resultado.valida());
@@ -194,28 +220,42 @@ class PartidaTest {
 
     @Test
     void puntos_partidaNueva_treintaYNuevePorColor() {
-        // Act & Assert
-        assertEquals(39, partida.puntos(Color.BLANCO));
-        assertEquals(39, partida.puntos(Color.NEGRO));
+        // Arrange
+        Partida partida = partidaSobre(new TableroEstandar().crearTablero());
+
+        // Act
+        int blancas = partida.puntos(Color.BLANCO);
+        int negras = partida.puntos(Color.NEGRO);
+
+        // Assert
+        assertEquals(39, blancas);
+        assertEquals(39, negras);
     }
 
     @Test
     void puntos_despuesDePerderUnaTorre_bajanCinco() {
-        // Act: la torre blanca captura en h5 y la torre negra la captura a ella.
+        // Arrange: la torre blanca captura en h5 y la torre negra la captura a ella.
         jugarValidas("h2 h4", "g7 g5", "h4 g5", "h7 h5", "h1 h5", "h8 h5");
 
+        // Act
+        int puntos = partida.puntos(Color.BLANCO);
+
         // Assert
-        assertEquals(34, partida.puntos(Color.BLANCO));
+        assertEquals(34, puntos);
     }
 
     // --- Fin de partida ---
 
     @Test
     void jugar_mateDelLoco_terminaYGananLasNegras() {
+        // Arrange
+        jugarValidas("f2 f3", "e7 e5", "g2 g4");
+
         // Act
-        jugarValidas("f2 f3", "e7 e5", "g2 g4", "d8 h4");
+        ResultadoJugada resultado = jugar("d8", "h4");
 
         // Assert
+        assertTrue(resultado.valida());
         assertEquals(new EstadoPartida(true, Optional.of(Color.NEGRO), "Jaque mate: gana NEGRO"), partida.estado());
     }
 
@@ -270,6 +310,9 @@ class PartidaTest {
 
     @Test
     void terminar_conMaterialIgual_esTablas() {
+        // Arrange: en la posición inicial los dos tienen 39 puntos.
+        Partida partida = partidaSobre(new TableroEstandar().crearTablero());
+
         // Act
         EstadoPartida estado = partida.terminar();
 
@@ -386,8 +429,14 @@ class PartidaTest {
 
     @Test
     void deshacer_sinJugadas_devuelveFalse() {
-        // Act & Assert
-        assertFalse(partida.deshacer());
+        // Arrange
+        Partida partida = partidaSobre(new TableroEstandar().crearTablero());
+
+        // Act
+        boolean deshizo = partida.deshacer();
+
+        // Assert
+        assertFalse(deshizo);
     }
 
     @Test
@@ -477,8 +526,12 @@ class PartidaTest {
 
     @Test
     void jugar_conPromocionEnUnaJugadaQueNoCorona_laIgnora() {
+        // Arrange
+        Posicion desde = casilla("e2");
+        Posicion hasta = casilla("e4");
+
         // Act
-        ResultadoJugada resultado = partida.jugar(casilla("e2"), casilla("e4"), "dama");
+        ResultadoJugada resultado = partida.jugar(desde, hasta, "dama");
 
         // Assert
         assertTrue(resultado.valida());
@@ -524,29 +577,55 @@ class PartidaTest {
 
     @Test
     void opcionesDeCoronacion_jugadaQueNoCorona_vacio() {
-        // Act & Assert
-        assertTrue(partida.opcionesDeCoronacion(casilla("e2"), casilla("e4")).isEmpty());
+        // Arrange
+        Posicion desde = casilla("e2");
+        Posicion hasta = casilla("e4");
+
+        // Act
+        List<String> opciones = partida.opcionesDeCoronacion(desde, hasta);
+
+        // Assert
+        assertTrue(opciones.isEmpty());
     }
 
     // --- Destinos para resaltar en la interfaz ---
 
     @Test
     void destinosLegales_peonInicial_avanzaUnaODosCasillas() {
-        // Act & Assert
-        assertEquals(casillas("e3", "e4"), Set.copyOf(partida.destinosLegales(casilla("e2"))));
+        // Arrange
+        Posicion peon = casilla("e2");
+
+        // Act
+        List<Posicion> destinos = partida.destinosLegales(peon);
+
+        // Assert
+        assertEquals(casillas("e3", "e4"), Set.copyOf(destinos));
     }
 
     @Test
     void destinosLegales_caballoInicial_saltaAa3YC3() {
-        // Act & Assert
-        assertEquals(casillas("a3", "c3"), Set.copyOf(partida.destinosLegales(casilla("b1"))));
+        // Arrange
+        Posicion caballo = casilla("b1");
+
+        // Act
+        List<Posicion> destinos = partida.destinosLegales(caballo);
+
+        // Assert
+        assertEquals(casillas("a3", "c3"), Set.copyOf(destinos));
     }
 
     @Test
     void destinosLegales_piezaDelRival_vacio() {
-        // Act & Assert
-        assertTrue(partida.destinosLegales(casilla("e7")).isEmpty());
-        assertTrue(partida.destinosIlegales(casilla("e7")).isEmpty());
+        // Arrange: le toca a las blancas y en e7 hay un peón negro.
+        Posicion peonNegro = casilla("e7");
+
+        // Act
+        List<Posicion> legales = partida.destinosLegales(peonNegro);
+        List<Posicion> ilegales = partida.destinosIlegales(peonNegro);
+
+        // Assert
+        assertTrue(legales.isEmpty());
+        assertTrue(ilegales.isEmpty());
     }
 
     @Test
@@ -647,8 +726,14 @@ class PartidaTest {
 
     @Test
     void jugadasLegales_partidaNueva_lasVeinteDeLasBlancas() {
-        // Act & Assert
-        assertEquals(20, partida.jugadasLegales().size());
+        // Arrange
+        Partida partida = partidaSobre(new TableroEstandar().crearTablero());
+
+        // Act
+        List<JugadaLegal> legales = partida.jugadasLegales();
+
+        // Assert
+        assertEquals(20, legales.size());
     }
 
     @Test

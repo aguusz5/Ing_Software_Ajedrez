@@ -40,7 +40,11 @@ public final class TipoDePieza {
         return esRey;
     }
 
-    public List<ReglaDeMovimiento> reglas() {
+    /**
+     * Solo para Pieza, que junta lo que propone cada regla. No es pública: quien recibe el tablero por el puerto
+     * (un adaptador) no llega por acá a las reglas de movimiento (decisión 8).
+     */
+    List<ReglaDeMovimiento> reglas() {
         return reglas;
     }
 

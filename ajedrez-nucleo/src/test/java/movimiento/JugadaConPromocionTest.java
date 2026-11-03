@@ -15,6 +15,7 @@ import org.junit.jupiter.api.Test;
 import modelo.Color;
 import modelo.Pieza;
 import modelo.Tablero;
+import modelo.TipoDePieza;
 
 class JugadaConPromocionTest {
 
@@ -50,8 +51,14 @@ class JugadaConPromocionTest {
     }
 
     @Test
-    void promocion_devuelveElTipoNuevo() {
-        // Act & Assert
-        assertEquals(Optional.of(dama()), new JugadaConPromocion(casilla("e7"), casilla("e8"), dama()).promocion());
+    void promocion_jugadaQueCorona_devuelveElTipoNuevo() {
+        // Arrange
+        JugadaConPromocion jugada = new JugadaConPromocion(casilla("e7"), casilla("e8"), dama());
+
+        // Act
+        Optional<TipoDePieza> promocion = jugada.promocion();
+
+        // Assert
+        assertEquals(Optional.of(dama()), promocion);
     }
 }

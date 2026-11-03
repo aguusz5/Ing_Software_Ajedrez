@@ -36,15 +36,24 @@ class PanelDelTableroTest {
 
     @Test
     void casillas_tableroEstandar_cadaUnaTieneSuCoordenadaComoNombre() {
+        // Arrange
+        int columnas = estandar.ancho();
+        int filas = estandar.alto();
+
         // Act
-        long conNombre = Arrays.stream(tablero.getComponents())
+        PanelDelTablero nuevo = new PanelDelTablero(columnas, filas, posicion -> {});
+
+        // Assert: 64 casillas, cada una con un nombre distinto como "e4".
+        assertEquals(64, coordenadasDistintas(nuevo));
+    }
+
+    /** Cuántas casillas del panel tienen como nombre una coordenada, sin contar repetidas. */
+    private static long coordenadasDistintas(PanelDelTablero panel) {
+        return Arrays.stream(panel.getComponents())
                 .map(casilla -> casilla.getAccessibleContext().getAccessibleName())
                 .filter(nombre -> nombre != null && nombre.matches("[a-z][0-9]+"))
                 .distinct()
                 .count();
-
-        // Assert
-        assertEquals((long) estandar.ancho() * estandar.alto(), conNombre);
     }
 
     private AccessibleContext casillaLlamada(String nombre) {

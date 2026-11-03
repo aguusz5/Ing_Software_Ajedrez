@@ -104,8 +104,8 @@ final class PanelDelTablero extends JPanel {
                 lado, lado));
     }
 
-    /** "e4": la letra de la columna y el número de la fila, como las coordenadas del borde. */
-    private static String coordenada(Posicion posicion) {
+    /** "e4": la letra de la columna y el número de la fila, como las coordenadas del borde. La usa toda la ventana. */
+    static String coordenada(Posicion posicion) {
         return (char) ('a' + posicion.columna()) + String.valueOf(posicion.fila() + 1);
     }
 

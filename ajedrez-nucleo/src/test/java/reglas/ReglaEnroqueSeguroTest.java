@@ -35,8 +35,14 @@ class ReglaEnroqueSeguroTest {
 
     @Test
     void validar_enroqueSinAmenazas_esValido() {
-        // Act & Assert
-        assertTrue(regla.validar(listoParaEnrocar(), ENROQUE_CORTO, Color.BLANCO).valida());
+        // Arrange
+        Tablero tablero = listoParaEnrocar();
+
+        // Act
+        ResultadoValidacion resultado = regla.validar(tablero, ENROQUE_CORTO, Color.BLANCO);
+
+        // Assert
+        assertTrue(resultado.valida());
     }
 
     @Test

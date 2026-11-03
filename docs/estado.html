@@ -183,7 +183,7 @@
   <header class="cabecera">
     <div class="eyebrow">TPO Ajedrez · Ingeniería de Software</div>
     <h1>Dónde estamos</h1>
-    <p class="sello"><span>Última actualización</span> <time datetime="2026-11-02">2 de noviembre de 2026</time></p>
+    <p class="sello"><span>Última actualización</span> <time datetime="2026-11-03">3 de noviembre de 2026</time></p>
     <p class="bajada">El alcance obligatorio está completo y probado: las seis piezas, turnos, captura,
       validación y jaque, jugables por consola y por ventana. Por calendario el roadmap nos ubica en la
       fase 3, así que vamos adelantados: ya están los opcionales 0 a 7 y el menú de inicio.</p>
@@ -316,7 +316,7 @@
           <tr>
             <th scope="row">Núcleo probado sin levantar nada</th>
             <td><span class="estado hecho">Cumple</span></td>
-            <td class="detalle">120 tests del núcleo con tableros armados a mano. Sin consola ni ventana.</td>
+            <td class="detalle">176 tests del núcleo con tableros armados a mano. Sin consola ni ventana. Todos los tests tienen su Arrange, como enseña la cátedra.</td>
           </tr>
           <tr>
             <th scope="row">Clases nuevas sin modificar las existentes</th>
@@ -326,7 +326,7 @@
           <tr>
             <th scope="row">UML fiel al código</th>
             <td><span class="estado hecho">Cumple</span></td>
-            <td class="detalle">Revisado el 08/10: todas las clases y todos los métodos públicos del código están en el UML, y todo lo del UML existe en el código.</td>
+            <td class="detalle">Revisado el 03/11: todas las clases, los métodos públicos y las asociaciones coinciden con el código, y los cinco diagramas compilan con PlantUML. Convención: se dibujan las asociaciones (campos), las dependencias de uso interno y los tipos que se devuelven; los tipos de los parámetros se leen en la firma.</td>
           </tr>
         </tbody>
       </table>
@@ -483,6 +483,17 @@
   <section aria-labelledby="t-historial">
     <h2 id="t-historial">Historial</h2>
     <ol class="historial" reversed>
+      <li>
+        <time datetime="2026-11-03">03/11/2026</time>
+        <ul>
+          <li>Ajustes de la auditoría contra la teoría de la cátedra. Las reglas de jugar contra la computadora, que estaban repetidas en la consola y en la ventana, pasaron al núcleo: <code>ia.ContraLaComputadora</code>, con 13 tests. Decide cuándo le toca, juega por el puerto (fuera de su turno no juega) y deshace o rehace hasta el turno de la persona. <code>Principal</code> arma una por color en cada <code>Dificultad</code>. Decisión 34; revisiones en 2 y 27.</li>
+          <li><code>Computadora.elegirJugada</code> recibe el tablero, el turno y las legales en vez del puerto (ISP). <code>TipoDePieza.reglas()</code> pasó a ser de paquete: desde el tablero que entrega el puerto ya no se llega a las reglas de movimiento. Revisión de la decisión 8.</li>
+          <li>Decisión 35: <code>AsesorDeJugadas</code> es una Strategy interna, no un puerto de salida, y por qué los adaptadores dependen de clases concretas del núcleo (DIP frente a la regla de sobre-ingeniería). Revisión en 3. README y nota de <code>d1</code> corregidos.</li>
+          <li>Tests con la estructura Arrange / Act / Assert de la cátedra: los 65 que no tenían Arrange lo tienen, el Act de <code>AsesorMinimaxTest</code> es la llamada que se prueba, y los 6 nombres que no tenían la condición la tienen. Los de excepciones separan Act y Assert con <code>soporte.Excepciones</code>. En la ventana, la notación "e2" se escribe en un solo lugar.</li>
+          <li>UML <code>d1</code>, <code>d2</code>, <code>d4</code> y <code>d5</code>. 217 tests en verde.</li>
+          <li>UML completado contra el código: <code>Partida</code> → <code>Tablero</code> (actual e inicial) y <code>Partida</code> ..> <code>Jugada</code> en <code>d3</code>; las coronaciones del peón y las direcciones de las reglas en <code>d2</code>, donde <code>TiposDePiezaEstandar</code> pasó de «factory» a «catálogo estático» (no decide qué crear, que es lo que la cátedra llama Factory); <code>JugadaDeLaComputadora</code> → <code>JugadaLegal</code> y <code>AsesorMinimax</code> ..> <code>Jugada</code> en <code>d5</code>; <code>modelo.Color</code> distinguido de <code>java.awt.Color</code> en <code>d4</code>; los paquetes del núcleo nombrados en <code>d1</code>.</li>
+        </ul>
+      </li>
       <li>
         <time datetime="2026-11-02">02/11/2026</time>
         <ul>

@@ -2,9 +2,10 @@ package reglas;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static soporte.Casillas.casilla;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static soporte.Excepciones.excepcionDe;
 
 import java.util.List;
 
@@ -53,7 +54,13 @@ class ValidadorDeJugadasTest {
 
     @Test
     void constructor_sinReglas_lanzaExcepcion() {
-        // Act & Assert
-        assertThrows(IllegalArgumentException.class, () -> new ValidadorDeJugadas(List.of()));
+        // Arrange
+        List<ReglaDeValidacion> sinReglas = List.of();
+
+        // Act
+        RuntimeException error = excepcionDe(() -> new ValidadorDeJugadas(sinReglas));
+
+        // Assert
+        assertInstanceOf(IllegalArgumentException.class, error);
     }
 }

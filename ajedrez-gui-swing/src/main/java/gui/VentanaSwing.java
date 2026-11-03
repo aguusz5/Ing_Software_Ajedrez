@@ -61,7 +61,7 @@ public final class VentanaSwing {
     }
 
     private void contraLaComputadora(Dificultad dificultad, modelo.Color colorDelJugador) {
-        partida.empezarContraLaComputadora(dificultad.computadora(), colorDelJugador);
+        partida.empezarContraLaComputadora(dificultad.paraJugarCon(colorDelJugador));
         mostrarPartida(TITULO + " — contra la computadora (" + dificultad.nombre() + ")");
     }
 

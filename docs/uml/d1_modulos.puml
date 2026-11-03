@@ -13,8 +13,8 @@ package "ajedrez-gui-swing\n(adaptador)" as gui #E8F1FA {
 }
 package "ajedrez-nucleo  (NÚCLEO — Java puro, sin dependencias)" as core #EAF6EA {
   interface "JuegoDeAjedrez\n(puerto de entrada)" as IN
-  [Partida + reglas + piezas + tablero] as G
-  [Computadora + minimax + aleatorio] as IA
+  [Partida + reglas + movimiento\n+ modelo + configuracion] as G
+  [ContraLaComputadora + Computadora\n+ minimax + aleatorio] as IA
 }
 Principal ..> AdaptadorConsola : crea e inyecta
 Principal ..> VentanaSwing : crea e inyecta
@@ -25,7 +25,8 @@ VentanaSwing --> IN : usa
 AdaptadorConsola --> IA : usa
 VentanaSwing --> IA : usa
 G ..|> IN
-IA --> IN : jugadasLegales(), tablero(), turnoActual()
+IA --> IN : ContraLaComputadora juega\npor el puerto
+IA --> G : el minimax usa el generador\ny el detector de jaque
 note bottom of core
   Las flechas de dependencia apuntan SIEMPRE hacia el núcleo.
   ajedrez-nucleo no tiene en su pom.xml ninguna dependencia
@@ -35,6 +36,9 @@ note bottom of core
   núcleo no los use es una regla del proyecto, no del compilador.
   El núcleo no necesita nada del exterior, así que no hay
   puerto de salida: jugar() devuelve un ResultadoJugada y listo.
-  La IA (minimax) también vive en el núcleo.
+  La IA (minimax) también vive en el núcleo. AsesorDeJugadas es una
+  Strategy interna, no un puerto: sería el primer puerto de salida
+  si se suma un asesor con infraestructura, como Stockfish (decisión 35).
+  Los adaptadores usan el puerto y ContraLaComputadora (decisión 34).
 end note
 @enduml

@@ -13,6 +13,7 @@ import configuracion.TiposDePiezaEstandar;
 import modelo.Color;
 import modelo.Pieza;
 import modelo.TipoDePieza;
+import java.util.ArrayList;
 
 class TemaStarWarsTest {
 
@@ -28,31 +29,57 @@ class TemaStarWarsTest {
 
     @Test
     void personajeDe_cadaPiezaEstandarDeCadaBando_tienePersonaje() {
-        for (Color bando : Color.values()) {
+        // Arrange
+        List<Color> bandos = List.of(Color.values());
+
+        // Act
+        List<String> sinPersonaje = new ArrayList<>();
+        for (Color bando : bandos) {
             for (TipoDePieza tipo : ESTANDAR) {
-                // Act & Assert
-                assertTrue(personajes.personajeDe(tipo.nombre(), bando).isPresent(), tipo + " de " + bando);
+                if (personajes.personajeDe(tipo.nombre(), bando).isEmpty()) {
+                    sinPersonaje.add(tipo + " de " + bando);
+                }
             }
         }
+
+        // Assert
+        assertEquals(List.of(), sinPersonaje);
     }
 
     @Test
     void nombreDe_damaNegra_esDarthVaderConLaPiezaEntreParentesis() {
-        // Act & Assert
-        assertEquals("Darth Vader (dama)", tema.nombreDe("dama", Color.NEGRO));
+        // Arrange
+        String tipo = "dama";
+
+        // Act
+        String nombre = tema.nombreDe(tipo, Color.NEGRO);
+
+        // Assert
+        assertEquals("Darth Vader (dama)", nombre);
     }
 
     @Test
     void nombreDe_peonBlanco_esUnPilotoRebelde() {
-        // Act & Assert
-        assertEquals("Piloto rebelde (peón)", tema.nombreDe("peón", Color.BLANCO));
+        // Arrange
+        String tipo = "peón";
+
+        // Act
+        String nombre = tema.nombreDe(tipo, Color.BLANCO);
+
+        // Assert
+        assertEquals("Piloto rebelde (peón)", nombre);
     }
 
     @Test
     void bando_blancasYNegras_sonLaRebelionYElImperio() {
-        // Act & Assert
-        assertEquals("Rebelión", tema.bando(Color.BLANCO));
-        assertEquals("Imperio", tema.bando(Color.NEGRO));
+        // Arrange
+        List<Color> bandos = List.of(Color.BLANCO, Color.NEGRO);
+
+        // Act
+        List<String> nombres = bandos.stream().map(tema::bando).toList();
+
+        // Assert
+        assertEquals(List.of("Rebelión", "Imperio"), nombres);
     }
 
     @Test

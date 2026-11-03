@@ -7,10 +7,11 @@ package "ajedrez-nucleo :: juego (el puerto y quien lo implementa)" #EAF6EA {
 }
 package "ajedrez-nucleo :: ia" #EAF6EA {
   class Computadora
+  class ContraLaComputadora
 }
 package "ajedrez-consola (adaptador)" #E8F1FA {
   class AdaptadorConsola {
-    +AdaptadorConsola(juego, traductor, dibujante, entrada : Scanner, salida : PrintStream, computadora : Optional<Computadora>)
+    +AdaptadorConsola(juego, traductor, dibujante, entrada : Scanner, salida : PrintStream, rival : Optional<ContraLaComputadora>)
     +ejecutar()
   }
   class TraductorDeNotacion {
@@ -29,7 +30,9 @@ package "ajedrez-gui-swing (adaptador)" #E8F1FA {
   class Dificultad <<record>> {
     +nombre : String
     +descripcion : String
-    +computadora : Computadora
+    +siElegisBlancas : ContraLaComputadora
+    +siElegisNegras : ContraLaComputadora
+    +paraJugarCon(colorDelJugador : modelo.Color) : ContraLaComputadora
   }
   class PanelDelMenu <<pantalla>> {
     ~usarTema(t : Tema)
@@ -38,19 +41,20 @@ package "ajedrez-gui-swing (adaptador)" #E8F1FA {
   class PanelDeLaPartida <<pantalla>> {
     ~usarTema(t : Tema)
     ~empezarUnoContraUno()
-    ~empezarContraLaComputadora(c : Computadora, colorDelJugador : Color)
+    ~empezarContraLaComputadora(rival : ContraLaComputadora)
   }
   class PanelDelTablero {
     ~setInvertido(invertido : boolean)
     ~usarColores(coordenadas : Color, marco : Color)
     ~mostrar(p : Posicion, pieza : Optional<DibujoDePieza>, fondo : Color, borde : Border)
+    ~{static} coordenada(p : Posicion) : String
   }
   interface Tema <<Strategy>> {
     +nombre() : String
     +epigrafe() : String
     +paleta() : Paleta
-    +bando(c : Color) : String
-    +nombreDe(tipo : String, c : Color) : String
+    +bando(c : modelo.Color) : String
+    +nombreDe(tipo : String, c : modelo.Color) : String
     +dibujoDe(p : Pieza) : DibujoDePieza
     +pintarFondo(g : Graphics2D, ancho : int, alto : int)
   }
@@ -79,7 +83,7 @@ package "ajedrez-gui-swing (adaptador)" #E8F1FA {
     +brillo : Color
   }
   class PersonajesDeStarWars {
-    ~personajeDe(tipo : String, bando : Color) : Optional<Personaje>
+    ~personajeDe(tipo : String, bando : modelo.Color) : Optional<Personaje>
   }
   class Personaje {
     ~{static} LADO : double
@@ -110,7 +114,7 @@ PanelDelMenu --> "*" Dificultad : las ofrece
 PanelDeLaPartida --> JuegoDeAjedrez
 PanelDeLaPartida --> Tema : el elegido en el menú
 PanelDelMenu --> "*" Tema : los ofrece
-PanelDeLaPartida --> "0..1" Computadora : la del modo elegido
+PanelDeLaPartida --> "0..1" ContraLaComputadora : la del modo elegido
 PanelDeLaPartida *-- PanelDelTablero
 PanelDelTablero ..> DibujoDePieza
 TemaClasico ..|> Tema
@@ -126,10 +130,12 @@ TemaStarWars --> GlifosDePieza
 TemaStarWars --> PersonajesDeStarWars
 PersonajesDeStarWars --> "12" Personaje
 Personaje *-- "1..*" Capa
-Dificultad --> Computadora
-AdaptadorConsola --> "0..1" Computadora
+Dificultad --> "2" ContraLaComputadora : una por color
+ContraLaComputadora --> Computadora
+AdaptadorConsola --> "0..1" ContraLaComputadora
 Principal ..> Partida : new + inyecta
 Principal ..> Computadora : new (una por dificultad)
+Principal ..> ContraLaComputadora : new (dos por dificultad)
 Principal ..> Dificultad : new
 Principal ..> AdaptadorConsola : new + inyecta
 Principal ..> TraductorDeNotacion : new
@@ -139,6 +145,10 @@ Principal ..> TemaStarWars : new + le pasa el póster
 Principal ..> TemaClasico : new
 Principal ..> GlifosDePieza : new
 Principal ..> PersonajesDeStarWars : new
+legend right
+  Color sin prefijo = java.awt.Color (cómo se pinta).
+  modelo.Color = el color de las piezas (BLANCO / NEGRO).
+endlegend
 note bottom of PanelDelTablero
   Acomoda las casillas a mano: el lado más grande que entra
   a lo ancho y a lo alto. Siempre cuadradas y centradas.

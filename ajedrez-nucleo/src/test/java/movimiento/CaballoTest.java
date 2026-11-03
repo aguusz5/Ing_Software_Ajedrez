@@ -63,7 +63,7 @@ class CaballoTest {
     }
 
     @Test
-    void caballo_noCaeSobrePiezaPropiaPeroSiCapturaRival() {
+    void caballo_piezaPropiaYRivalEnSusSaltos_noCaeSobreLaPropiaYCapturaLaRival() {
         // Arrange
         Tablero tablero = new Tablero(8, 8)
                 .con(casilla("d4"), CABALLO_BLANCO)

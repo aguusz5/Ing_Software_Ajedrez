@@ -20,11 +20,21 @@ import modelo.Tablero;
 
 class TableroEstandarTest {
 
-    private final Tablero tablero = new TableroEstandar().crearTablero();
-
     @Test
-    void crearTablero_esDe8x8Con32Piezas() {
+    void crearTablero_tamanoYPiezas_esDe8x8Con32Piezas() {
+        // Arrange
+        TableroEstandar estandar = new TableroEstandar();
+
         // Act
+        Tablero tablero = estandar.crearTablero();
+
+        // Assert
+        assertEquals(8, tablero.ancho());
+        assertEquals(8, tablero.alto());
+        assertEquals(32, piezasEn(tablero));
+    }
+
+    private static int piezasEn(Tablero tablero) {
         int piezas = 0;
         for (int columna = 0; columna < tablero.ancho(); columna++) {
             for (int fila = 0; fila < tablero.alto(); fila++) {
@@ -33,16 +43,18 @@ class TableroEstandarTest {
                 }
             }
         }
-
-        // Assert
-        assertEquals(8, tablero.ancho());
-        assertEquals(8, tablero.alto());
-        assertEquals(32, piezas);
+        return piezas;
     }
 
     @Test
     void crearTablero_piezasMayores_estanEnSuCasillaInicial() {
-        // Act & Assert
+        // Arrange
+        TableroEstandar estandar = new TableroEstandar();
+
+        // Act
+        Tablero tablero = estandar.crearTablero();
+
+        // Assert
         assertEquals(Optional.of(new Pieza(Color.BLANCO, rey())), tablero.piezaEn(casilla("e1")));
         assertEquals(Optional.of(new Pieza(Color.BLANCO, dama())), tablero.piezaEn(casilla("d1")));
         assertEquals(Optional.of(new Pieza(Color.BLANCO, caballo())), tablero.piezaEn(casilla("g1")));
@@ -53,7 +65,13 @@ class TableroEstandarTest {
 
     @Test
     void crearTablero_peones_ocupanLasFilas2y7YElCentroEstaVacio() {
-        // Act & Assert
+        // Arrange
+        TableroEstandar estandar = new TableroEstandar();
+
+        // Act
+        Tablero tablero = estandar.crearTablero();
+
+        // Assert
         for (char columna = 'a'; columna <= 'h'; columna++) {
             assertEquals(Optional.of(new Pieza(Color.BLANCO, peon())), tablero.piezaEn(casilla(columna + "2")));
             assertEquals(Optional.of(new Pieza(Color.NEGRO, peon())), tablero.piezaEn(casilla(columna + "7")));

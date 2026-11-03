@@ -25,8 +25,10 @@ import gui.VentanaSwing;
 import ia.AsesorAleatorio;
 import ia.AsesorMinimax;
 import ia.Computadora;
+import ia.ContraLaComputadora;
 import juego.JuegoDeAjedrez;
 import juego.Partida;
+import modelo.Color;
 import modelo.Tablero;
 import reglas.DetectorDeJaque;
 import reglas.GeneradorDeJugadasLegales;
@@ -64,7 +66,7 @@ public final class Principal {
         GeneradorDeJugadasLegales generador = new GeneradorDeJugadasLegales(validador);
         Tablero tablero = new TableroEstandar().crearTablero();
         JuegoDeAjedrez juego = new Partida(tablero, validador, detector, generador);
-        List<Dificultad> dificultades = crearDificultades(generador, detector);
+        List<Dificultad> dificultades = crearDificultades(juego, generador, detector);
         if (opciones.contains("--gui")) {
             GlifosDePieza glifos = new GlifosDePieza();
             List<Tema> temas = List.of(
@@ -72,11 +74,12 @@ public final class Principal {
                     new TemaClasico(glifos));
             SwingUtilities.invokeLater(() -> new VentanaSwing(juego, temas, dificultades).mostrar());
         } else {
-            Optional<Computadora> computadora = opciones.contains("--ia")
-                    ? Optional.of(dificultades.get(dificultades.size() - 1).computadora())
+            // En la consola la persona juega con blancas y la computadora, si se pidió, con negras.
+            Optional<ContraLaComputadora> rival = opciones.contains("--ia")
+                    ? Optional.of(dificultades.get(dificultades.size() - 1).paraJugarCon(Color.BLANCO))
                     : Optional.empty();
             new AdaptadorConsola(juego, new TraductorDeNotacion(), new DibujanteAscii(),
-                    new Scanner(System.in), System.out, computadora).ejecutar();
+                    new Scanner(System.in), System.out, rival).ejecutar();
         }
     }
 
@@ -90,15 +93,27 @@ public final class Principal {
     }
 
     /** Las dificultades del menú, de la más fácil a la más difícil. Todo corre en la compu, sin internet. */
-    private static List<Dificultad> crearDificultades(GeneradorDeJugadasLegales generador, DetectorDeJaque detector) {
+    private static List<Dificultad> crearDificultades(JuegoDeAjedrez juego, GeneradorDeJugadasLegales generador,
+                                                      DetectorDeJaque detector) {
         return List.of(
-                new Dificultad("Fácil", "juega cualquier jugada legal",
+                dificultad("Fácil", "juega cualquier jugada legal", juego,
                         new Computadora(new AsesorAleatorio(new Random()), new AsesorAleatorio(new Random()), INTENTOS)),
-                new Dificultad("Medio", "mira 2 jugadas hacia adelante",
+                dificultad("Medio", "mira 2 jugadas hacia adelante", juego,
                         new Computadora(new AsesorMinimax(generador, detector, PROFUNDIDAD_MEDIA, new Random()),
                                 new AsesorAleatorio(new Random()), INTENTOS)),
-                new Dificultad("Difícil", "mira 3 jugadas hacia adelante",
+                dificultad("Difícil", "mira 3 jugadas hacia adelante", juego,
                         new Computadora(new AsesorMinimax(generador, detector, PROFUNDIDAD_DIFICIL, new Random()),
                                 new AsesorAleatorio(new Random()), INTENTOS)));
+    }
+
+    /**
+     * Una dificultad con sus dos partidas contra la computadora: si la persona elige blancas, la computadora juega
+     * con negras, y al revés. Se arman acá para que la ventana no tenga que hacer new al elegir el color.
+     */
+    private static Dificultad dificultad(String nombre, String descripcion, JuegoDeAjedrez juego,
+                                         Computadora computadora) {
+        return new Dificultad(nombre, descripcion,
+                new ContraLaComputadora(juego, computadora, Color.NEGRO),
+                new ContraLaComputadora(juego, computadora, Color.BLANCO));
     }
 }

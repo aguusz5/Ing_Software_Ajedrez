@@ -45,7 +45,7 @@ package "ajedrez-nucleo :: modelo" #EAF6EA {
     +nombre() : String
     +esRey() : boolean
     +valor() : int
-    +reglas() : List<ReglaDeMovimiento>
+    ~reglas() : List<ReglaDeMovimiento>
   }
 }
 package "ajedrez-nucleo :: movimiento" #EAF6EA {
@@ -92,7 +92,7 @@ package "ajedrez-nucleo :: movimiento" #EAF6EA {
   }
 }
 package "ajedrez-nucleo :: configuracion" #EAF6EA {
-  class TiposDePiezaEstandar <<factory estático>> {
+  class TiposDePiezaEstandar <<catálogo estático>> {
     +{static} peon() / torre() / caballo()
     +{static} alfil() / dama() / rey()
   }
@@ -100,7 +100,7 @@ package "ajedrez-nucleo :: configuracion" #EAF6EA {
     +crearTablero() : Tablero
   }
 }
-Tablero o-- "0..*" Pieza
+Tablero o-- "0..*" Pieza : una por Posicion
 Pieza --> Color
 Pieza --> TipoDePieza
 TipoDePieza o-- "1..*" ReglaDeMovimiento
@@ -110,6 +110,11 @@ ReglaAvanceDePeon ..|> ReglaDeMovimiento
 ReglaCapturaDePeon ..|> ReglaDeMovimiento
 ReglaDeEnroque ..|> ReglaDeMovimiento
 ReglaDeEnroque --> TipoDePieza : compañera
+ReglaAvanceDePeon --> "1..*" TipoDePieza : coronaciones
+ReglaCapturaDePeon --> "1..*" TipoDePieza : coronaciones
+ReglaDeslizante --> "1..*" Direccion
+ReglaDeSalto --> "1..*" Direccion
+Pieza ..> Jugada : jugadasCandidatas()
 ReglaDeMovimiento ..> Jugada : crea
 JugadaSimple ..|> Jugada
 JugadaConPromocion ..|> Jugada

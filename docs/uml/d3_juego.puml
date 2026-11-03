@@ -29,6 +29,7 @@ package "ajedrez-nucleo :: juego" #EAF6EA {
   class Partida {
     -pasado : Deque<Foto>
     -futuro : Deque<Foto>
+    -turno : Color
     +Partida(tablero : Tablero, validador : ValidadorDeJugadas, detector : DetectorDeJaque, generador : GeneradorDeJugadasLegales)
   }
   class "Partida.Foto" as Foto <<record privado>> <<Memento>> {
@@ -81,7 +82,16 @@ package "ajedrez-nucleo :: reglas" #EAF6EA {
     +{static} rechazada(motivo : String) : ResultadoValidacion
   }
 }
+package "ajedrez-nucleo :: modelo" #EAF6EA {
+  class Tablero <<inmutable>>
+}
+package "ajedrez-nucleo :: movimiento" #EAF6EA {
+  interface Jugada
+}
 Partida ..|> JuegoDeAjedrez
+Partida --> "1" Tablero : actual
+Partida --> "1" Tablero : inicial
+Partida ..> Jugada : pide las candidatas y la aplica
 Partida ..> ResultadoJugada : devuelve
 Partida -down--> ValidadorDeJugadas
 Partida -down---> DetectorDeJaque

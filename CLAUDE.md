@@ -12,8 +12,9 @@ mvn package && java -jar ajedrez-app/target/ajedrez.jar [--gui] [--ia]
 ## Arquitectura
 - `ajedrez-nucleo` es el núcleo: Java puro, sin dependencias (solo JUnit en scope test).
 - Prohibido en el núcleo: `System.out`, `Scanner`, `javax.swing`, `java.awt`, archivos, red.
-- `ajedrez-consola` y `ajedrez-gui-swing` son adaptadores: solo usan el puerto `JuegoDeAjedrez`, la
-  `Computadora` del paquete `ia` y los datos que devuelven (`modelo`, `ResultadoJugada`, `JugadaLegal`).
+- `ajedrez-consola` y `ajedrez-gui-swing` son adaptadores: solo usan el puerto `JuegoDeAjedrez`,
+  `ContraLaComputadora` del paquete `ia` y los datos que devuelven (`modelo`, `ResultadoJugada`, `JugadaLegal`,
+  `JugadaDeLaComputadora`).
   Nunca importan `reglas`, `movimiento` ni `configuracion`.
 - Ninguna regla del ajedrez vive en un adaptador.
 

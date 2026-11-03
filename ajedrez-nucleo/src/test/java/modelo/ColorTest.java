@@ -8,15 +8,31 @@ class ColorTest {
 
     @Test
     void contrario_deCadaColor_esElOtro() {
-        // Act & Assert
-        assertEquals(Color.NEGRO, Color.BLANCO.contrario());
-        assertEquals(Color.BLANCO, Color.NEGRO.contrario());
+        // Arrange
+        Color blanco = Color.BLANCO;
+        Color negro = Color.NEGRO;
+
+        // Act
+        Color contrarioDelBlanco = blanco.contrario();
+        Color contrarioDelNegro = negro.contrario();
+
+        // Assert
+        assertEquals(Color.NEGRO, contrarioDelBlanco);
+        assertEquals(Color.BLANCO, contrarioDelNegro);
     }
 
     @Test
-    void sentidoDeAvance_blancasSubenYNegrasBajan() {
-        // Act & Assert
-        assertEquals(1, Color.BLANCO.sentidoDeAvance());
-        assertEquals(-1, Color.NEGRO.sentidoDeAvance());
+    void sentidoDeAvance_deCadaColor_blancasSubenYNegrasBajan() {
+        // Arrange
+        Color blanco = Color.BLANCO;
+        Color negro = Color.NEGRO;
+
+        // Act
+        int sentidoDelBlanco = blanco.sentidoDeAvance();
+        int sentidoDelNegro = negro.sentidoDeAvance();
+
+        // Assert
+        assertEquals(1, sentidoDelBlanco);
+        assertEquals(-1, sentidoDelNegro);
     }
 }

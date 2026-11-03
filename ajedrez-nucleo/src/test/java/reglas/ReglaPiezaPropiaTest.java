@@ -21,9 +21,11 @@ class ReglaPiezaPropiaTest {
 
     @Test
     void validar_piezaDelColorQueJuega_esValida() {
+        // Arrange
+        JugadaSimple jugada = new JugadaSimple(casilla("e2"), casilla("e3"));
+
         // Act
-        ResultadoValidacion resultado =
-                regla.validar(tablero, new JugadaSimple(casilla("e2"), casilla("e3")), Color.BLANCO);
+        ResultadoValidacion resultado = regla.validar(tablero, jugada, Color.BLANCO);
 
         // Assert
         assertTrue(resultado.valida());
@@ -31,9 +33,11 @@ class ReglaPiezaPropiaTest {
 
     @Test
     void validar_piezaDelRival_esRechazada() {
+        // Arrange
+        JugadaSimple jugada = new JugadaSimple(casilla("e7"), casilla("e6"));
+
         // Act
-        ResultadoValidacion resultado =
-                regla.validar(tablero, new JugadaSimple(casilla("e7"), casilla("e6")), Color.BLANCO);
+        ResultadoValidacion resultado = regla.validar(tablero, jugada, Color.BLANCO);
 
         // Assert
         assertFalse(resultado.valida());
@@ -42,9 +46,11 @@ class ReglaPiezaPropiaTest {
 
     @Test
     void validar_casillaDeOrigenVacia_esRechazada() {
+        // Arrange
+        JugadaSimple jugada = new JugadaSimple(casilla("d4"), casilla("d5"));
+
         // Act
-        ResultadoValidacion resultado =
-                regla.validar(tablero, new JugadaSimple(casilla("d4"), casilla("d5")), Color.BLANCO);
+        ResultadoValidacion resultado = regla.validar(tablero, jugada, Color.BLANCO);
 
         // Assert
         assertFalse(resultado.valida());

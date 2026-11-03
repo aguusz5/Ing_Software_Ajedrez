@@ -4,7 +4,7 @@ import java.io.PrintStream;
 import java.util.Optional;
 import java.util.Scanner;
 
-import ia.Computadora;
+import ia.ContraLaComputadora;
 import ia.JugadaDeLaComputadora;
 import juego.JuegoDeAjedrez;
 import juego.JugadaLegal;
@@ -16,11 +16,10 @@ import modelo.Posicion;
  * Adaptador de consola: lee jugadas del teclado, se las pasa al núcleo por el puerto
  * JuegoDeAjedrez y muestra la respuesta. No contiene ninguna regla del ajedrez.
  * Recibe la entrada y la salida por constructor, así en los tests se usa un texto armado.
- * Si recibe una Computadora, las negras las juega ella y se avisa quién eligió cada jugada.
+ * Si recibe una partida contra la computadora, la computadora juega su color y se avisa quién eligió cada
+ * jugada. Cuándo le toca y hasta dónde vuelve deshacer lo decide ContraLaComputadora, en el núcleo.
  */
 public final class AdaptadorConsola {
-
-    private static final Color COLOR_DE_LA_COMPUTADORA = Color.NEGRO;
 
     private static final String COMANDO_SALIR = "salir";
     private static final String COMANDO_TERMINAR = "terminar";
@@ -34,17 +33,17 @@ public final class AdaptadorConsola {
     private final DibujanteAscii dibujante;
     private final Scanner entrada;
     private final PrintStream salida;
-    private final Optional<Computadora> computadora;
+    private final Optional<ContraLaComputadora> rival;
 
-    /** Sin computadora se juega uno contra uno. */
+    /** Sin rival se juega uno contra uno. */
     public AdaptadorConsola(JuegoDeAjedrez juego, TraductorDeNotacion traductor, DibujanteAscii dibujante,
-                            Scanner entrada, PrintStream salida, Optional<Computadora> computadora) {
+                            Scanner entrada, PrintStream salida, Optional<ContraLaComputadora> rival) {
         this.juego = juego;
         this.traductor = traductor;
         this.dibujante = dibujante;
         this.entrada = entrada;
         this.salida = salida;
-        this.computadora = computadora;
+        this.rival = rival;
     }
 
     public void ejecutar() {
@@ -86,24 +85,21 @@ public final class AdaptadorConsola {
     }
 
     private boolean leTocaALaComputadora() {
-        return computadora.isPresent() && !juego.estado().terminada()
-                && juego.turnoActual() == COLOR_DE_LA_COMPUTADORA;
+        return rival.map(ContraLaComputadora::leToca).orElse(false);
     }
 
     /**
-     * Le pide la jugada a la computadora y la hace por el puerto, como cualquier otra.
+     * Le pide la jugada a la computadora y la hace, como cualquier otra (la valida el núcleo).
      * Devuelve false si el núcleo la rechazó, para no quedar pidiéndole jugadas para siempre.
      */
     private boolean jugarComputadora() {
-        salida.println("Piensa la computadora (" + computadora.get().asesor() + ")...");
-        Optional<JugadaDeLaComputadora> elegida = computadora.get().elegirJugada(juego);
+        salida.println("Piensa la computadora (" + rival.get().asesor() + ")...");
+        Optional<JugadaDeLaComputadora> elegida = rival.get().elegirJugada();
         if (elegida.isEmpty()) {
             return false;
         }
         JugadaLegal jugada = elegida.get().jugada();
-        ResultadoJugada resultado = jugada.promocion()
-                .map(tipo -> juego.jugar(jugada.desde(), jugada.hasta(), tipo))
-                .orElseGet(() -> juego.jugar(jugada.desde(), jugada.hasta()));
+        ResultadoJugada resultado = rival.get().jugar(elegida.get());
         salida.println("La computadora jugó " + traductor.escribir(jugada.desde()) + " "
                 + traductor.escribir(jugada.hasta()) + " (eligió " + elegida.get().asesor()
                 + (elegida.get().deRespaldo() ? ", de respaldo" : "") + ")");
@@ -111,21 +107,13 @@ public final class AdaptadorConsola {
         return resultado.valida();
     }
 
-    /** Contra la computadora, deshacer vuelve hasta que le toque al jugador: su jugada y la de la computadora. */
+    /** Contra la computadora, hasta dónde vuelve deshacer lo decide el núcleo; uno contra uno, un paso. */
     private boolean deshacerTurno() {
-        boolean cambio = juego.deshacer();
-        if (cambio && leTocaALaComputadora()) {
-            juego.deshacer();
-        }
-        return cambio;
+        return rival.map(ContraLaComputadora::deshacer).orElseGet(juego::deshacer);
     }
 
     private boolean rehacerTurno() {
-        boolean cambio = juego.rehacer();
-        if (cambio && leTocaALaComputadora()) {
-            juego.rehacer();
-        }
-        return cambio;
+        return rival.map(ContraLaComputadora::rehacer).orElseGet(juego::rehacer);
     }
 
     private void anunciarFin() {

@@ -38,7 +38,14 @@ class AsesorAleatorioTest {
 
     @Test
     void sugerirJugada_sinJugadasLegales_vacio() {
-        // Act & Assert
-        assertTrue(new AsesorAleatorio(new Random(1)).sugerirJugada(new Tablero(8, 8), Color.BLANCO, List.of()).isEmpty());
+        // Arrange
+        AsesorAleatorio asesor = new AsesorAleatorio(new Random(1));
+        Tablero tablero = new Tablero(8, 8);
+
+        // Act
+        Optional<JugadaLegal> sugerida = asesor.sugerirJugada(tablero, Color.BLANCO, List.of());
+
+        // Assert
+        assertTrue(sugerida.isEmpty());
     }
 }

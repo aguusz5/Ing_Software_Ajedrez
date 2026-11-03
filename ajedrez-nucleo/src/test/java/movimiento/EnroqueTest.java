@@ -50,8 +50,11 @@ class EnroqueTest {
 
     @Test
     void rey_conLasDosTorresSinMover_proponeEnroqueCortoYLargo() {
+        // Arrange
+        Tablero tablero = reyYTorresBlancas();
+
         // Act
-        Set<Posicion> destinos = destinosDelRey(reyYTorresBlancas(), "e1");
+        Set<Posicion> destinos = destinosDelRey(tablero, "e1");
 
         // Assert: además de los cinco pasos de rey, g1 y c1.
         assertEquals(casillas("d1", "d2", "e2", "f2", "f1", "g1", "c1"), destinos);
@@ -157,7 +160,13 @@ class EnroqueTest {
 
     @Test
     void jugadaSimple_casillasQueNoPuedenEstarAtacadas_vacio() {
-        // Act & Assert
-        assertTrue(new JugadaSimple(casilla("e1"), casilla("f1")).casillasQueNoPuedenEstarAtacadas().isEmpty());
+        // Arrange
+        JugadaSimple jugada = new JugadaSimple(casilla("e1"), casilla("f1"));
+
+        // Act
+        List<Posicion> casillas = jugada.casillasQueNoPuedenEstarAtacadas();
+
+        // Assert
+        assertTrue(casillas.isEmpty());
     }
 }

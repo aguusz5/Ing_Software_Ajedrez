@@ -31,6 +31,9 @@ se revierte, no se borra: se marca como reemplazada y se dice por cuál.
 - **Cuándo se rompería:** si un adaptador necesitara información que el puerto no expone (por ejemplo,
   las jugadas legales de una pieza para resaltarlas). La solución es ampliar el puerto, no que el
   adaptador importe clases internas.
+- **Revisión (03/11):** además del puerto, los adaptadores usan `ia.ContraLaComputadora` para jugar contra la
+  computadora (decisión 34). Es una clase concreta del núcleo, no una interfaz (decisión 35). Siguen sin
+  importar `reglas`, `movimiento` ni `configuracion`.
 
 ### 3. Sin puerto de salida
 
@@ -39,6 +42,7 @@ se revierte, no se borra: se marca como reemplazada y se dice por cuál.
   adaptador decide cómo mostrarlo. Una interfaz sin uso real sería decoración.
 - **Cuándo se rompería:** con guardado de partidas (puerto de persistencia) o con un reloj de juego
   (puerto de tiempo).
+- **Revisión (03/11):** `AsesorDeJugadas` tampoco es un puerto de salida: es una Strategy interna (decisión 35).
 
 ### 4. `Principal` es la raíz de composición
 
@@ -96,6 +100,17 @@ se revierte, no se borra: se marca como reemplazada y se dice por cuál.
   lectura no protegía nada y además rompía la simulación de jaque: las reglas recibían la vista, pero
   `Jugada.aplicarEn` necesita un `Tablero`.
 - **Cuándo se rompería:** si el tablero dejara de ser inmutable (ver la decisión 7).
+- **Revisión (03/11), qué expone el puerto:** el examen modelo pregunta "qué expone el núcleo hacia afuera y
+  qué no" y responde que no expone cómo se calcula lo de adentro. El puerto devuelve el `Tablero`: lo
+  necesitan para dibujar, y la inmutabilidad (decisión 7) impide que un adaptador cambie la partida sin pasar
+  por `jugar()`. En el código, los adaptadores solo lo leen (`piezaEn`, `ancho`, `alto`, `estaDentro` y
+  `buscarRey` para pintar el rey en jaque). Lo que el tablero sí dejaba alcanzar era el motor de reglas:
+  `TipoDePieza.reglas()` ahora es de paquete (solo la usa `Pieza`), así que desde el tablero ya no se llega a
+  las `ReglaDeMovimiento`. `Pieza.jugadasCandidatas` sigue pública porque la usan `reglas` y `juego`, y Java no
+  tiene una visibilidad "solo para el núcleo". Por eso sigue valiendo la regla de que los adaptadores no
+  importan `movimiento`.
+  **Cuándo se rompería:** si un adaptador necesitara calcular algo con las jugadas candidatas. Ahí se amplía
+  el puerto (decisión 2), no se usa `jugadasCandidatas` desde afuera.
 
 ### 9. La jugada es un objeto: interfaz `Jugada`
 
@@ -333,6 +348,13 @@ se revierte, no se borra: se marca como reemplazada y se dice por cuál.
 - **Cuándo se rompería:** si la computadora tuviera que jugar sin un adaptador que se lo pida (dos
   computadoras entre sí, o una partida en red). Ahí aparecen jugadas que nadie pidió y vuelve el Observer
   (decisión 16).
+- **Revisión (03/11):** `Computadora.elegirJugada` recibe el tablero, el turno y las jugadas legales en vez
+  del puerto entero: de sus 16 métodos usaba 3, y la cátedra define ISP como "nadie debería depender de
+  métodos que no usa". Ahora `Computadora` no conoce la partida, y su test no necesita armar una. Lo de
+  "contra la computadora, deshacer vuelve hasta que le toque a la persona", que estaba repetido en la consola
+  y en la ventana, pasó a `ContraLaComputadora` (decisión 34). El puerto en sí no se partió: la ventana usa 15
+  de sus 16 métodos y la consola 11. Es la "interfaz muy cohesiva" de la que la cátedra dice que no conviene
+  fragmentar (PPT de la Unidad 01 II, ISP: "cuándo romperlo").
 
 ### 28. El minimax vive en el núcleo y prueba jugadas sobre el tablero inmutable
 
@@ -441,3 +463,60 @@ se revierte, no se borra: se marca como reemplazada y se dice por cuál.
   eligió la imagen a sabiendas de que tiene derechos de autor y de que el repositorio es público: se usa
   en un trabajo práctico, sin fines comerciales. Si hubiera que sacarla, alcanza con borrar el archivo y
   el tema vuelve solo al fondo dibujado.
+
+### 34. Las reglas de jugar contra la computadora viven en el núcleo: `ContraLaComputadora`
+
+- **Qué:** `ia.ContraLaComputadora` recibe por constructor la partida (`JuegoDeAjedrez`), la `Computadora` y el
+  color con el que juega la computadora. Decide cuándo le toca (la partida sigue y es el turno de su color),
+  elige sin modificar la partida, hace la jugada elegida por el puerto (y la rechaza fuera de su turno) y
+  deshace o rehace hasta que le toque a la persona. La consola y la ventana delegan en ella. `Principal` arma
+  dos por dificultad, una por color, y `Dificultad.paraJugarCon(color)` devuelve la del color que eligió la
+  persona.
+- **Por qué:** esas reglas estaban repetidas, idénticas, en `AdaptadorConsola` y en `PanelDeLaPartida`. Para
+  la cátedra, el núcleo son las reglas que seguirían siendo las mismas si mañana se reescribiera la interfaz
+  con otra tecnología (Unidad 01 I, §5 y "Para repasar"), y estas lo son: un tercer adaptador las habría
+  tenido que copiar. Se arman en `Principal` porque el color se elige en el menú: crearlas en la ventana sería
+  el `new` escondido que prohíbe la inyección de dependencias (Unidad 01 II, §2). Tampoco hace falta una
+  fábrica: la cátedra la justifica cuando construir implica decidir qué implementación usar (Unidad 01 II,
+  §4), y acá siempre es la misma clase con uno de dos colores. Elegir y jugar van separados para que la
+  ventana pueda elegir en segundo plano (decisión 27).
+  En los adaptadores quedó lo que es de cada interfaz:
+  - cómo se dice ("Tu turno", "Ganó la computadora");
+  - ofrecer rendirse en jaque, que es una decisión de pantalla: el núcleo deja rendirse en cualquier momento;
+  - la notación "e2", un formato para mostrar. La ventana la tenía repetida y ahora la escribe en un solo
+    lugar, `PanelDelTablero.coordenada`;
+  - los valores de las piezas en la ayuda del menú. Es texto que describe la regla, no la aplica. Sacarlo
+    del núcleo obligaría a sumarle un octavo parámetro al constructor de `PanelDelMenu`, y la cátedra ya
+    marca uno con demasiados parámetros como señal de que la clase hace demasiado.
+- **Cuándo se rompería:** si la computadora tuviera que jugar sin que un adaptador se lo pida (dos
+  computadoras, una partida en red): ahí vuelve el Observer (decisión 16). O si aparecieran más modalidades
+  con reglas propias, por ejemplo contra otra persona por red: ahí conviene una interfaz de modalidad con una
+  implementación por modo (Strategy), en vez del `Optional` que hoy distingue "uno contra uno" de "contra la
+  computadora" en cada adaptador.
+
+### 35. `AsesorDeJugadas` es una Strategy interna, no un puerto de salida, y los adaptadores dependen de clases concretas del núcleo
+
+- **Qué:** `AsesorAleatorio` y `AsesorMinimax` viven en el núcleo y `AsesorDeJugadas` es la interfaz de una
+  Strategy. Para jugar contra la computadora, los adaptadores usan `ContraLaComputadora` y
+  `JugadaDeLaComputadora`, que son clases concretas.
+- **Por qué:**
+  - **No es un puerto.** Para la cátedra, un puerto de salida dice "qué necesita el núcleo del mundo
+    exterior para funcionar", y lo implementa un adaptador con la tecnología concreta (Unidad 01 I, §6). Los
+    dos asesores no usan nada del exterior: son algoritmos sobre el dominio (`Random` es Java estándar). Son
+    lo que la PPT de la Unidad 01 II pone como ejemplo de Strategy: "distintas IAs de enemigo, mismo
+    contrato, comportamiento distinto". Además, el minimax necesita el `GeneradorDeJugadasLegales`, y un
+    adaptador no puede importar `reglas` (decisión 28).
+  - **Por qué difiere del bonus.** En el bonus de la Unidad 05, el asesor de ejemplo es un adaptador porque
+    usa una API de IA por HTTP, y el aleatorio aparece ahí como su respaldo. Del bonus tomamos el resto: el
+    contrato y la verificación de la jugada (`Computadora`) quedan en el núcleo.
+  - **DIP.** La cátedra pide depender de abstracciones, y lo único que exime son los tipos muy estables del
+    lenguaje. `ContraLaComputadora` es concreta, así que acá hay una tensión. La resuelve la regla de
+    sobre-ingeniería de la Unidad 01 I, §3: "una interfaz con una sola implementación que nunca va a tener
+    otra — abstracción de más". Hay una sola forma de jugar contra la computadora y nadie la usa en forma
+    polimórfica, el mismo criterio de las decisiones 14 y 21. La dependencia igual apunta hacia adentro, que
+    es la regla de la frontera.
+- **Cuándo se rompería:**
+  - Cuando entre un asesor con infraestructura (Stockfish como proceso aparte, una API): ese asesor va en un
+    adaptador, y `AsesorDeJugadas` pasa a ser además el primer puerto de salida (decisiones 3 y 29).
+  - Para DIP: si aparece una segunda forma de jugar contra la computadora (decisión 34), o si hiciera falta
+    probar un adaptador con un doble de `ContraLaComputadora`. Ahí se extrae la interfaz.

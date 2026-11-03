@@ -20,7 +20,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.SwingWorker;
 import javax.swing.border.Border;
 
-import ia.Computadora;
+import ia.ContraLaComputadora;
 import ia.JugadaDeLaComputadora;
 import juego.EstadoPartida;
 import juego.JuegoDeAjedrez;
@@ -33,7 +33,8 @@ import modelo.Tablero;
  * La pantalla de juego: los botones arriba, el tablero en el medio y el estado abajo. El primer clic
  * elige la pieza y el segundo, el destino; la jugada se le pide al núcleo por el puerto JuegoDeAjedrez.
  * No contiene reglas del ajedrez: si la jugada no vale, muestra el motivo que da el núcleo.
- * Contra la computadora, ella juega el color que no eligió el jugador y la barra avisa qué jugó.
+ * Contra la computadora, ella juega el color que no eligió el jugador y la barra avisa qué jugó. Cuándo le
+ * toca y hasta dónde vuelve deshacer lo decide ContraLaComputadora, en el núcleo.
  * Cómo se ve (fondo, casillas, piezas, nombres de los bandos) lo decide el tema elegido en el menú.
  */
 final class PanelDeLaPartida extends JPanel {
@@ -60,8 +61,7 @@ final class PanelDeLaPartida extends JPanel {
     private final JButton rendirse = new JButton("Rendirse");
     private Tema tema; // cambia cuando se elige otro en el menú
     // Contra quién se juega. Vacío: uno contra uno. Cambia cada vez que se elige una partida en el menú.
-    private Optional<Computadora> computadora = Optional.empty();
-    private modelo.Color colorDeLaComputadora = modelo.Color.NEGRO;
+    private Optional<ContraLaComputadora> rival = Optional.empty();
     private Posicion origen; // null mientras no se eligió ninguna pieza
     private String mensaje = "";
     private boolean finAnunciado = false;
@@ -97,16 +97,15 @@ final class PanelDeLaPartida extends JPanel {
 
     /** Partida nueva entre dos personas en la misma compu, con las blancas abajo. */
     void empezarUnoContraUno() {
-        computadora = Optional.empty();
+        rival = Optional.empty();
         tablero.setInvertido(false);
         empezarDeNuevo();
     }
 
-    /** Partida nueva contra la computadora: el jugador elige su color y lo tiene abajo; ella juega el otro. */
-    void empezarContraLaComputadora(Computadora elegida, modelo.Color colorDelJugador) {
-        computadora = Optional.of(elegida);
-        colorDeLaComputadora = colorDelJugador.contrario();
-        tablero.setInvertido(colorDelJugador == modelo.Color.NEGRO);
+    /** Partida nueva contra la computadora: el jugador tiene su color abajo; ella juega el otro. */
+    void empezarContraLaComputadora(ContraLaComputadora elegido) {
+        rival = Optional.of(elegido);
+        tablero.setInvertido(elegido.colorDeLaComputadora() == modelo.Color.BLANCO);
         empezarDeNuevo();
     }
 
@@ -195,26 +194,17 @@ final class PanelDeLaPartida extends JPanel {
         pensarSiLeToca();
     }
 
-    /** Contra la computadora, deshacer vuelve hasta que le toque al jugador: su jugada y la de la computadora. */
+    /** Contra la computadora, hasta dónde vuelve deshacer lo decide el núcleo; uno contra uno, un paso. */
     private boolean deshacerTurno() {
-        boolean cambio = juego.deshacer();
-        if (cambio && leTocaALaComputadora()) {
-            juego.deshacer();
-        }
-        return cambio;
+        return rival.map(ContraLaComputadora::deshacer).orElseGet(juego::deshacer);
     }
 
     private boolean rehacerTurno() {
-        boolean cambio = juego.rehacer();
-        if (cambio && leTocaALaComputadora()) {
-            juego.rehacer();
-        }
-        return cambio;
+        return rival.map(ContraLaComputadora::rehacer).orElseGet(juego::rehacer);
     }
 
     private boolean leTocaALaComputadora() {
-        return computadora.isPresent() && !juego.estado().terminada()
-                && juego.turnoActual() == colorDeLaComputadora;
+        return rival.map(ContraLaComputadora::leToca).orElse(false);
     }
 
     /** La computadora elige en segundo plano (el minimax puede tardar un momento) y juega cuando termina. */
@@ -225,18 +215,18 @@ final class PanelDeLaPartida extends JPanel {
         pensando = true;
         mensaje = "Piensa la computadora…";
         repintar();
-        Computadora quePiensa = computadora.get();
+        ContraLaComputadora quePiensa = rival.get();
         new SwingWorker<Optional<JugadaDeLaComputadora>, Void>() {
             @Override
             protected Optional<JugadaDeLaComputadora> doInBackground() {
-                return quePiensa.elegirJugada(juego);
+                return quePiensa.elegirJugada();
             }
 
             @Override
             protected void done() {
                 pensando = false;
                 try {
-                    get().ifPresent(PanelDeLaPartida.this::jugarLaDeLaComputadora);
+                    get().ifPresent(elegida -> jugarLaDeLaComputadora(quePiensa, elegida));
                 } catch (InterruptedException e) {
                     Thread.currentThread().interrupt();
                 } catch (ExecutionException e) {
@@ -247,20 +237,15 @@ final class PanelDeLaPartida extends JPanel {
         }.execute();
     }
 
-    /** La jugada la hace el núcleo por el puerto, como cualquier otra; la barra dice qué jugó. */
-    private void jugarLaDeLaComputadora(JugadaDeLaComputadora elegida) {
+    /** La jugada la hace el núcleo, como cualquier otra; la barra dice qué jugó. */
+    private void jugarLaDeLaComputadora(ContraLaComputadora quienJuega, JugadaDeLaComputadora elegida) {
         JugadaLegal jugada = elegida.jugada();
-        ResultadoJugada resultado = jugada.promocion()
-                .map(tipo -> juego.jugar(jugada.desde(), jugada.hasta(), tipo))
-                .orElseGet(() -> juego.jugar(jugada.desde(), jugada.hasta()));
+        ResultadoJugada resultado = quienJuega.jugar(elegida);
         String jaque = describir(resultado);
-        mensaje = "La computadora jugó " + casilla(jugada.desde()) + " " + casilla(jugada.hasta())
+        mensaje = "La computadora jugó " + PanelDelTablero.coordenada(jugada.desde()) + " "
+                + PanelDelTablero.coordenada(jugada.hasta())
                 + (elegida.deRespaldo() ? " (eligió " + elegida.asesor() + ", de respaldo)" : "")
                 + (jaque.isEmpty() ? "" : "  —  " + jaque);
-    }
-
-    private static String casilla(Posicion posicion) {
-        return (char) ('a' + posicion.columna()) + String.valueOf(posicion.fila() + 1);
     }
 
     private String describir(ResultadoJugada resultado) {
@@ -316,16 +301,16 @@ final class PanelDeLaPartida extends JPanel {
     private String turno() {
         modelo.Color turno = juego.turnoActual();
         String bando = tema.bando(turno);
-        if (computadora.isEmpty()) {
+        if (rival.isEmpty()) {
             return "Turno: " + bando;
         }
-        return turno == colorDeLaComputadora ? "Turno de la computadora (" + bando + ")" : "Tu turno (" + bando + ")";
+        return turno == rival.get().colorDeLaComputadora() ? "Turno de la computadora (" + bando + ")" : "Tu turno (" + bando + ")";
     }
 
     /** Contra la computadora se habla en segunda persona: "Ganaste" o "Ganó la computadora". */
     private String resultado(EstadoPartida fin) {
-        return fin.ganador().map(color -> computadora.isEmpty() ? "Ganador: " + tema.bando(color)
-                        : color == colorDeLaComputadora ? "Ganó la computadora" : "¡Ganaste!")
+        return fin.ganador().map(color -> rival.isEmpty() ? "Ganador: " + tema.bando(color)
+                        : color == rival.get().colorDeLaComputadora() ? "Ganó la computadora" : "¡Ganaste!")
                 .orElse("Tablas");
     }
 

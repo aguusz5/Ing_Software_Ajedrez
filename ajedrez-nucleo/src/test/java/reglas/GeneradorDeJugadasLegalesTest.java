@@ -18,6 +18,7 @@ import modelo.Color;
 import modelo.Pieza;
 import modelo.Tablero;
 import movimiento.Jugada;
+import modelo.Posicion;
 
 class GeneradorDeJugadasLegalesTest {
 
@@ -85,7 +86,14 @@ class GeneradorDeJugadasLegalesTest {
 
     @Test
     void jugadasLegalesDesde_casillaVacia_devuelveListaVacia() {
-        // Act & Assert
-        assertTrue(generador.jugadasLegalesDesde(soloLosReyes(), casilla("d4"), Color.BLANCO).isEmpty());
+        // Arrange
+        Tablero tablero = soloLosReyes();
+        Posicion vacia = casilla("d4");
+
+        // Act
+        List<Jugada> legales = generador.jugadasLegalesDesde(tablero, vacia, Color.BLANCO);
+
+        // Assert
+        assertTrue(legales.isEmpty());
     }
 }

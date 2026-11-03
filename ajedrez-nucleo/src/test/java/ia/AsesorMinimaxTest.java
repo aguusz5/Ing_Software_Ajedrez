@@ -7,9 +7,10 @@ import static configuracion.TiposDePiezaEstandar.rey;
 import static configuracion.TiposDePiezaEstandar.torre;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static soporte.Casillas.casilla;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static soporte.Excepciones.excepcionDe;
 
 import java.util.List;
 import java.util.Optional;
@@ -102,17 +103,21 @@ class AsesorMinimaxTest {
                 .con(casilla("g8"), new Pieza(Color.NEGRO, rey()))
                 .con(casilla("a8"), new Pieza(Color.NEGRO, torre()));
         Tablero sinHacerLugar = new JugadaSimple(casilla("h5"), casilla("f4")).aplicarEn(tablero);
-        assertTrue(tieneMateEnUna(sinHacerLugar, Color.NEGRO), "La amenaza de mate tiene que ser real");
-        JugadaLegal elegida = sugerida(tablero, Color.BLANCO);
 
         // Act
-        Tablero despues = generador.jugadasLegales(tablero, Color.BLANCO).stream()
+        JugadaLegal elegida = sugerida(tablero, Color.BLANCO);
+
+        // Assert: la amenaza era real (sin hacer lugar hay mate) y la jugada elegida la evita.
+        assertTrue(tieneMateEnUna(sinHacerLugar, Color.NEGRO), "La amenaza de mate tiene que ser real");
+        assertFalse(tieneMateEnUna(aplicada(elegida, tablero), Color.NEGRO));
+    }
+
+    /** El tablero que queda después de hacer esa jugada legal. */
+    private Tablero aplicada(JugadaLegal elegida, Tablero tablero) {
+        return generador.jugadasLegales(tablero, Color.BLANCO).stream()
                 .filter(jugada -> JugadaLegal.de(jugada).equals(elegida))
                 .findFirst().orElseThrow()
                 .aplicarEn(tablero);
-
-        // Assert
-        assertFalse(tieneMateEnUna(despues, Color.NEGRO));
     }
 
     /** Si "color" tiene alguna jugada que deja al rival en jaque y sin jugadas legales. */
@@ -125,7 +130,13 @@ class AsesorMinimaxTest {
 
     @Test
     void constructor_profundidadCero_esRechazado() {
-        // Act & Assert
-        assertThrows(IllegalArgumentException.class, () -> new AsesorMinimax(generador, detector, 0, new Random(1)));
+        // Arrange
+        int profundidad = 0;
+
+        // Act
+        RuntimeException error = excepcionDe(() -> new AsesorMinimax(generador, detector, profundidad, new Random(1)));
+
+        // Assert
+        assertInstanceOf(IllegalArgumentException.class, error);
     }
 }

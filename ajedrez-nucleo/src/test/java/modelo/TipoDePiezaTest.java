@@ -1,16 +1,24 @@
 package modelo;
 
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static soporte.Excepciones.excepcionDe;
 
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
+import movimiento.ReglaDeMovimiento;
 
 class TipoDePiezaTest {
 
     @Test
     void constructor_sinReglasDeMovimiento_lanzaExcepcion() {
-        // Act & Assert
-        assertThrows(IllegalArgumentException.class, () -> new TipoDePieza("inmóvil", false, 1, List.of()));
+        // Arrange
+        List<ReglaDeMovimiento> sinReglas = List.of();
+
+        // Act
+        RuntimeException error = excepcionDe(() -> new TipoDePieza("inmóvil", false, 1, sinReglas));
+
+        // Assert
+        assertInstanceOf(IllegalArgumentException.class, error);
     }
 }

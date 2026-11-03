@@ -1,54 +1,40 @@
 package ia;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertSame;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static soporte.Casillas.casilla;
+import static soporte.Excepciones.excepcionDe;
 
 import java.util.List;
 import java.util.Optional;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import configuracion.TableroEstandar;
-import juego.JuegoDeAjedrez;
 import juego.JugadaLegal;
-import juego.Partida;
 import modelo.Color;
 import modelo.Tablero;
-import reglas.DetectorDeJaque;
-import reglas.GeneradorDeJugadasLegales;
-import reglas.ReglaEnroqueSeguro;
-import reglas.ReglaNoDejarReyEnJaque;
-import reglas.ReglaPiezaPropia;
-import reglas.ValidadorDeJugadas;
 
 class ComputadoraTest {
 
     private static final JugadaLegal E2_E4 = new JugadaLegal(casilla("e2"), casilla("e4"), Optional.empty());
     private static final JugadaLegal E2_E5 = new JugadaLegal(casilla("e2"), casilla("e5"), Optional.empty());
     private static final JugadaLegal D2_D4 = new JugadaLegal(casilla("d2"), casilla("d4"), Optional.empty());
+    /** Las jugadas legales que recibe la computadora en cada test: e2 e5 no está, así que no es legal. */
+    private static final List<JugadaLegal> LEGALES = List.of(E2_E4, D2_D4);
 
-    private JuegoDeAjedrez partida;
+    private final Tablero tablero = new TableroEstandar().crearTablero();
 
-    @BeforeEach
-    void crearPartidaEstandar() {
-        DetectorDeJaque detector = new DetectorDeJaque();
-        ValidadorDeJugadas validador = new ValidadorDeJugadas(List.of(
-                new ReglaPiezaPropia(), new ReglaEnroqueSeguro(detector), new ReglaNoDejarReyEnJaque(detector)));
-        partida = new Partida(new TableroEstandar().crearTablero(), validador, detector,
-                new GeneradorDeJugadasLegales(validador));
-    }
-
-    /** Doble de prueba: siempre sugiere lo mismo y cuenta cuántas veces le preguntaron. */
+    /** Doble de prueba (mock): siempre sugiere lo mismo y registra cuántas veces le preguntaron y con qué. */
     private static final class AsesorDePrueba implements AsesorDeJugadas {
 
         private final String nombre;
         private final Optional<JugadaLegal> respuesta;
         private int pedidos = 0;
+        private Tablero tableroRecibido;
+        private Color turnoRecibido;
 
         AsesorDePrueba(String nombre, Optional<JugadaLegal> respuesta) {
             this.nombre = nombre;
@@ -63,6 +49,8 @@ class ComputadoraTest {
         @Override
         public Optional<JugadaLegal> sugerirJugada(Tablero tablero, Color turno, List<JugadaLegal> legales) {
             pedidos++;
+            tableroRecibido = tablero;
+            turnoRecibido = turno;
             return respuesta;
         }
     }
@@ -72,9 +60,10 @@ class ComputadoraTest {
         // Arrange
         AsesorDePrueba asesor = new AsesorDePrueba("Principal", Optional.of(E2_E4));
         AsesorDePrueba respaldo = new AsesorDePrueba("Respaldo", Optional.of(D2_D4));
+        Computadora computadora = new Computadora(asesor, respaldo, 2);
 
         // Act
-        JugadaDeLaComputadora elegida = new Computadora(asesor, respaldo, 2).elegirJugada(partida).orElseThrow();
+        JugadaDeLaComputadora elegida = computadora.elegirJugada(tablero, Color.BLANCO, LEGALES).orElseThrow();
 
         // Assert
         assertEquals(new JugadaDeLaComputadora(E2_E4, "Principal", false), elegida);
@@ -82,13 +71,28 @@ class ComputadoraTest {
     }
 
     @Test
+    void elegirJugada_conUnaPosicion_leConsultaAlAsesorEsaPosicionYEseTurno() {
+        // Arrange
+        AsesorDePrueba asesor = new AsesorDePrueba("Principal", Optional.of(E2_E4));
+        Computadora computadora = new Computadora(asesor, asesor, 1);
+
+        // Act
+        computadora.elegirJugada(tablero, Color.NEGRO, LEGALES);
+
+        // Assert
+        assertSame(tablero, asesor.tableroRecibido);
+        assertEquals(Color.NEGRO, asesor.turnoRecibido);
+    }
+
+    @Test
     void elegirJugada_sugerenciaIlegal_reintentaYDespuesUsaElRespaldo() {
         // Arrange: e2 e5 no es legal, así que la computadora no le cree.
         AsesorDePrueba asesor = new AsesorDePrueba("Principal", Optional.of(E2_E5));
         AsesorDePrueba respaldo = new AsesorDePrueba("Respaldo", Optional.of(D2_D4));
+        Computadora computadora = new Computadora(asesor, respaldo, 2);
 
         // Act
-        JugadaDeLaComputadora elegida = new Computadora(asesor, respaldo, 2).elegirJugada(partida).orElseThrow();
+        JugadaDeLaComputadora elegida = computadora.elegirJugada(tablero, Color.BLANCO, LEGALES).orElseThrow();
 
         // Assert
         assertEquals(2, asesor.pedidos);
@@ -100,9 +104,10 @@ class ComputadoraTest {
         // Arrange: así se vería, desde el núcleo, un motor externo que no respondió.
         AsesorDePrueba asesor = new AsesorDePrueba("Principal", Optional.empty());
         AsesorDePrueba respaldo = new AsesorDePrueba("Respaldo", Optional.of(D2_D4));
+        Computadora computadora = new Computadora(asesor, respaldo, 1);
 
         // Act
-        JugadaDeLaComputadora elegida = new Computadora(asesor, respaldo, 1).elegirJugada(partida).orElseThrow();
+        JugadaDeLaComputadora elegida = computadora.elegirJugada(tablero, Color.BLANCO, LEGALES).orElseThrow();
 
         // Assert
         assertTrue(elegida.deRespaldo());
@@ -114,36 +119,27 @@ class ComputadoraTest {
         // Arrange
         AsesorDePrueba asesor = new AsesorDePrueba("Principal", Optional.of(E2_E5));
         AsesorDePrueba respaldo = new AsesorDePrueba("Respaldo", Optional.empty());
+        Computadora computadora = new Computadora(asesor, respaldo, 1);
 
         // Act
-        JugadaDeLaComputadora elegida = new Computadora(asesor, respaldo, 1).elegirJugada(partida).orElseThrow();
+        JugadaDeLaComputadora elegida = computadora.elegirJugada(tablero, Color.BLANCO, LEGALES).orElseThrow();
 
         // Assert
-        assertEquals(partida.jugadasLegales().get(0), elegida.jugada());
+        assertEquals(E2_E4, elegida.jugada());
     }
 
     @Test
-    void elegirJugada_noModificaLaPartida() {
+    void elegirJugada_sinJugadasLegales_vacio() {
         // Arrange
-        Tablero antes = partida.tablero();
         AsesorDePrueba asesor = new AsesorDePrueba("Principal", Optional.of(E2_E4));
+        Computadora computadora = new Computadora(asesor, asesor, 1);
 
         // Act
-        new Computadora(asesor, asesor, 1).elegirJugada(partida);
+        Optional<JugadaDeLaComputadora> elegida = computadora.elegirJugada(tablero, Color.BLANCO, List.of());
 
-        // Assert: la jugada la hace después el adaptador, por el puerto.
-        assertSame(antes, partida.tablero());
-        assertEquals(Color.BLANCO, partida.turnoActual());
-    }
-
-    @Test
-    void elegirJugada_partidaTerminada_vacio() {
-        // Arrange
-        partida.terminar();
-        AsesorDePrueba asesor = new AsesorDePrueba("Principal", Optional.of(E2_E4));
-
-        // Act & Assert
-        assertFalse(new Computadora(asesor, asesor, 1).elegirJugada(partida).isPresent());
+        // Assert
+        assertTrue(elegida.isEmpty());
+        assertEquals(0, asesor.pedidos);
     }
 
     @Test
@@ -151,7 +147,10 @@ class ComputadoraTest {
         // Arrange
         AsesorDePrueba asesor = new AsesorDePrueba("Principal", Optional.of(E2_E4));
 
-        // Act & Assert
-        assertThrows(IllegalArgumentException.class, () -> new Computadora(asesor, asesor, 0));
+        // Act
+        RuntimeException error = excepcionDe(() -> new Computadora(asesor, asesor, 0));
+
+        // Assert
+        assertInstanceOf(IllegalArgumentException.class, error);
     }
 }
