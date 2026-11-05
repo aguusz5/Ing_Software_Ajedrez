@@ -209,7 +209,9 @@ final class PanelDelMenu extends JPanel {
     }
 
     private void mostrarAyuda() {
-        JOptionPane.showMessageDialog(this, """
+        // Dentro de un JLabel: si se le pasa el String, JOptionPane lo corta en renglones y solo el
+        // primero se lee como HTML (el resto mostraría las etiquetas).
+        JOptionPane.showMessageDialog(this, new JLabel("""
                 <html><body style='width: 380px'>
                 <p><b>Mover:</b> hacé clic en una pieza y después en la casilla de destino.
                 Otro clic sobre la misma pieza la suelta.</p><br>
@@ -225,7 +227,7 @@ final class PanelDelMenu extends JPanel {
                 <p><b>Tema:</b> cambia solo cómo se ve. En Star Wars la Rebelión (blancas, brillo azul) juega
                 contra el Imperio (negras, brillo rojo). La insignia de la esquina dice qué pieza es cada
                 personaje, y si dejás el mouse quieto sobre una pieza aparece su nombre.</p>
-                </body></html>""", "Cómo se juega", JOptionPane.INFORMATION_MESSAGE);
+                </body></html>"""), "Cómo se juega", JOptionPane.INFORMATION_MESSAGE);
     }
 
     private static JButton boton(String texto) {
