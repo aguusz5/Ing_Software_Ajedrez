@@ -536,8 +536,8 @@ public record EstadoPartida(boolean terminada, Optional&lt;Color&gt; ganador, St
   <section aria-labelledby="t-probar">
     <h2 id="t-probar">Cómo probarlo</h2>
 <pre><code>mvn test                                          # 163 del núcleo + 31 de la consola
-mvn package &amp;&amp; java -jar ajedrez-app/target/ajedrez.jar --gui    # ventana: arranca en el menú
-mvn package &amp;&amp; java -jar ajedrez-app/target/ajedrez.jar          # consola (se va a sacar)</code></pre>
+mvn package &amp;&amp; java -jar ajedrez-app/target/ajedrez.jar          # ventana: arranca en el menú
+mvn package &amp;&amp; java -jar ajedrez-app/target/ajedrez.jar --consola  # consola (se va a sacar)</code></pre>
     <p>Para ver un mate rápido en la consola: <code>f2 f3</code>, <code>e7 e5</code>, <code>g2 g4</code>,
       <code>d8 h4</code>. Para ver el botón Rendirse en la ventana: <code>e2 e4</code>, <code>f7 f6</code>,
       <code>d1 h5</code> (las negras quedan en jaque). Para coronar rápido en la consola: <code>a2 a4</code>,

@@ -9,14 +9,16 @@ que también es del núcleo.
 
 ```bash
 mvn package                                      # compila, corre los tests y arma el jar
-java -jar ajedrez-app/target/ajedrez.jar         # consola: escribí "e2 e4"; "salir" para terminar
-java -jar ajedrez-app/target/ajedrez.jar --gui   # ventana: arranca en el menú de inicio
+java -jar ajedrez-app/target/ajedrez.jar             # ventana: arranca en el menú de inicio
+java -jar ajedrez-app/target/ajedrez.jar --consola   # consola: escribí "e2 e4"; "salir" para terminar
 mvn test                                         # solo los tests
 ```
 
+Desde un IDE alcanza con darle "Run" a `app.Principal` (módulo `ajedrez-app`): sin argumentos abre la ventana.
+
 La ventana arranca en un menú: uno contra uno, o contra la computadora en fácil (juega al azar), medio o
 difícil (un minimax que mira 2 o 3 jugadas hacia adelante), con blancas o con negras. Todo corre en la compu,
-sin internet. En la consola, `--ia` hace que las negras las juegue la computadora en difícil.
+sin internet. `--ia` abre la consola con las negras jugadas por la computadora en difícil.
 
 La ventana tiene dos temas, que se eligen en el menú: **Star Wars** (el que se ve al abrir: la Rebelión, con
 blancas, contra el Imperio, con negras, en el espacio) y **Clásico** (tablero de madera y símbolos de ajedrez).

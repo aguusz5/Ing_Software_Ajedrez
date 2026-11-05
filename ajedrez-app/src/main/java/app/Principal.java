@@ -39,9 +39,10 @@ import reglas.ValidadorDeJugadas;
 
 /**
  * Raíz de composición: el único lugar que conoce todas las clases concretas, las crea con new
- * y las conecta. Con --gui se abre la ventana, que arranca en el menú de inicio con el tema Star Wars
- * (el clásico se elige en el menú). Sin argumentos se juega por consola; ahí, con --ia, las negras las
- * juega la computadora en la dificultad más alta.
+ * y las conecta. Sin argumentos se abre la ventana, que arranca en el menú de inicio con el tema Star Wars
+ * (el clásico se elige en el menú): así, darle "Run" a esta clase en cualquier IDE abre el juego. Con
+ * --consola se juega por consola; con --ia también, y las negras las juega la computadora en la dificultad
+ * más alta.
  */
 public final class Principal {
 
@@ -67,7 +68,8 @@ public final class Principal {
         Tablero tablero = new TableroEstandar().crearTablero();
         JuegoDeAjedrez juego = new Partida(tablero, validador, detector, generador);
         List<Dificultad> dificultades = crearDificultades(juego, generador, detector);
-        if (opciones.contains("--gui")) {
+        boolean enConsola = opciones.contains("--consola") || opciones.contains("--ia");
+        if (!enConsola) {
             GlifosDePieza glifos = new GlifosDePieza();
             List<Tema> temas = List.of(
                     new TemaStarWars(glifos, new PersonajesDeStarWars(), cargarImagen(FONDO_STAR_WARS)),

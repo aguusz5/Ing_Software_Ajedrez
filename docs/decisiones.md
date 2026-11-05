@@ -431,6 +431,10 @@ se revierte, no se borra: se marca como reemplazada y se dice por cuál.
 - **Cuándo se rompería:** la consola es la segunda interfaz sobre el mismo puerto, la prueba de que el núcleo
   no depende de cómo se juega (decisiones 1 y 2). Si se saca, esa prueba queda en los tests del núcleo, que lo
   usan sin ninguna interfaz. Si en la defensa se quiere mostrar un segundo adaptador, conviene conservarla.
+- **Revisión (05/11):** `Principal` sin argumentos abre la ventana, y la consola pasa a pedirse con `--consola`
+  (o con `--ia`, que la abre contra la computadora). Antes era al revés y hacía falta `--gui`: quien clonaba
+  el repo y le daba "Run" a `Principal` en el IDE caía en la consola. Ahora el arranque por defecto es la
+  interfaz principal, sin configurar nada en el IDE.
 
 ### 33. La ventana tiene temas intercambiables, y el de Star Wars se dibuja con figuras
 

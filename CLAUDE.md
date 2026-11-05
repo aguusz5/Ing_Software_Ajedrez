@@ -6,7 +6,7 @@ Ajedrez en Java 21 con arquitectura núcleo + adaptadores. Módulos Maven: `ajed
 
 ```bash
 mvn test                                         # todos los tests
-mvn package && java -jar ajedrez-app/target/ajedrez.jar [--gui] [--ia]
+mvn package && java -jar ajedrez-app/target/ajedrez.jar [--consola] [--ia]   # sin argumentos: la ventana
 ```
 
 ## Arquitectura

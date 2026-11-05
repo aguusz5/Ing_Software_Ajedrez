@@ -183,7 +183,7 @@
   <header class="cabecera">
     <div class="eyebrow">TPO Ajedrez · Ingeniería de Software</div>
     <h1>Dónde estamos</h1>
-    <p class="sello"><span>Última actualización</span> <time datetime="2026-11-03">3 de noviembre de 2026</time></p>
+    <p class="sello"><span>Última actualización</span> <time datetime="2026-11-05">5 de noviembre de 2026</time></p>
     <p class="bajada">El alcance obligatorio está completo y probado: las seis piezas, turnos, captura,
       validación y jaque, jugables por consola y por ventana. Por calendario el roadmap nos ubica en la
       fase 3, así que vamos adelantados: ya están los opcionales 0 a 7 y el menú de inicio.</p>
@@ -237,7 +237,7 @@
             <th scope="row">F4 · GUI y extensibilidad</th>
             <td class="fechas">26/10 – 01/11</td>
             <td><span class="estado hecho">Hecha</span></td>
-            <td class="detalle">Ventana Swing con <code>--gui</code>. Una pieza nueva y un tablero de 10x10 funcionan sin tocar el núcleo.</td>
+            <td class="detalle">Ventana Swing, la que abre <code>Principal</code> sin argumentos. Una pieza nueva y un tablero de 10x10 funcionan sin tocar el núcleo.</td>
           </tr>
           <tr>
             <th scope="row">F5 · Opcionales</th>
@@ -483,6 +483,13 @@
   <section aria-labelledby="t-historial">
     <h2 id="t-historial">Historial</h2>
     <ol class="historial" reversed>
+      <li>
+        <time datetime="2026-11-05">05/11/2026</time>
+        <ul>
+          <li><code>Principal</code> sin argumentos abre la ventana: darle "Run" en cualquier IDE, o <code>java -jar ajedrez.jar</code>, abre el juego. La consola se pide con <code>--consola</code> (o <code>--ia</code>, contra la computadora). Revisión de la decisión 32; README y explicaciones al día.</li>
+          <li>El diálogo "Cómo se juega" mostraba las etiquetas HTML: <code>JOptionPane</code> corta el texto en renglones y solo el primero se leía como HTML. Ahora va dentro de un <code>JLabel</code>.</li>
+        </ul>
+      </li>
       <li>
         <time datetime="2026-11-03">03/11/2026</time>
         <ul>

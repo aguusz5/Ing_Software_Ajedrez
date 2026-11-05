@@ -319,7 +319,7 @@
       <div class="caja app mapa-app">
         <span class="etiqueta">Ni núcleo ni adaptador: arranque</span>
         <span class="modulo">ajedrez-app · Principal</span>
-        <span class="rol">Es la <strong>raíz de composición</strong>: el único lugar que conoce todas las clases concretas. Crea la <code>Partida</code> con sus reglas, crea el adaptador que corresponda (consola, o ventana con <code>--gui</code>) y le pasa la partida. No tiene lógica de ajedrez ni de pantalla.</span>
+        <span class="rol">Es la <strong>raíz de composición</strong>: el único lugar que conoce todas las clases concretas. Crea la <code>Partida</code> con sus reglas, crea el adaptador que corresponda (la ventana, o la consola con <code>--consola</code>) y le pasa la partida. No tiene lógica de ajedrez ni de pantalla.</span>
       </div>
     </div>
     <p class="nota">Las dependencias apuntan siempre hacia el núcleo. La consola y la ventana dependen de él, y él no depende de nadie. Por eso el compilador no lo deja importar Swing ni <code>Scanner</code>.</p>
