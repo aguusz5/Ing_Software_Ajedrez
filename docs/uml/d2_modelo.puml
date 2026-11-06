@@ -29,16 +29,30 @@ package "ajedrez-nucleo :: modelo" #EAF6EA {
     +piezaEn(p : Posicion) : Optional<Pieza>
     +buscarRey(c : Color) : Posicion
     +puntosDe(c : Color) : int
+    +potenciadorEn(p : Posicion) : Optional<Potenciador>
+    +cantidadDePotenciadores() : int
     +con(p : Posicion, pieza : Pieza) : Tablero
     +sin(p : Posicion) : Tablero
+    +conPotenciador(p : Posicion, pot : Potenciador) : Tablero
+    +sinPotenciadoresDe(c : Color) : Tablero
   }
   class Pieza <<record>> {
     +color : Color
     +tipo : TipoDePieza
     +yaSeMovio : boolean
+    +potenciador : Optional<Potenciador>
     +Pieza(color : Color, tipo : TipoDePieza)
+    +Pieza(color : Color, tipo : TipoDePieza, yaSeMovio : boolean)
     +movida() : Pieza
+    +conPotenciador(pot : Potenciador) : Pieza
+    +sinPotenciador() : Pieza
     +jugadasCandidatas(t : Tablero, desde : Posicion) : List<Jugada>
+  }
+  class Potenciador {
+    +Potenciador(nombre : String, descripcion : String, regla : ReglaDeMovimiento)
+    +nombre() : String
+    +descripcion() : String
+    ~regla() : ReglaDeMovimiento
   }
   class TipoDePieza {
     +TipoDePieza(nombre : String, esRey : boolean, valor : int, reglas : List<ReglaDeMovimiento>)
@@ -51,6 +65,7 @@ package "ajedrez-nucleo :: modelo" #EAF6EA {
 package "ajedrez-nucleo :: movimiento" #EAF6EA {
   interface ReglaDeMovimiento <<Strategy>> {
     +jugadasCandidatas(t : Tablero, desde : Posicion, p : Pieza) : List<Jugada>
+    +adaptarJugadaPrestada(t : Tablero, prestada : Jugada, p : Pieza) : List<Jugada> {default: la deja igual; el avance del peón corona}
   }
   class ReglaDeslizante {
     +{static} SIN_LIMITE : int
@@ -99,8 +114,17 @@ package "ajedrez-nucleo :: configuracion" #EAF6EA {
   class TableroEstandar {
     +crearTablero() : Tablero
   }
+  class PotenciadoresStarWars <<catálogo estático>> {
+    +{static} hiperespacio() / fuerza()
+    +{static} propulsores() / sableDeLuz()
+    +{static} todos() : List<Potenciador>
+  }
 }
 Tablero o-- "0..*" Pieza : una por Posicion
+Tablero o-- "0..*" Potenciador : esperando en casillas vacías
+Pieza --> "0..1" Potenciador : tomó (dura un turno)
+Potenciador --> "1" ReglaDeMovimiento : movimiento extra
+PotenciadoresStarWars ..> Potenciador : crea
 Pieza --> Color
 Pieza --> TipoDePieza
 TipoDePieza o-- "1..*" ReglaDeMovimiento

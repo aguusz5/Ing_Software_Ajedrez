@@ -13,4 +13,12 @@ import modelo.Tablero;
 public interface ReglaDeMovimiento {
 
     List<Jugada> jugadasCandidatas(Tablero tablero, Posicion desde, Pieza pieza);
+
+    /**
+     * Cómo queda una jugada que le presta un potenciador a una pieza que se mueve con esta regla. Casi todas la
+     * dejan igual; el avance del peón la convierte en coronación si lo deja en la última fila (decisión 36).
+     */
+    default List<Jugada> adaptarJugadaPrestada(Tablero tablero, Jugada prestada, Pieza pieza) {
+        return List.of(prestada);
+    }
 }

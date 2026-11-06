@@ -56,13 +56,17 @@ public final class VentanaSwing {
     }
 
     private void unoContraUno() {
-        partida.empezarUnoContraUno();
-        mostrarPartida(TITULO + " — uno contra uno");
+        partida.empezarUnoContraUno(menu.conPotenciadores());
+        mostrarPartida(TITULO + " — uno contra uno" + modo());
     }
 
     private void contraLaComputadora(Dificultad dificultad, modelo.Color colorDelJugador) {
-        partida.empezarContraLaComputadora(dificultad.paraJugarCon(colorDelJugador));
-        mostrarPartida(TITULO + " — contra la computadora (" + dificultad.nombre() + ")");
+        partida.empezarContraLaComputadora(dificultad.paraJugarCon(colorDelJugador), menu.conPotenciadores());
+        mostrarPartida(TITULO + " — contra la computadora (" + dificultad.nombre() + ")" + modo());
+    }
+
+    private String modo() {
+        return menu.conPotenciadores() ? " · con potenciadores" : "";
     }
 
     private void usarTema(Tema tema) {

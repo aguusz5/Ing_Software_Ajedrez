@@ -4,6 +4,7 @@ import java.awt.Color;
 import java.awt.Graphics2D;
 
 import modelo.Pieza;
+import modelo.Potenciador;
 
 /** El tema de siempre: casillas de madera, piezas con su símbolo Unicode en blanco y negro. */
 public final class TemaClasico implements Tema {
@@ -13,6 +14,7 @@ public final class TemaClasico implements Tema {
             new Color(240, 217, 181), new Color(181, 136, 99),
             new Color(60, 60, 60), new Color(40, 30, 20), new Color(120, 90, 60), new Color(90, 60, 40),
             new Color(0, 0, 0, 0)); // el fondo es liso: el menú no necesita velo
+    private static final Color DORADO = new Color(225, 170, 30);
 
     private final GlifosDePieza glifos;
 
@@ -51,6 +53,14 @@ public final class TemaClasico implements Tema {
         return new DibujoDeGlifo(pieza.tipo().nombre(), glifos.glifoDe(pieza),
                 esBlanca ? Color.WHITE : Color.BLACK,
                 esBlanca ? Color.BLACK : Color.WHITE);
+    }
+
+    /** Una esfera dorada, con el símbolo del movimiento que presta. */
+    @Override
+    public DibujoDePieza dibujoDe(Potenciador potenciador) {
+        return new DibujoDePotenciador("Potenciador: " + potenciador.nombre() + " (" + potenciador.descripcion()
+                + ", un solo turno)", new DibujoDeGlifo(potenciador.nombre(), glifos.glifoDe(potenciador),
+                Color.WHITE, DORADO.darker().darker()), DORADO);
     }
 
     @Override

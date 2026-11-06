@@ -524,3 +524,72 @@ se revierte, no se borra: se marca como reemplazada y se dice por cuál.
     adaptador, y `AsesorDeJugadas` pasa a ser además el primer puerto de salida (decisiones 3 y 29).
   - Para DIP: si aparece una segunda forma de jugar contra la computadora (decisión 34), o si hiciera falta
     probar un adaptador con un doble de `ContraLaComputadora`. Ahí se extrae la interfaz.
+
+### 36. Los potenciadores son una regla de movimiento que la pieza lleva encima por un turno
+
+- **Qué:** en la ventana, la partida empieza con 2 potenciadores al azar en casillas vacías (el máximo), y
+  cada 6 jugadas (3 de cada color) aparece otro si hay lugar. Nunca hay más de 2 esperando. La pieza que cae
+  en esa casilla lo toma, también un peón, y en el **próximo turno de su color** se mueve además con una regla
+  extra. Si en ese turno mueve otra pieza, el potenciador se pierde. Los del comienzo los pone
+  `Partida.reiniciar()` con `AparicionDePotenciadores.alEmpezar`, así que reiniciar también arranca con 2. Son
+  cuatro, con nombres de Star Wars (`configuracion.PotenciadoresStarWars`):
+  - Salto al hiperespacio: salta como el caballo.
+  - Empuje de la Fuerza: un paso en cualquier dirección.
+  - Propulsores: hasta dos casillas en línea recta.
+  - Sable de luz: hasta dos casillas en diagonal.
+
+  En el núcleo:
+  - `modelo.Potenciador` es un nombre, una descripción y una `ReglaDeMovimiento`.
+  - `Pieza` puede llevar uno (`Optional<Potenciador>`), y `jugadasCandidatas` suma su regla a las del tipo.
+    Antes, cada regla del tipo puede adaptar las jugadas prestadas (`adaptarJugadaPrestada`).
+  - `Tablero` guarda los potenciadores que esperan en casillas. `con()` hace que la pieza que llega tome el
+    que había.
+  - `juego.AparicionDePotenciadores` decide cuándo y dónde aparece uno, y recibe el `Random` por constructor.
+  - `Partida` gasta los potenciadores del que mueve antes de aplicar su jugada y después le pide a la
+    aparición que ponga uno nuevo.
+
+  **Son opcionales.** En el menú de la ventana, la casilla "Con potenciadores" (marcada de entrada) decide si la
+  partida que se elige, uno contra uno o contra la computadora, los usa. Para eso el puerto suma
+  `reiniciar(boolean conPotenciadores)`; el `reiniciar()` de siempre sigue en el modo elegido, que es lo que
+  necesitan el botón Reiniciar y "Jugar de nuevo". Una `Partida` recién creada juega sin potenciadores, así
+  que la consola, que nunca los pide, juega el ajedrez de siempre.
+- **Por qué:**
+  - **Encaja en el diseño que ya teníamos.** Una pieza ya era "un tipo + reglas de movimiento" (decisión 5).
+    Un potenciador es una regla más, y temporal. No hay subclases ni `instanceof` ni piezas
+    nuevas. Como el jaque, las jugadas legales, el resaltado y la IA ya pasan todos por
+    `Pieza.jugadasCandidatas`, una torre con el salto al hiperespacio da jaque como un caballo, y la IA la
+    puede jugar, sin tocar `DetectorDeJaque`, `GeneradorDeJugadasLegales` ni `AsesorMinimax`.
+  - **Duran un turno a propósito.** Si durara toda la partida, la pieza potenciada pasaría a protagonizar el
+    juego. Así, un potenciador es una ventaja leve que hay que saber aprovechar. Se gastan antes de aplicar
+    la jugada porque la jugada ya se eligió y se validó con ellos. Mientras la pieza tiene el potenciador,
+    también amenaza con él: el rival lo ve venir.
+  - **El peón también los toma, y corona igual.** El riesgo era que un movimiento prestado lo dejara en la
+    última fila sin coronar. Para no preguntar por el tipo (prohibido `instanceof`/`switch`), cada
+    `ReglaDeMovimiento` puede adaptar las jugadas que le presta un potenciador a su pieza: por defecto las
+    deja igual, y `ReglaAvanceDePeon` convierte la que llega a la última fila en una por cada coronación,
+    con el mismo `JugadaConPromocion.deUnPeon` que usa para su propio avance. Si el peón puede coronar en la
+    misma casilla por los dos caminos, `Partida` no repite las opciones (`distinct`). Una primera versión
+    no dejaba que el peón los tomara. Se cambió porque el grupo quiere que los peones también los puedan
+    aprovechar.
+  - **Deshacer sigue funcionando sin código extra.** El tablero es inmutable y ya trae los potenciadores, así
+    que una foto (decisión 24) los guarda. Rehacer vuelve a mostrar el mismo potenciador, sin volver a
+    sortearlo.
+  - **Opcionales, para no perder el ajedrez de la consigna.** La consigna pide implementar el ajedrez, y los
+    potenciadores no son una regla del ajedrez. Con la opción, la ventana muestra el alcance obligatorio tal
+    cual y los potenciadores quedan como un agregado del grupo. Se eligen en el puerto y no con dos `Partida`
+    armadas en `Principal`, porque cada `Dificultad` ya tiene sus `ContraLaComputadora` atadas a una partida:
+    habría que duplicarlas todas.
+  - **Una sola clase de aparición, sin interfaz.** "Sin potenciadores" es la misma clase con el catálogo
+    vacío. Con una sola implementación, una interfaz sería abstracción de más (decisiones 14 y 21).
+  - **`Potenciador.regla()` no es pública**, igual que `TipoDePieza.reglas()`: un adaptador ve el nombre y la
+    descripción, pero no llega a las reglas (decisión 8).
+- **Cuándo se rompería:**
+  - El minimax prueba jugadas con `aplicarEn`. Ahí la pieza toma el potenciador al caer en él, pero en sus
+    simulaciones no aparecen potenciadores nuevos ni se vencen los de las piezas que no mueve. Si hiciera falta
+    que la IA los valore bien, el vencimiento y la aparición tendrían que pasar a la jugada (o a un "estado de
+    partida" que el minimax pueda simular), no quedarse en `Partida`.
+  - Si un potenciador tuviera que hacer algo que no es moverse (escudo, mover dos veces, revivir una pieza),
+    ya no alcanzaría con una `ReglaDeMovimiento`, y `Potenciador` pasaría a ser una interfaz con un efecto
+    propio.
+  - Los dibujos de la ventana reconocen a cada potenciador por su nombre (`GlifosDePieza`). Si se renombra uno
+    en el núcleo, la ventana le pone una estrella genérica hasta que se actualice la tabla.

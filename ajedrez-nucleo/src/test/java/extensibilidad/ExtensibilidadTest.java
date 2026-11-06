@@ -11,10 +11,12 @@ import static soporte.Casillas.destinos;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Random;
 import java.util.Set;
 
 import org.junit.jupiter.api.Test;
 
+import juego.AparicionDePotenciadores;
 import juego.JuegoDeAjedrez;
 import juego.Partida;
 import juego.ResultadoJugada;
@@ -50,7 +52,8 @@ class ExtensibilidadTest {
                 new ReglaPiezaPropia(),
                 new ReglaEnroqueSeguro(detector),
                 new ReglaNoDejarReyEnJaque(detector)));
-        return new Partida(tablero, validador, detector, new GeneradorDeJugadasLegales(validador));
+        return new Partida(tablero, validador, detector, new GeneradorDeJugadasLegales(validador),
+                new AparicionDePotenciadores(List.of(), 1, 0, new Random()));
     }
 
     @Test

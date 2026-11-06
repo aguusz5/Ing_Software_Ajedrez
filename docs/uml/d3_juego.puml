@@ -19,6 +19,7 @@ package "ajedrez-nucleo :: juego" #EAF6EA {
     +destinosIlegales(desde : Posicion) : List<Posicion>
     +jugadasLegales() : List<JugadaLegal>
     +reiniciar()
+    +reiniciar(conPotenciadores : boolean)
   }
   class JugadaLegal <<record>> {
     +desde : Posicion
@@ -30,12 +31,20 @@ package "ajedrez-nucleo :: juego" #EAF6EA {
     -pasado : Deque<Foto>
     -futuro : Deque<Foto>
     -turno : Color
-    +Partida(tablero : Tablero, validador : ValidadorDeJugadas, detector : DetectorDeJaque, generador : GeneradorDeJugadasLegales)
+    -jugadasHechas : int
+    -conPotenciadores : boolean
+    +Partida(tablero : Tablero, validador : ValidadorDeJugadas, detector : DetectorDeJaque, generador : GeneradorDeJugadasLegales, aparicion : AparicionDePotenciadores)
+  }
+  class AparicionDePotenciadores {
+    +AparicionDePotenciadores(catalogo : List<Potenciador>, cadaCuantasJugadas : int, maximoEnElTablero : int, azar : Random)
+    +alEmpezar(inicial : Tablero) : Tablero
+    +trasLaJugada(t : Tablero, jugadasHechas : int) : Tablero
   }
   class "Partida.Foto" as Foto <<record privado>> <<Memento>> {
     +tablero : Tablero
     +turno : Color
     +estado : EstadoPartida
+    +jugadasHechas : int
   }
   class EstadoPartida <<record>> {
     +terminada : boolean
@@ -96,6 +105,8 @@ Partida ..> ResultadoJugada : devuelve
 Partida -down--> ValidadorDeJugadas
 Partida -down---> DetectorDeJaque
 Partida -down--> GeneradorDeJugadasLegales
+Partida --> AparicionDePotenciadores : tras cada jugada
+AparicionDePotenciadores ..> Tablero : conPotenciador()
 Partida --> EstadoPartida
 Partida *-- "0..*" Foto : pasado y futuro
 JuegoDeAjedrez ..> JugadaLegal : devuelve

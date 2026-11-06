@@ -3,6 +3,7 @@ package gui;
 import java.awt.Graphics2D;
 
 import modelo.Pieza;
+import modelo.Potenciador;
 
 /**
  * Cómo se ve la ventana: el fondo, los colores, cómo se dibuja cada pieza y cómo se llaman los bandos.
@@ -26,6 +27,9 @@ public interface Tema {
     String nombreDe(String tipo, modelo.Color color);
 
     DibujoDePieza dibujoDe(Pieza pieza);
+
+    /** Un potenciador esperando en su casilla. Detrás de la pieza que lo toma se dibuja lo mismo. */
+    DibujoDePieza dibujoDe(Potenciador potenciador);
 
     /** Pinta el fondo de una pantalla entera. */
     void pintarFondo(Graphics2D g, int ancho, int alto);

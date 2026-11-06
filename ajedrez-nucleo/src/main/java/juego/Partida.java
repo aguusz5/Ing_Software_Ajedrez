@@ -25,6 +25,7 @@ public final class Partida implements JuegoDeAjedrez {
     private final ValidadorDeJugadas validador;
     private final DetectorDeJaque detector;
     private final GeneradorDeJugadasLegales generador;
+    private final AparicionDePotenciadores aparicion;
     // Para deshacer/rehacer alcanza con guardar fotos: el tablero es inmutable (decisión 7).
     private final Deque<Foto> pasado = new ArrayDeque<>();
     private final Deque<Foto> futuro = new ArrayDeque<>();
@@ -33,14 +34,19 @@ public final class Partida implements JuegoDeAjedrez {
     private Tablero tablero;
     private Color turno;
     private EstadoPartida estado;
+    // Las jugadas hechas por los dos colores: cada tantas aparece un potenciador.
+    private int jugadasHechas;
+    // Si se eligió jugar con potenciadores. Sin elegir, el ajedrez de siempre.
+    private boolean conPotenciadores;
 
     public Partida(Tablero tablero, ValidadorDeJugadas validador, DetectorDeJaque detector,
-                   GeneradorDeJugadasLegales generador) {
+                   GeneradorDeJugadasLegales generador, AparicionDePotenciadores aparicion) {
         this.inicial = tablero;
         this.validador = validador;
         this.detector = detector;
         this.generador = generador;
-        reiniciar();
+        this.aparicion = aparicion;
+        reiniciar(false);
     }
 
     @Override
@@ -86,9 +92,14 @@ public final class Partida implements JuegoDeAjedrez {
             return ResultadoJugada.rechazada(validacion.motivo());
         }
 
-        // 4. Se aplica la jugada y pasa el turno.
+        // 4. Se aplica la jugada y pasa el turno. Los potenciadores del que mueve duraban solo esta jugada: se
+        //    gastan antes de aplicarla (la jugada ya se eligió con ellos). Después, quizás aparece uno nuevo.
         guardarFoto();
-        tablero = jugada.get().aplicarEn(tablero);
+        tablero = jugada.get().aplicarEn(tablero.sinPotenciadoresDe(turno));
+        jugadasHechas++;
+        if (conPotenciadores) {
+            tablero = aparicion.trasLaJugada(tablero, jugadasHechas);
+        }
         turno = turno.contrario();
 
         // 5. Si el que tiene que mover no tiene ninguna jugada legal, la partida termina:
@@ -117,6 +128,7 @@ public final class Partida implements JuegoDeAjedrez {
                 .filter(jugada -> jugada.hasta().equals(hasta))
                 .flatMap(jugada -> jugada.promocion().stream())
                 .map(TipoDePieza::nombre)
+                .distinct() // un peón potenciado puede llegar a coronar por su regla y por la prestada
                 .toList();
     }
 
@@ -202,9 +214,17 @@ public final class Partida implements JuegoDeAjedrez {
 
     @Override
     public void reiniciar() {
-        tablero = inicial;
+        reiniciar(conPotenciadores);
+    }
+
+    @Override
+    public void reiniciar(boolean conPotenciadores) {
+        this.conPotenciadores = conPotenciadores;
         turno = Color.BLANCO;
         estado = EstadoPartida.enCurso();
+        jugadasHechas = 0;
+        // Con potenciadores, la partida ya empieza con algunos en el tablero, hasta el máximo.
+        tablero = conPotenciadores ? aparicion.alEmpezar(inicial) : inicial;
         pasado.clear();
         futuro.clear();
     }
@@ -216,12 +236,13 @@ public final class Partida implements JuegoDeAjedrez {
         }
         return generador.jugadasLegales(tablero, turno).stream()
                 .map(JugadaLegal::de)
+                .distinct() // la regla de un potenciador puede repetir una jugada que la pieza ya tenía
                 .toList();
     }
 
     /** Antes de cada cambio (jugada, terminar o rendirse) se guarda cómo estaba; lo deshecho se descarta. */
     private void guardarFoto() {
-        pasado.push(new Foto(tablero, turno, estado));
+        pasado.push(new Foto(tablero, turno, estado, jugadasHechas));
         futuro.clear();
     }
 
@@ -230,16 +251,20 @@ public final class Partida implements JuegoDeAjedrez {
         if (desde.isEmpty()) {
             return false;
         }
-        hacia.push(new Foto(tablero, turno, estado));
+        hacia.push(new Foto(tablero, turno, estado, jugadasHechas));
         Foto foto = desde.pop();
         tablero = foto.tablero();
         turno = foto.turno();
         estado = foto.estado();
+        jugadasHechas = foto.jugadasHechas();
         return true;
     }
 
-    /** Cómo estaba la partida en un momento: alcanza para volver a él. */
-    private record Foto(Tablero tablero, Color turno, EstadoPartida estado) { }
+    /**
+     * Cómo estaba la partida en un momento: alcanza para volver a él. El tablero ya trae los potenciadores, así
+     * que rehacer vuelve a mostrar el mismo que había aparecido, sin volver a sortearlo.
+     */
+    private record Foto(Tablero tablero, Color turno, EstadoPartida estado, int jugadasHechas) { }
 
     /** La única regla de "ganar por puntos": si el profesor la quiere distinta, se cambia acá. */
     private EstadoPartida decidirPorPuntos(String motivo) {

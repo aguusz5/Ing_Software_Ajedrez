@@ -20,6 +20,7 @@ import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.ButtonGroup;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
@@ -29,8 +30,8 @@ import javax.swing.border.TitledBorder;
 
 /**
  * La pantalla de inicio: jugar uno contra uno o contra la computadora (eligiendo dificultad y color),
- * volver a la partida en curso, elegir el tema, ver cómo se juega o salir. No juega: avisa qué se eligió
- * y la ventana arma la partida o cambia el tema.
+ * volver a la partida en curso, elegir el tema y si se juega con potenciadores, ver cómo se juega o salir.
+ * No juega: avisa qué se eligió y la ventana arma la partida o cambia el tema.
  */
 final class PanelDelMenu extends JPanel {
 
@@ -49,6 +50,8 @@ final class PanelDelMenu extends JPanel {
     private final List<JRadioButton> opcionesDeDificultad = new ArrayList<>();
     private final JRadioButton conBlancas = comun(new JRadioButton("Blancas", true));
     private final JRadioButton conNegras = comun(new JRadioButton("Negras"));
+    /** Vale para las dos modalidades. Arranca marcada: es el modo pensado para el tema Star Wars. */
+    private final JCheckBox potenciadores = comun(new JCheckBox("Con potenciadores", true));
     private final TitledBorder bordeDeLaComputadora = BorderFactory.createTitledBorder("Contra la computadora");
     private Tema tema; // cambia cuando se elige otro
 
@@ -81,6 +84,12 @@ final class PanelDelMenu extends JPanel {
         columna.add(seccionContraLaComputadora(dificultades, alElegirContraLaComputadora));
         columna.add(Box.createVerticalStrut(12));
         columna.add(filaDeTemas(temas, alElegirTema));
+        columna.add(Box.createVerticalStrut(6));
+        potenciadores.setOpaque(false);
+        potenciadores.setFocusPainted(false);
+        potenciadores.setAlignmentX(Component.CENTER_ALIGNMENT);
+        potenciadores.setToolTipText("Cristales que le dan a una pieza un movimiento extra por un turno");
+        columna.add(potenciadores);
         columna.add(Box.createVerticalStrut(12));
 
         JButton comoSeJuega = boton("Cómo se juega");
@@ -132,6 +141,11 @@ final class PanelDelMenu extends JPanel {
                 zona.width + 2 * MARGEN_DEL_VELO, zona.height + 2 * MARGEN_DEL_VELO,
                 REDONDEO_DEL_VELO, REDONDEO_DEL_VELO);
         g.dispose();
+    }
+
+    /** Si la próxima partida que se elija va con potenciadores. */
+    boolean conPotenciadores() {
+        return potenciadores.isSelected();
     }
 
     /** Desde que hay una partida empezada, el menú ofrece volver a ella. */
@@ -219,6 +233,10 @@ final class PanelDelMenu extends JPanel {
                 pero dejaría a su rey en jaque; rojo, el rey en jaque.</p><br>
                 <p><b>Enroque:</b> mové el rey dos casillas hacia la torre. <b>Coronación:</b> cuando un peón
                 llega al final, elegís en qué pieza se convierte.</p><br>
+                <p><b>Potenciadores</b> (se activan o desactivan en el menú): la partida empieza con dos cristales en casillas vacías y cada tanto
+                aparece otro. La pieza que cae ahí lo toma y en tu próximo turno se mueve además como dice el
+                símbolo del cristal (♘ salta como el caballo, ♔ un paso, ♖ y ♗ hasta dos casillas). Si ese
+                turno movés otra pieza, se pierde. Un peón que llega al final así también corona.</p><br>
                 <p><b>Deshacer y Rehacer:</b> contra la computadora vuelven hasta tu turno.</p><br>
                 <p><b>Terminar partida:</b> gana el que tiene más puntos (peón 1, caballo y alfil 3, torre 5,
                 dama 9). <b>Rendirse</b> aparece cuando estás en jaque.</p><br>

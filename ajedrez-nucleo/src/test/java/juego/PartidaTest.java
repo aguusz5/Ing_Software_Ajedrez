@@ -1,5 +1,7 @@
 package juego;
 
+import static configuracion.PotenciadoresStarWars.fuerza;
+import static configuracion.PotenciadoresStarWars.hiperespacio;
 import static configuracion.TiposDePiezaEstandar.alfil;
 import static configuracion.TiposDePiezaEstandar.caballo;
 import static configuracion.TiposDePiezaEstandar.dama;
@@ -15,6 +17,7 @@ import static soporte.Casillas.casillas;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Random;
 import java.util.Set;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -42,12 +45,16 @@ class PartidaTest {
     }
 
     private static Partida partidaSobre(Tablero tablero) {
+        return partidaSobre(tablero, new AparicionDePotenciadores(List.of(), 1, 0, new Random()));
+    }
+
+    private static Partida partidaSobre(Tablero tablero, AparicionDePotenciadores aparicion) {
         DetectorDeJaque detector = new DetectorDeJaque();
         ValidadorDeJugadas validador = new ValidadorDeJugadas(List.of(
                 new ReglaPiezaPropia(),
                 new ReglaEnroqueSeguro(detector),
                 new ReglaNoDejarReyEnJaque(detector)));
-        return new Partida(tablero, validador, detector, new GeneradorDeJugadasLegales(validador));
+        return new Partida(tablero, validador, detector, new GeneradorDeJugadasLegales(validador), aparicion);
     }
 
     private ResultadoJugada jugar(String desde, String hasta) {
@@ -869,5 +876,158 @@ class PartidaTest {
         // Act & Assert
         assertEquals(casillas("d1", "d2", "e2"), Set.copyOf(partida.destinosLegales(casilla("e1"))));
         assertEquals(casillas("f1", "f2", "g1"), Set.copyOf(partida.destinosIlegales(casilla("e1"))));
+    }
+
+    /** Reyes en e1 y e8, una torre blanca en a1, un peón negro en h7 y el salto al hiperespacio esperando en a3. */
+    private static Tablero conHiperespacioEnA3() {
+        return new Tablero(8, 8)
+                .con(casilla("e1"), new Pieza(Color.BLANCO, rey()))
+                .con(casilla("e8"), new Pieza(Color.NEGRO, rey()))
+                .con(casilla("a1"), new Pieza(Color.BLANCO, torre()))
+                .con(casilla("h7"), new Pieza(Color.NEGRO, peon()))
+                .conPotenciador(casilla("a3"), hiperespacio());
+    }
+
+    @Test
+    void jugar_torreTomaElHiperespacio_enSuProximoTurnoSaltaComoCaballo() {
+        // Arrange
+        partida = partidaSobre(conHiperespacioEnA3());
+        jugarValidas("a1 a3", "h7 h6");
+
+        // Act
+        ResultadoJugada salto = jugar("a3", "b5");
+
+        // Assert
+        assertTrue(salto.valida());
+        assertTrue(partida.tablero().piezaEn(casilla("b5")).orElseThrow().potenciador().isEmpty());
+    }
+
+    @Test
+    void jugar_noMueveLaPiezaPotenciadaEnSuProximoTurno_pierdeElPotenciador() {
+        // Arrange
+        partida = partidaSobre(conHiperespacioEnA3());
+        jugarValidas("a1 a3", "h7 h6", "e1 d1", "h6 h5");
+
+        // Act
+        ResultadoJugada salto = jugar("a3", "b5");
+
+        // Assert
+        assertFalse(salto.valida());
+        assertTrue(partida.tablero().piezaEn(casilla("a3")).orElseThrow().potenciador().isEmpty());
+    }
+
+    @Test
+    void deshacer_trasTomarUnPotenciador_vuelveAEsperarEnSuCasilla() {
+        // Arrange
+        partida = partidaSobre(conHiperespacioEnA3());
+        jugarValidas("a1 a3");
+
+        // Act
+        partida.deshacer();
+
+        // Assert
+        assertEquals(Optional.of(hiperespacio()), partida.tablero().potenciadorEn(casilla("a3")));
+        assertTrue(partida.tablero().piezaEn(casilla("a1")).orElseThrow().potenciador().isEmpty());
+    }
+
+    @Test
+    void partidaNueva_conAparicion_empiezaSinPotenciadoresHastaQueSeElijan() {
+        // Arrange
+        AparicionDePotenciadores hastaDos = new AparicionDePotenciadores(List.of(hiperespacio()), 6, 2, new Random(1));
+
+        // Act
+        partida = partidaSobre(new TableroEstandar().crearTablero(), hastaDos);
+
+        // Assert
+        assertEquals(0, partida.tablero().cantidadDePotenciadores());
+    }
+
+    @Test
+    void reiniciar_conPotenciadores_empiezaConElMaximoAntesDeLaPrimeraJugada() {
+        // Arrange
+        partida = partidaSobre(new TableroEstandar().crearTablero(),
+                new AparicionDePotenciadores(List.of(hiperespacio()), 6, 2, new Random(1)));
+
+        // Act
+        partida.reiniciar(true);
+
+        // Assert
+        assertEquals(2, partida.tablero().cantidadDePotenciadores());
+    }
+
+    @Test
+    void jugar_conPotenciadoresSeTomoElUnicoYPasanDosJugadas_apareceOtro() {
+        // Arrange: el tablero ya trae el máximo (uno, en a3), así que al empezar no aparece ninguno.
+        partida = partidaSobre(conHiperespacioEnA3(),
+                new AparicionDePotenciadores(List.of(fuerza()), 2, 1, new Random(1)));
+        partida.reiniciar(true);
+        jugarValidas("a1 a3");
+        int antes = partida.tablero().cantidadDePotenciadores();
+
+        // Act
+        jugarValidas("h7 h6");
+
+        // Assert
+        assertEquals(0, antes);
+        assertEquals(1, partida.tablero().cantidadDePotenciadores());
+    }
+
+    @Test
+    void reiniciar_sinElegirTrasUnaPartidaConPotenciadores_sigueConPotenciadores() {
+        // Arrange
+        partida = partidaSobre(new TableroEstandar().crearTablero(),
+                new AparicionDePotenciadores(List.of(hiperespacio()), 2, 3, new Random(1)));
+        partida.reiniciar(true);
+        jugarValidas("e2 e4", "e7 e5");
+
+        // Act
+        partida.reiniciar();
+
+        // Assert
+        assertEquals(3, partida.tablero().cantidadDePotenciadores());
+    }
+
+    @Test
+    void reiniciar_sinPotenciadoresTrasUnaPartidaConPotenciadores_noApareceNinguno() {
+        // Arrange
+        partida = partidaSobre(new TableroEstandar().crearTablero(),
+                new AparicionDePotenciadores(List.of(hiperespacio()), 2, 3, new Random(1)));
+        partida.reiniciar(true);
+
+        // Act
+        partida.reiniciar(false);
+        jugarValidas("e2 e4", "e7 e5");
+
+        // Assert
+        assertEquals(0, partida.tablero().cantidadDePotenciadores());
+    }
+
+    @Test
+    void opcionesDeCoronacion_peonConFuerzaQuePuedeCoronarPorDosCaminos_noRepiteOpciones() {
+        // Arrange: el peón de d7 corona avanzando a d8, y también con el paso prestado por la Fuerza.
+        partida = partidaSobre(new Tablero(8, 8)
+                .con(casilla("e1"), new Pieza(Color.BLANCO, rey()))
+                .con(casilla("h8"), new Pieza(Color.NEGRO, rey()))
+                .con(casilla("d7"), new Pieza(Color.BLANCO, peon(), true).conPotenciador(fuerza())));
+
+        // Act
+        List<String> opciones = partida.opcionesDeCoronacion(casilla("d7"), casilla("d8"));
+
+        // Assert
+        assertEquals(List.of("dama", "torre", "alfil", "caballo"), opciones);
+    }
+
+    @Test
+    void reiniciar_conPotenciadoresEnJuego_vuelveAlTableroInicialSinPotenciadores() {
+        // Arrange
+        partida = partidaSobre(conHiperespacioEnA3());
+        jugarValidas("a1 a3");
+
+        // Act
+        partida.reiniciar();
+
+        // Assert
+        assertEquals(Optional.of(hiperespacio()), partida.tablero().potenciadorEn(casilla("a3")));
+        assertTrue(partida.tablero().piezaEn(casilla("a1")).orElseThrow().potenciador().isEmpty());
     }
 }

@@ -4,6 +4,7 @@ top to bottom direction
 package "ajedrez-nucleo :: juego (el puerto y quien lo implementa)" #EAF6EA {
   interface JuegoDeAjedrez <<puerto de entrada>>
   class Partida
+  class AparicionDePotenciadores
 }
 package "ajedrez-nucleo :: ia" #EAF6EA {
   class Computadora
@@ -37,11 +38,12 @@ package "ajedrez-gui-swing (adaptador)" #E8F1FA {
   class PanelDelMenu <<pantalla>> {
     ~usarTema(t : Tema)
     ~permitirVolverALaPartida()
+    ~conPotenciadores() : boolean
   }
   class PanelDeLaPartida <<pantalla>> {
     ~usarTema(t : Tema)
-    ~empezarUnoContraUno()
-    ~empezarContraLaComputadora(rival : ContraLaComputadora)
+    ~empezarUnoContraUno(conPotenciadores : boolean)
+    ~empezarContraLaComputadora(rival : ContraLaComputadora, conPotenciadores : boolean)
   }
   class PanelDelTablero {
     ~setInvertido(invertido : boolean)
@@ -56,6 +58,7 @@ package "ajedrez-gui-swing (adaptador)" #E8F1FA {
     +bando(c : modelo.Color) : String
     +nombreDe(tipo : String, c : modelo.Color) : String
     +dibujoDe(p : Pieza) : DibujoDePieza
+    +dibujoDe(p : Potenciador) : DibujoDePieza
     +pintarFondo(g : Graphics2D, ancho : int, alto : int)
   }
   class TemaClasico {
@@ -78,6 +81,14 @@ package "ajedrez-gui-swing (adaptador)" #E8F1FA {
     +glifo : String
     +relleno, trazo : Color
   }
+  class DibujoDePotenciador <<record>> {
+    +nombre : String
+    +brillo : Color
+  }
+  class DibujoPotenciado <<record>> <<Decorator>> {
+    +pieza : DibujoDePieza
+    +potenciador : DibujoDePieza
+  }
   class DibujoDePersonaje <<record>> {
     +nombre : String
     +brillo : Color
@@ -97,6 +108,7 @@ package "ajedrez-gui-swing (adaptador)" #E8F1FA {
   }
   class GlifosDePieza {
     +glifoDe(p : Pieza) : String
+    +glifoDe(p : Potenciador) : String
   }
 }
 package "ajedrez-app (raíz de composición)" #FFF4E0 {
@@ -123,6 +135,10 @@ Tema ..> Paleta
 Tema ..> DibujoDePieza : crea
 DibujoDeGlifo ..|> DibujoDePieza
 DibujoDePersonaje ..|> DibujoDePieza
+DibujoDePotenciador ..|> DibujoDePieza
+DibujoDePotenciador --> DibujoDeGlifo : insignia
+DibujoPotenciado ..|> DibujoDePieza
+DibujoPotenciado --> "2" DibujoDePieza : pieza y potenciador
 DibujoDePersonaje --> Personaje
 DibujoDePersonaje --> DibujoDeGlifo : insignia
 TemaClasico --> GlifosDePieza
@@ -134,6 +150,7 @@ Dificultad --> "2" ContraLaComputadora : una por color
 ContraLaComputadora --> Computadora
 AdaptadorConsola --> "0..1" ContraLaComputadora
 Principal ..> Partida : new + inyecta
+Principal ..> AparicionDePotenciadores : new (catálogo Star Wars)
 Principal ..> Computadora : new (una por dificultad)
 Principal ..> ContraLaComputadora : new (dos por dificultad)
 Principal ..> Dificultad : new

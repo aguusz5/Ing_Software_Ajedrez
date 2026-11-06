@@ -11,18 +11,21 @@ import java.awt.image.BufferedImage;
 import java.util.Optional;
 
 import modelo.Pieza;
+import modelo.Potenciador;
 
 /**
  * Tema Star Wars: la Rebelión (blancas) contra el Imperio (negras), en el espacio. Cada pieza es un
  * personaje con el brillo de su bando, azul la Rebelión y rojo el Imperio, y una insignia con el símbolo
  * de la pieza. Una pieza sin personaje (una pieza nueva del núcleo) se dibuja con su símbolo, en los
  * colores del bando: así se ve sin tocar este tema. El fondo es la imagen que llega por constructor (el
- * póster); si no llega, se dibuja el espacio con estrellas.
+ * póster); si no llega, se dibuja el espacio con estrellas. Los potenciadores son cristales kyber verdes.
  */
 public final class TemaStarWars implements Tema {
 
     private static final Color AZUL_REBELDE = new Color(80, 170, 255);
     private static final Color ROJO_IMPERIAL = new Color(255, 50, 50);
+    /** El verde de un cristal kyber (el de un sable de luz Jedi): no es de ningún bando. */
+    private static final Color VERDE_KYBER = new Color(90, 255, 140);
     private static final Paleta PALETA = new Paleta(
             new Color(170, 178, 192), new Color(58, 63, 76),
             new Color(205, 215, 235),
@@ -87,6 +90,14 @@ public final class TemaStarWars implements Tema {
                 .<DibujoDePieza>map(personaje -> new DibujoDePersonaje(nombreDe(tipo, pieza.color()), personaje,
                         brillo, new DibujoDeGlifo(tipo, glifo, Color.WHITE, brillo.darker().darker())))
                 .orElseGet(() -> new DibujoDeGlifo(tipo, glifo, rebelde ? Color.WHITE : Color.BLACK, brillo));
+    }
+
+    /** Un cristal kyber que brilla en verde, con el símbolo del movimiento que presta. */
+    @Override
+    public DibujoDePieza dibujoDe(Potenciador potenciador) {
+        return new DibujoDePotenciador("Potenciador: " + potenciador.nombre() + " (" + potenciador.descripcion()
+                + ", un solo turno)", new DibujoDeGlifo(potenciador.nombre(), glifos.glifoDe(potenciador),
+                Color.WHITE, VERDE_KYBER.darker().darker()), VERDE_KYBER);
     }
 
     /** La imagen, si llegó; si no, el espacio dibujado. */

@@ -11,6 +11,7 @@ import java.util.Scanner;
 import javax.imageio.ImageIO;
 import javax.swing.SwingUtilities;
 
+import configuracion.PotenciadoresStarWars;
 import configuracion.TableroEstandar;
 import consola.AdaptadorConsola;
 import consola.DibujanteAscii;
@@ -26,6 +27,7 @@ import ia.AsesorAleatorio;
 import ia.AsesorMinimax;
 import ia.Computadora;
 import ia.ContraLaComputadora;
+import juego.AparicionDePotenciadores;
 import juego.JuegoDeAjedrez;
 import juego.Partida;
 import modelo.Color;
@@ -42,7 +44,8 @@ import reglas.ValidadorDeJugadas;
  * y las conecta. Sin argumentos se abre la ventana, que arranca en el menú de inicio con el tema Star Wars
  * (el clásico se elige en el menú): así, darle "Run" a esta clase en cualquier IDE abre el juego. Con
  * --consola se juega por consola; con --ia también, y las negras las juega la computadora en la dificultad
- * más alta.
+ * más alta. Los potenciadores (decisión 36) se eligen en el menú de la ventana: la consola nunca los pide y
+ * juega el ajedrez de siempre.
  */
 public final class Principal {
 
@@ -53,6 +56,12 @@ public final class Principal {
     private static final int INTENTOS = 1;
     /** El póster de fondo del tema Star Wars, en los recursos del módulo de la ventana (paquete gui). */
     private static final String FONDO_STAR_WARS = "fondo-star-wars.jpg";
+    /**
+     * La partida empieza con 2 potenciadores y después aparece uno cada 3 jugadas de cada color, si hay lugar:
+     * nunca hay más de 2 esperando, para que no protagonicen.
+     */
+    private static final int JUGADAS_ENTRE_POTENCIADORES = 6;
+    private static final int MAXIMO_DE_POTENCIADORES = 2;
 
     private Principal() {
     }
@@ -66,9 +75,11 @@ public final class Principal {
                 new ReglaNoDejarReyEnJaque(detector)));
         GeneradorDeJugadasLegales generador = new GeneradorDeJugadasLegales(validador);
         Tablero tablero = new TableroEstandar().crearTablero();
-        JuegoDeAjedrez juego = new Partida(tablero, validador, detector, generador);
-        List<Dificultad> dificultades = crearDificultades(juego, generador, detector);
         boolean enConsola = opciones.contains("--consola") || opciones.contains("--ia");
+        AparicionDePotenciadores aparicion = new AparicionDePotenciadores(PotenciadoresStarWars.todos(),
+                JUGADAS_ENTRE_POTENCIADORES, MAXIMO_DE_POTENCIADORES, new Random());
+        JuegoDeAjedrez juego = new Partida(tablero, validador, detector, generador, aparicion);
+        List<Dificultad> dificultades = crearDificultades(juego, generador, detector);
         if (!enConsola) {
             GlifosDePieza glifos = new GlifosDePieza();
             List<Tema> temas = List.of(

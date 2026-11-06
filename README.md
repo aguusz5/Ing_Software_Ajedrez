@@ -24,6 +24,12 @@ La ventana tiene dos temas, que se eligen en el menú: **Star Wars** (el que se 
 blancas, contra el Imperio, con negras, en el espacio) y **Clásico** (tablero de madera y símbolos de ajedrez).
 El tema cambia solo cómo se ve; las reglas son las mismas.
 
+En la ventana hay además **potenciadores** con nombres de Star Wars: la partida empieza con dos al azar en
+casillas vacías y después aparece otro cada 6 jugadas. La pieza que lo toma se mueve también como dice el
+potenciador, pero solo en el próximo turno de su color (por ejemplo, una torre que salta como caballo). Se
+activan o desactivan en el menú con la casilla "Con potenciadores"; sin ella, y en la consola, es el ajedrez de
+siempre. Ver la decisión 36.
+
 ## La arquitectura en un dibujo
 
 ```
@@ -101,7 +107,7 @@ Una pieza nueva no toca código existente: es un `new TipoDePieza("canciller", f
 - **Nada de `8` suelto:** el tamaño lo sabe el tablero. Hay un test que juega en 10x10.
 
 Del alcance opcional ya están el jaque mate y el ahogado, los puntos, rendirse, deshacer/rehacer, la
-promoción, el enroque, el oponente con IA y el menú de inicio. El avance está en [docs/estado.html](docs/estado.html).
+promoción, el enroque, el oponente con IA y el menú de inicio, más los potenciadores de la ventana. El avance está en [docs/estado.html](docs/estado.html).
 
 ## Para profundizar (orden de lectura sugerido)
 

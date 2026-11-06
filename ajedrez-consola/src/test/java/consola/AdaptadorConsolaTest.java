@@ -19,6 +19,7 @@ import configuracion.TableroEstandar;
 import ia.AsesorAleatorio;
 import ia.Computadora;
 import ia.ContraLaComputadora;
+import juego.AparicionDePotenciadores;
 import juego.JuegoDeAjedrez;
 import juego.Partida;
 import modelo.Color;
@@ -49,7 +50,7 @@ class AdaptadorConsolaTest {
         ValidadorDeJugadas validador = new ValidadorDeJugadas(List.of(
                 new ReglaPiezaPropia(), new ReglaEnroqueSeguro(detector), new ReglaNoDejarReyEnJaque(detector)));
         JuegoDeAjedrez juego = new Partida(new TableroEstandar().crearTablero(), validador, detector,
-                new GeneradorDeJugadasLegales(validador));
+                new GeneradorDeJugadasLegales(validador), new AparicionDePotenciadores(List.of(), 1, 0, new Random()));
         ByteArrayOutputStream bytes = new ByteArrayOutputStream();
         PrintStream salida = new PrintStream(bytes, true, StandardCharsets.UTF_8);
 

@@ -41,4 +41,17 @@ public final class ReglaAvanceDePeon implements ReglaDeMovimiento {
     private static boolean estaLibre(Tablero tablero, Posicion posicion) {
         return tablero.estaDentro(posicion) && tablero.piezaEn(posicion).isEmpty();
     }
+
+    /**
+     * Un peón que llega a la última fila con un movimiento prestado por un potenciador también corona: la jugada
+     * se convierte en una por cada tipo de coronación. Si ya corona (la adaptó otra regla), queda como está.
+     */
+    @Override
+    public List<Jugada> adaptarJugadaPrestada(Tablero tablero, Jugada prestada, Pieza pieza) {
+        if (prestada.promocion().isPresent()) {
+            return List.of(prestada);
+        }
+        Direccion adelante = new Direccion(0, pieza.color().sentidoDeAvance());
+        return JugadaConPromocion.deUnPeon(tablero, prestada.desde(), prestada.hasta(), adelante, coronaciones);
+    }
 }

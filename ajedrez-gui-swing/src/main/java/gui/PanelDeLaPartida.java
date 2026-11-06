@@ -26,6 +26,7 @@ import juego.EstadoPartida;
 import juego.JuegoDeAjedrez;
 import juego.JugadaLegal;
 import juego.ResultadoJugada;
+import modelo.Pieza;
 import modelo.Posicion;
 import modelo.Tablero;
 
@@ -36,6 +37,7 @@ import modelo.Tablero;
  * Contra la computadora, ella juega el color que no eligió el jugador y la barra avisa qué jugó. Cuándo le
  * toca y hasta dónde vuelve deshacer lo decide ContraLaComputadora, en el núcleo.
  * Cómo se ve (fondo, casillas, piezas, nombres de los bandos) lo decide el tema elegido en el menú.
+ * Los potenciadores los pone y los vence el núcleo; la pantalla los dibuja y avisa cuándo se toma uno.
  */
 final class PanelDeLaPartida extends JPanel {
 
@@ -96,20 +98,25 @@ final class PanelDeLaPartida extends JPanel {
     }
 
     /** Partida nueva entre dos personas en la misma compu, con las blancas abajo. */
-    void empezarUnoContraUno() {
+    void empezarUnoContraUno(boolean conPotenciadores) {
         rival = Optional.empty();
         tablero.setInvertido(false);
+        juego.reiniciar(conPotenciadores);
         empezarDeNuevo();
     }
 
     /** Partida nueva contra la computadora: el jugador tiene su color abajo; ella juega el otro. */
-    void empezarContraLaComputadora(ContraLaComputadora elegido) {
+    void empezarContraLaComputadora(ContraLaComputadora elegido, boolean conPotenciadores) {
         rival = Optional.of(elegido);
         tablero.setInvertido(elegido.colorDeLaComputadora() == modelo.Color.BLANCO);
+        juego.reiniciar(conPotenciadores);
         empezarDeNuevo();
     }
 
-    /** La misma modalidad desde la posición inicial. Si la computadora tiene blancas, mueve ella primero. */
+    /**
+     * La misma modalidad desde la posición inicial, con o sin potenciadores como se eligió en el menú. Si la
+     * computadora tiene blancas, mueve ella primero.
+     */
     private void empezarDeNuevo() {
         juego.reiniciar();
         origen = null;
@@ -174,7 +181,7 @@ final class PanelDeLaPartida extends JPanel {
     private void jugarHacia(Posicion destino) {
         List<String> opciones = juego.opcionesDeCoronacion(origen, destino);
         if (opciones.isEmpty()) {
-            mensaje = describir(juego.jugar(origen, destino));
+            mensaje = describir(juego.jugar(origen, destino), destino);
             return;
         }
         // Los botones dicen cómo se llama cada pieza en el tema: "dama" o "Princesa Leia (dama)".
@@ -182,7 +189,7 @@ final class PanelDeLaPartida extends JPanel {
         int elegida = JOptionPane.showOptionDialog(this, "¿En qué pieza corona el peón?", "Promoción",
                 JOptionPane.DEFAULT_OPTION, JOptionPane.QUESTION_MESSAGE, null, nombres, nombres[0]);
         if (elegida != JOptionPane.CLOSED_OPTION) {
-            mensaje = describir(juego.jugar(origen, destino, opciones.get(elegida)));
+            mensaje = describir(juego.jugar(origen, destino, opciones.get(elegida)), destino);
         }
     }
 
@@ -241,18 +248,51 @@ final class PanelDeLaPartida extends JPanel {
     private void jugarLaDeLaComputadora(ContraLaComputadora quienJuega, JugadaDeLaComputadora elegida) {
         JugadaLegal jugada = elegida.jugada();
         ResultadoJugada resultado = quienJuega.jugar(elegida);
-        String jaque = describir(resultado);
+        String jaque = describir(resultado, jugada.hasta());
         mensaje = "La computadora jugó " + PanelDelTablero.coordenada(jugada.desde()) + " "
                 + PanelDelTablero.coordenada(jugada.hasta())
                 + (elegida.deRespaldo() ? " (eligió " + elegida.asesor() + ", de respaldo)" : "")
                 + (jaque.isEmpty() ? "" : "  —  " + jaque);
     }
 
-    private String describir(ResultadoJugada resultado) {
+    /** El jaque, si lo hubo, y el potenciador que tomó la pieza al llegar a "destino", si tomó uno. */
+    private String describir(ResultadoJugada resultado, Posicion destino) {
         if (!resultado.valida()) {
             return "Jugada inválida: " + resultado.motivo();
         }
-        return resultado.colorEnJaque().map(color -> "¡" + tema.bando(color) + " en jaque!").orElse("");
+        String jaque = resultado.colorEnJaque().map(color -> "¡" + tema.bando(color) + " en jaque!").orElse("");
+        // Una pieza recién movida ya gastó el potenciador que traía: si tiene uno, lo acaba de tomar.
+        String tomado = juego.tablero().piezaEn(destino)
+                .flatMap(pieza -> pieza.potenciador().map(potenciador -> tema.bando(pieza.color()) + " tomó "
+                        + potenciador.nombre() + ": en su próximo turno " + potenciador.descripcion()))
+                .orElse("");
+        return jaque.isEmpty() || tomado.isEmpty() ? jaque + tomado : jaque + "  —  " + tomado;
+    }
+
+    /** Si al que mueve le queda un potenciador, se le recuerda: lo usa ahora o lo pierde. */
+    private String recordatorioDePotenciador(Tablero actual) {
+        for (int columna = 0; columna < actual.ancho(); columna++) {
+            for (int fila = 0; fila < actual.alto(); fila++) {
+                Posicion posicion = new Posicion(columna, fila);
+                Optional<String> recordatorio = actual.piezaEn(posicion)
+                        .filter(pieza -> pieza.color() == juego.turnoActual())
+                        .flatMap(Pieza::potenciador)
+                        .map(potenciador -> potenciador.nombre() + " en " + PanelDelTablero.coordenada(posicion)
+                                + ": usalo ahora o se pierde");
+                if (recordatorio.isPresent()) {
+                    return recordatorio.get();
+                }
+            }
+        }
+        return "";
+    }
+
+    /** La pieza como la dibuja el tema y, si tomó un potenciador, con el brillo del potenciador detrás. */
+    private DibujoDePieza dibujoDe(Pieza pieza) {
+        DibujoDePieza dibujo = tema.dibujoDe(pieza);
+        return pieza.potenciador()
+                .<DibujoDePieza>map(potenciador -> new DibujoPotenciado(dibujo, tema.dibujoDe(potenciador)))
+                .orElse(dibujo);
     }
 
     private void repintar() {
@@ -276,7 +316,8 @@ final class PanelDeLaPartida extends JPanel {
                 Color base = (columna + fila) % 2 == 0 ? paleta.casillaOscura() : paleta.casillaClara();
                 Color tinte = resaltado(posicion, reyEnJaque, legales, ilegales);
                 tablero.mostrar(posicion,
-                        actual.piezaEn(posicion).map(tema::dibujoDe),
+                        actual.piezaEn(posicion).map(this::dibujoDe)
+                                .or(() -> actual.potenciadorEn(posicion).map(tema::dibujoDe)),
                         tinte == null ? base : mezclar(base, tinte, OPACIDAD_RESALTADO),
                         tinte == null ? SIN_BORDE : BorderFactory.createLineBorder(tinte.darker(), GROSOR_BORDE));
             }
@@ -294,7 +335,9 @@ final class PanelDeLaPartida extends JPanel {
             anunciarFin(fin);
         } else {
             finAnunciado = false; // si se deshizo el final, el próximo final se vuelve a anunciar
-            estado.setText(puntos + turno() + (mensaje.isEmpty() ? "" : "  —  " + mensaje));
+            String recordatorio = recordatorioDePotenciador(actual);
+            estado.setText(puntos + turno() + (mensaje.isEmpty() ? "" : "  —  " + mensaje)
+                    + (recordatorio.isEmpty() ? "" : "  —  " + recordatorio));
         }
     }
 
