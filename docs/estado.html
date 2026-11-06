@@ -349,7 +349,7 @@
           <tr>
             <th scope="row">Diagrama de clases (UML)</th>
             <td><span class="estado parcial">En curso</span></td>
-            <td class="detalle">Cuatro diagramas en <code>docs/uml/</code>, al día con el código. Se actualizan con cada firma pública que cambie.</td>
+            <td class="detalle">Siete diagramas en <code>docs/uml/</code>, al día con el código: uno de módulos (<code>d1</code>) y seis de clases, uno por parte del sistema (modelo, juego, ventana, IA, consola y composición). Se actualizan con cada firma pública que cambie.</td>
           </tr>
           <tr>
             <th scope="row">Tests unitarios del núcleo</th>
@@ -469,7 +469,7 @@
     <h2 id="t-mapa">Dónde está cada cosa</h2>
     <dl class="mapa">
       <div><dt><a href="decisiones.md">decisiones.md</a></dt><dd>Decisiones de diseño: qué, por qué y cuándo se rompería.</dd></div>
-      <div><dt><a href="uml/">uml/</a></dt><dd>Los cuatro diagramas de clases en PlantUML.</dd></div>
+      <div><dt><a href="uml/">uml/</a></dt><dd>Los siete diagramas en PlantUML. Se ven con la extensión PlantUML de VS Code; con Graphviz instalado (<code>brew install graphviz</code>) se dibujan más ordenados.</dd></div>
       <div><dt><a href="plan-opcionales.html">plan-opcionales.html</a></dt><dd>El plan de los opcionales: orden, responsables y cómo encarar cada uno.</dd></div>
       <div><dt><a href="explicaciones/opcionales-implementados.html">explicaciones/opcionales-implementados.html</a></dt><dd>Qué cambió con cada opcional hecho y en qué se apartó del plan.</dd></div>
       <div><dt><a href="explicaciones/resumen.html">explicaciones/resumen.html</a></dt><dd>Resumen visual de cómo está armado el ajedrez.</dd></div>
@@ -498,6 +498,7 @@
           <li>Decisión 35: <code>AsesorDeJugadas</code> es una Strategy interna, no un puerto de salida, y por qué los adaptadores dependen de clases concretas del núcleo (DIP frente a la regla de sobre-ingeniería). Revisión en 3. README y nota de <code>d1</code> corregidos.</li>
           <li>Tests con la estructura Arrange / Act / Assert de la cátedra: los 65 que no tenían Arrange lo tienen, el Act de <code>AsesorMinimaxTest</code> es la llamada que se prueba, y los 6 nombres que no tenían la condición la tienen. Los de excepciones separan Act y Assert con <code>soporte.Excepciones</code>. En la ventana, la notación "e2" se escribe en un solo lugar.</li>
           <li>UML <code>d1</code>, <code>d2</code>, <code>d4</code> y <code>d5</code>. 217 tests en verde.</li>
+          <li>UML reorganizado para que las flechas no se crucen: <code>d4_adaptadores</code> se partió en <code>d4_ventana</code>, <code>d6_consola</code> y <code>d7_composicion</code> (lo que crea <code>Principal</code>, que antes cruzaba todo el diagrama). En todos, las interfaces quedan arriba de quienes las implementan; en <code>d2</code>, <code>modelo</code> queda arriba de <code>movimiento</code>. Ninguna relación se perdió (verificado una por una) y los siete se dibujan con Graphviz y con Smetana.</li>
           <li>UML completado contra el código: <code>Partida</code> → <code>Tablero</code> (actual e inicial) y <code>Partida</code> ..> <code>Jugada</code> en <code>d3</code>; las coronaciones del peón y las direcciones de las reglas en <code>d2</code>, donde <code>TiposDePiezaEstandar</code> pasó de «factory» a «catálogo estático» (no decide qué crear, que es lo que la cátedra llama Factory); <code>JugadaDeLaComputadora</code> → <code>JugadaLegal</code> y <code>AsesorMinimax</code> ..> <code>Jugada</code> en <code>d5</code>; <code>modelo.Color</code> distinguido de <code>java.awt.Color</code> en <code>d4</code>; los paquetes del núcleo nombrados en <code>d1</code>.</li>
         </ul>
       </li>

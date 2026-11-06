@@ -52,13 +52,6 @@ package "ajedrez-nucleo :: movimiento" #EAF6EA {
   interface ReglaDeMovimiento <<Strategy>> {
     +jugadasCandidatas(t : Tablero, desde : Posicion, p : Pieza) : List<Jugada>
   }
-  class ReglaDeslizante {
-    +{static} SIN_LIMITE : int
-    +ReglaDeslizante(direcciones : List<Direccion>, pasosMaximos : int)
-  }
-  class ReglaDeSalto {
-    +ReglaDeSalto(saltos : List<Direccion>)
-  }
   class ReglaAvanceDePeon {
     +ReglaAvanceDePeon(coronaciones : List<TipoDePieza>)
   }
@@ -67,6 +60,13 @@ package "ajedrez-nucleo :: movimiento" #EAF6EA {
   }
   class ReglaDeEnroque {
     +ReglaDeEnroque(companera : TipoDePieza)
+  }
+  class ReglaDeslizante {
+    +{static} SIN_LIMITE : int
+    +ReglaDeslizante(direcciones : List<Direccion>, pasosMaximos : int)
+  }
+  class ReglaDeSalto {
+    +ReglaDeSalto(saltos : List<Direccion>)
   }
   interface Jugada {
     +desde() : Posicion
@@ -100,29 +100,32 @@ package "ajedrez-nucleo :: configuracion" #EAF6EA {
     +crearTablero() : Tablero
   }
 }
+' Cada relación se escribe con la clase de arriba primero: no cambia la flecha,
+' solo le dice a Graphviz qué va arriba (modelo) y qué va abajo (movimiento).
+TableroEstandar ..> TiposDePiezaEstandar
+TableroEstandar ..> Tablero : crea
+TiposDePiezaEstandar ..> TipoDePieza : crea
 Tablero o-- "0..*" Pieza : una por Posicion
 Pieza --> Color
 Pieza --> TipoDePieza
-TipoDePieza o-- "1..*" ReglaDeMovimiento
-ReglaDeslizante ..|> ReglaDeMovimiento
-ReglaDeSalto ..|> ReglaDeMovimiento
-ReglaAvanceDePeon ..|> ReglaDeMovimiento
-ReglaCapturaDePeon ..|> ReglaDeMovimiento
-ReglaDeEnroque ..|> ReglaDeMovimiento
-ReglaDeEnroque --> TipoDePieza : compañera
-ReglaAvanceDePeon --> "1..*" TipoDePieza : coronaciones
-ReglaCapturaDePeon --> "1..*" TipoDePieza : coronaciones
-ReglaDeslizante --> "1..*" Direccion
-ReglaDeSalto --> "1..*" Direccion
-Pieza ..> Jugada : jugadasCandidatas()
-ReglaDeMovimiento ..> Jugada : crea
-JugadaSimple ..|> Jugada
-JugadaConPromocion ..|> Jugada
-JugadaConPromocion --> TipoDePieza
-JugadaDeEnroque ..|> Jugada
-TableroEstandar ..> TiposDePiezaEstandar
-TiposDePiezaEstandar ..> TipoDePieza : crea
 Posicion ..> Direccion
+TipoDePieza o-- "1..*" ReglaDeMovimiento
+Pieza ..> Jugada : jugadasCandidatas()
+ReglaDeMovimiento ...> Jugada : crea
+ReglaDeMovimiento <|.. ReglaAvanceDePeon
+ReglaDeMovimiento <|.. ReglaCapturaDePeon
+ReglaDeMovimiento <|.. ReglaDeEnroque
+ReglaDeMovimiento <|.. ReglaDeslizante
+ReglaDeMovimiento <|.. ReglaDeSalto
+TipoDePieza "1..*" <-- ReglaAvanceDePeon : coronaciones
+TipoDePieza "1..*" <-- ReglaCapturaDePeon : coronaciones
+TipoDePieza <-- ReglaDeEnroque : compañera
+Direccion "1..*" <-- ReglaDeslizante
+Direccion "1..*" <-- ReglaDeSalto
+Jugada <|.. JugadaSimple
+Jugada <|.. JugadaConPromocion
+Jugada <|.. JugadaDeEnroque
+TipoDePieza <-- JugadaConPromocion : nuevoTipo
 note bottom of Tablero
   Sin interfaz de solo lectura: Tablero es inmutable,
   nadie puede modificarlo aunque lo reciba.

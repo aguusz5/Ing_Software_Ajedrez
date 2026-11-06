@@ -88,7 +88,7 @@ package "ajedrez-nucleo :: modelo" #EAF6EA {
 package "ajedrez-nucleo :: movimiento" #EAF6EA {
   interface Jugada
 }
-Partida ..|> JuegoDeAjedrez
+JuegoDeAjedrez <|.. Partida
 Partida --> "1" Tablero : actual
 Partida --> "1" Tablero : inicial
 Partida ..> Jugada : pide las candidatas y la aplica
@@ -99,19 +99,15 @@ Partida -down--> GeneradorDeJugadasLegales
 Partida --> EstadoPartida
 Partida *-- "0..*" Foto : pasado y futuro
 JuegoDeAjedrez ..> JugadaLegal : devuelve
-ReglaPiezaPropia ..|> ReglaDeValidacion
-ReglaNoDejarReyEnJaque ..|> ReglaDeValidacion
+ReglaDeValidacion <|.. ReglaPiezaPropia
+ReglaDeValidacion <|.. ReglaNoDejarReyEnJaque
 ReglaNoDejarReyEnJaque --> DetectorDeJaque
-ReglaEnroqueSeguro ..|> ReglaDeValidacion
+ReglaDeValidacion <|.. ReglaEnroqueSeguro
 ReglaEnroqueSeguro --> DetectorDeJaque
 ValidadorDeJugadas o-- "1..*" ReglaDeValidacion
 GeneradorDeJugadasLegales --> ValidadorDeJugadas
 ReglaDeValidacion ..> ResultadoValidacion : devuelve
-JuegoDeAjedrez -[hidden]down-> ReglaPiezaPropia
-JuegoDeAjedrez -[hidden]down-> ValidadorDeJugadas
-ResultadoJugada -[hidden]down-> ReglaNoDejarReyEnJaque
-ResultadoJugada -[hidden]down-> DetectorDeJaque
-note right of Foto
+note bottom of Foto
   Memento (decisión 24): antes de cada cambio, Partida apila
   una foto en el pasado. deshacer() y rehacer() mueven fotos
   entre las dos pilas; no se calcula la inversa de la jugada.

@@ -1,0 +1,31 @@
+@startuml d6_consola
+!include common.iuml
+top to bottom direction
+package "ajedrez-consola (adaptador)" #E8F1FA {
+  class AdaptadorConsola {
+    +AdaptadorConsola(juego, traductor, dibujante, entrada : Scanner, salida : PrintStream, rival : Optional<ContraLaComputadora>)
+    +ejecutar()
+  }
+  class TraductorDeNotacion {
+    +leer(texto : String, t : Tablero) : Posicion
+    +escribir(p : Posicion) : String
+  }
+  class DibujanteAscii {
+    +dibujar(t : Tablero) : String
+  }
+}
+package "ajedrez-nucleo (lo que usa la consola)" #EAF6EA {
+  interface JuegoDeAjedrez <<puerto de entrada>>
+  class ContraLaComputadora
+}
+AdaptadorConsola --> TraductorDeNotacion
+AdaptadorConsola --> DibujanteAscii
+AdaptadorConsola --> JuegoDeAjedrez
+AdaptadorConsola --> "0..1" ContraLaComputadora : con --ia
+note right of AdaptadorConsola
+  Lee las jugadas de un Scanner y escribe en un PrintStream:
+  los dos llegan por constructor, así los tests usan un texto
+  armado. Sin rival se juega uno contra uno.
+  El grupo decidió sacarla más adelante (decisión 32).
+end note
+@enduml
