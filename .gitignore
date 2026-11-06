@@ -9,3 +9,6 @@ target/
 .settings/
 .vscode/
 bin/
+
+# Audios originales (MP3 de las películas): al repo solo van los WAV recortados de gui/sonidos/
+Audios/

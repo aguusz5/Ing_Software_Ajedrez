@@ -607,7 +607,8 @@ se revierte, no se borra: se marca como reemplazada y se dice por cuál.
   `PersonajesDeStarWars` pasó a ser el elenco de una era, con una fábrica por era. Los 11 dibujos nuevos están
   en `PersonajesDeLaGuerraDeLosClones`, y Yoda se repite como rey de la República. Las figuras con las que se
   dibuja (elipses, curvas, reflejos) se separaron en `Figuras`, para que las usen las dos eras. `Principal`
-  arma los dos temas; el póster es de la Rebelión, así que la Guerra de los Clones usa el espacio dibujado.
+  arma los dos temas, cada uno con su imagen de fondo: el póster de la película para la Rebelión y una batalla de
+  clones en Geonosis para la República (`gui/fondo-guerra-de-los-clones.jpg`, 2520 x 1080).
 - **Por qué:** lo que cambia de una era a otra son datos: nombres, colores y dibujos. La forma de dibujar una
   pieza (personaje, brillo, insignia, fondo) es la misma. Una subclase o una implementación nueva de `Tema`
   por era duplicaría todo `TemaStarWars` para cambiar seis valores. Con el record, una era nueva es una
@@ -617,3 +618,56 @@ se revierte, no se borra: se marca como reemplazada y se dice por cuál.
 - **Cuándo se rompería:** si una era tuviera que dibujarse distinto, más allá de sus datos (otro fondo con
   animación, piezas que no son personajes, otra forma de marcar los bandos). Ahí esa era pasa a ser su propia
   implementación de `Tema`, y lo común se comparte por composición.
+
+### 38. Los personajes hablan al elegirlos: el sonido lo decide el tema y lo reproduce `ReproductorDeSonidos`
+
+- **Qué:** al hacer click sobre una pieza para elegirla, si su personaje tiene sonido, se escucha: una frase
+  (Luke: "I'm a Jedi, like my father before me"; el droide de combate: "Roger, roger") o un efecto (el bláster
+  de los guardias imperiales, los sables de Ahsoka y Ventress, la alarma de la Estrella de la Muerte). Tiene
+  tres partes:
+  - `Tema.sonidoDe(Pieza)` dice qué archivo le toca. Es un método `default` que devuelve vacío: el tema
+    Clásico no habla, y `TemaStarWars` se lo pregunta a los personajes de su era.
+  - `PersonajesDeStarWars` tiene, además de los dibujos, una tabla de sonidos por bando (tipo de pieza →
+    archivo). Las piezas que no están en la tabla no suenan.
+  - `ReproductorDeSonidos` reproduce WAV cortos de `gui/sonidos/` con `javax.sound.sampled`, que viene con
+    Java. Suena uno por vez, y si se pide otro, el anterior se corta. Si no hay salida de audio o falta el
+    archivo, no hace nada. Lo crea `Principal` y llega a `PanelDeLaPartida` por constructor, a través de
+    `VentanaSwing`.
+
+  Los audios se recortan a la frase (unos 3 segundos), se normaliza el volumen y se guardan como WAV de 16
+  bits. Java no lee MP3 sin bibliotecas.
+- **Por qué:** qué dice cada personaje es parte del tema, igual que su dibujo y su nombre, así que se pide a la
+  misma Strategy y una era nueva trae sus sonidos con sus personajes. Reproducir es otra responsabilidad (abrir
+  el archivo, manejar la salida de audio, cortar el anterior), así que va en su propia clase y no en el panel.
+  No es una interfaz porque tiene una sola implementación (decisión 21). Fallar en silencio hace que los tests y
+  el CI, que no tienen placa de sonido, sigan andando. No se agregó una biblioteca de MP3, porque convertir
+  los archivos una vez es más simple que sumar una dependencia.
+- **Cuándo se rompería:** si los sonidos dejaran de ser un archivo por personaje (frases al azar, sonidos al
+  capturar o al dar jaque, música de fondo). Ahí el tema devolvería algo más rico que un nombre de archivo, por
+  ejemplo un evento de la partida y qué suena con él.
+- **Silenciar:** el menú tiene una casilla "Con sonido" (marcada de entrada), al lado de la de los potenciadores.
+  A diferencia de esa, no espera a la próxima partida: el menú avisa el cambio con un callback y
+  `VentanaSwing` se lo pasa al reproductor (`activar(boolean)`), que deja de sonar en el momento. Apagarlo
+  también corta el sonido que esté sonando.
+
+### 39. Cada imagen de fondo dice dónde se corta (`ImagenDeFondo`)
+
+- **Qué:** `TemaStarWars` ya no recibe una imagen suelta, sino una `ImagenDeFondo`, un record con la imagen y su
+  `bordeDerecho`. La imagen siempre cubre toda la ventana sin deformarse, y lo que sobra se corta. Si sobra a
+  los costados, el borde derecho de la ventana cae en `bordeDerecho`, una fracción del ancho de la imagen: lo
+  que hay más allá se corta primero y, si todavía sobra, se corta de la izquierda. Los valores son:
+  - el póster de la Rebelión, 1.0: queda pegado a la derecha, donde están los personajes;
+  - la batalla de la Guerra de los Clones (2520 x 1080), 0.86: ahí termina el clon de la 501 y a su derecha
+    solo hay rocas, así que eso es lo primero que se pierde y las cañoneras y los clones de la izquierda se ven
+    lo más posible.
+
+  `Principal` elige el borde de cada imagen al cargarla.
+- **Por qué:** dónde conviene cortar depende de qué hay en la imagen, no de la era ni del tema. Por eso el dato
+  viaja con la imagen y lo elige quien la elige. Es un número y no una clase por cada forma de encuadrar,
+  porque las dos imágenes se acomodan igual (cubrir) y solo cambia dónde se corta. Se probó mostrar la batalla
+  entera con un relleno borroso arriba y abajo, y se descartó: el fondo tiene que ocupar toda la ventana.
+- **Cuándo se rompería:** si una imagen tuviera lo importante en los dos costados y la ventana fuera tan
+  angosta que no entran. Cubrir sin deformar obliga a cortar algo: con la ventana de 1512 x 900 de una Mac se
+  ve del 14% al 86% de la batalla, y los clones de la izquierda quedan cortados; desde unos 1900 x 1000 se ven
+  enteros. Si hiciera falta un corte que no sea solo a los costados (un punto de foco también en el alto),
+  `bordeDerecho` pasaría a ser un punto.

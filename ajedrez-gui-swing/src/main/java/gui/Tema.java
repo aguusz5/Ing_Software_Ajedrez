@@ -1,14 +1,15 @@
 package gui;
 
 import java.awt.Graphics2D;
+import java.util.Optional;
 
 import modelo.Pieza;
 import modelo.Potenciador;
 
 /**
- * Cómo se ve la ventana: el fondo, los colores, cómo se dibuja cada pieza y cómo se llaman los bandos.
- * No cambia nada del juego: las reglas siguen en el núcleo. Los temas los arma Principal y se eligen en
- * el menú; un tema nuevo es una clase nueva, sin tocar las pantallas.
+ * Cómo se ve la ventana: el fondo, los colores, cómo se dibuja cada pieza, qué dice al elegirla y cómo
+ * se llaman los bandos. No cambia nada del juego: las reglas siguen en el núcleo. Los temas los arma
+ * Principal y se eligen en el menú; un tema nuevo es una clase nueva, sin tocar las pantallas.
  */
 public interface Tema {
 
@@ -30,6 +31,14 @@ public interface Tema {
 
     /** Un potenciador esperando en su casilla. Detrás de la pieza que lo toma se dibuja lo mismo. */
     DibujoDePieza dibujoDe(Potenciador potenciador);
+
+    /**
+     * El sonido de la pieza al elegirla, como nombre de archivo en gui/sonidos ("yoda.wav"). Por defecto no
+     * hay: solo los temas con personajes les ponen voz.
+     */
+    default Optional<String> sonidoDe(Pieza pieza) {
+        return Optional.empty();
+    }
 
     /** Pinta el fondo de una pantalla entera. */
     void pintarFondo(Graphics2D g, int ancho, int alto);

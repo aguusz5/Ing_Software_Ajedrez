@@ -19,6 +19,8 @@ import consola.TraductorDeNotacion;
 import gui.Dificultad;
 import gui.Era;
 import gui.GlifosDePieza;
+import gui.ImagenDeFondo;
+import gui.ReproductorDeSonidos;
 import gui.Tema;
 import gui.TemaClasico;
 import gui.TemaStarWars;
@@ -56,6 +58,7 @@ public final class Principal {
     private static final int INTENTOS = 1;
     /** El póster de fondo del tema Star Wars, en los recursos del módulo de la ventana (paquete gui). */
     private static final String FONDO_STAR_WARS = "fondo-star-wars.jpg";
+    private static final String FONDO_GUERRA_DE_LOS_CLONES = "fondo-guerra-de-los-clones.jpg";
     /**
      * La partida empieza con 2 potenciadores y después aparece uno cada 3 jugadas de cada color, si hay lugar:
      * nunca hay más de 2 esperando, para que no protagonicen.
@@ -83,11 +86,14 @@ public final class Principal {
         if (!enConsola) {
             GlifosDePieza glifos = new GlifosDePieza();
             List<Tema> temas = List.of(
-                    new TemaStarWars(glifos, Era.rebelionContraImperio(), cargarImagen(FONDO_STAR_WARS)),
-                    // El póster es de la Rebelión: la Guerra de los Clones usa el espacio dibujado.
-                    new TemaStarWars(glifos, Era.republicaContraSeparatistas(), Optional.empty()),
+                    // Dónde se corta cada imagen: el póster, pegado a la derecha; la batalla, justo después del clon.
+                    new TemaStarWars(glifos, Era.rebelionContraImperio(),
+                            cargarFondo(FONDO_STAR_WARS, 1.0)),
+                    new TemaStarWars(glifos, Era.republicaContraSeparatistas(),
+                            cargarFondo(FONDO_GUERRA_DE_LOS_CLONES, 0.86)),
                     new TemaClasico(glifos));
-            SwingUtilities.invokeLater(() -> new VentanaSwing(juego, temas, dificultades).mostrar());
+            ReproductorDeSonidos sonidos = new ReproductorDeSonidos();
+            SwingUtilities.invokeLater(() -> new VentanaSwing(juego, temas, dificultades, sonidos).mostrar());
         } else {
             // En la consola la persona juega con blancas y la computadora, si se pidió, con negras.
             Optional<ContraLaComputadora> rival = opciones.contains("--ia")
@@ -99,6 +105,10 @@ public final class Principal {
     }
 
     /** Una imagen de los recursos de la ventana. Si no está o no se puede leer, vacía: el tema se arregla sin ella. */
+    private static Optional<ImagenDeFondo> cargarFondo(String nombre, double bordeDerecho) {
+        return cargarImagen(nombre).map(imagen -> new ImagenDeFondo(imagen, bordeDerecho));
+    }
+
     private static Optional<BufferedImage> cargarImagen(String nombre) {
         try (InputStream entrada = TemaStarWars.class.getResourceAsStream(nombre)) {
             return entrada == null ? Optional.empty() : Optional.ofNullable(ImageIO.read(entrada));

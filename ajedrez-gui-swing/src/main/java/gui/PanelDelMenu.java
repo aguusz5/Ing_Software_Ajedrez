@@ -30,7 +30,8 @@ import javax.swing.border.TitledBorder;
 
 /**
  * La pantalla de inicio: jugar uno contra uno o contra la computadora (eligiendo dificultad y color),
- * volver a la partida en curso, elegir el tema y si se juega con potenciadores, ver cómo se juega o salir.
+ * volver a la partida en curso, elegir el tema, si se juega con potenciadores y si hay sonido, ver cómo se
+ * juega o salir.
  * No juega: avisa qué se eligió y la ventana arma la partida o cambia el tema.
  */
 final class PanelDelMenu extends JPanel {
@@ -52,13 +53,14 @@ final class PanelDelMenu extends JPanel {
     private final JRadioButton conNegras = comun(new JRadioButton("Negras"));
     /** Vale para las dos modalidades. Arranca marcada: es el modo pensado para el tema Star Wars. */
     private final JCheckBox potenciadores = comun(new JCheckBox("Con potenciadores", true));
+    private final JCheckBox sonido = comun(new JCheckBox("Con sonido", true));
     private final TitledBorder bordeDeLaComputadora = BorderFactory.createTitledBorder("Contra la computadora");
     private Tema tema; // cambia cuando se elige otro
 
     /** El primer tema de la lista es el que se ve al abrir. */
     PanelDelMenu(List<Dificultad> dificultades, List<Tema> temas, Runnable alElegirUnoContraUno,
                  BiConsumer<Dificultad, modelo.Color> alElegirContraLaComputadora, Consumer<Tema> alElegirTema,
-                 Runnable alVolverALaPartida, Runnable alSalir) {
+                 Runnable alVolverALaPartida, Consumer<Boolean> alCambiarElSonido, Runnable alSalir) {
         super(new GridBagLayout()); // centra la columna en la ventana, sea del tamaño que sea
         columna.setLayout(new BoxLayout(columna, BoxLayout.Y_AXIS));
         columna.setOpaque(false);
@@ -85,11 +87,10 @@ final class PanelDelMenu extends JPanel {
         columna.add(Box.createVerticalStrut(12));
         columna.add(filaDeTemas(temas, alElegirTema));
         columna.add(Box.createVerticalStrut(6));
-        potenciadores.setOpaque(false);
-        potenciadores.setFocusPainted(false);
-        potenciadores.setAlignmentX(Component.CENTER_ALIGNMENT);
         potenciadores.setToolTipText("Cristales que le dan a una pieza un movimiento extra por un turno");
-        columna.add(potenciadores);
+        sonido.setToolTipText("Los personajes hablan cuando los elegís");
+        sonido.addActionListener(evento -> alCambiarElSonido.accept(sonido.isSelected()));
+        columna.add(filaDeCasillas(potenciadores, sonido));
         columna.add(Box.createVerticalStrut(12));
 
         JButton comoSeJuega = boton("Cómo se juega");
@@ -141,6 +142,19 @@ final class PanelDelMenu extends JPanel {
                 zona.width + 2 * MARGEN_DEL_VELO, zona.height + 2 * MARGEN_DEL_VELO,
                 REDONDEO_DEL_VELO, REDONDEO_DEL_VELO);
         g.dispose();
+    }
+
+    /** Las casillas de opciones, una al lado de la otra. */
+    private static JPanel filaDeCasillas(JCheckBox... casillas) {
+        JPanel fila = new JPanel(new FlowLayout(FlowLayout.CENTER, 14, 0));
+        fila.setOpaque(false);
+        fila.setAlignmentX(Component.CENTER_ALIGNMENT);
+        for (JCheckBox casilla : casillas) {
+            casilla.setOpaque(false);
+            casilla.setFocusPainted(false);
+            fila.add(casilla);
+        }
+        return fila;
     }
 
     /** Si la próxima partida que se elija va con potenciadores. */
@@ -237,6 +251,8 @@ final class PanelDelMenu extends JPanel {
                 aparece otro. La pieza que cae ahí lo toma y en tu próximo turno se mueve además como dice el
                 símbolo del cristal (♘ salta como el caballo, ♔ un paso, ♖ y ♗ hasta dos casillas). Si ese
                 turno movés otra pieza, se pierde. Un peón que llega al final así también corona.</p><br>
+                <p><b>Sonido:</b> en Star Wars y la Guerra de los Clones, cada personaje habla cuando lo
+                elegís. Se apaga con la casilla <b>Con sonido</b> del menú.</p><br>
                 <p><b>Deshacer y Rehacer:</b> contra la computadora vuelven hasta tu turno.</p><br>
                 <p><b>Terminar partida:</b> gana el que tiene más puntos (peón 1, caballo y alfil 3, torre 5,
                 dama 9). <b>Rendirse</b> aparece cuando estás en jaque.</p><br>

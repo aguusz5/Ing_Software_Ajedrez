@@ -38,10 +38,16 @@ public final class PersonajesDeStarWars {
 
     private final Map<String, Personaje> blancas;
     private final Map<String, Personaje> negras;
+    // Qué dice cada personaje al elegirlo: tipo de pieza -> archivo en gui/sonidos. Los que no están, callan.
+    private final Map<String, String> sonidosDeLasBlancas;
+    private final Map<String, String> sonidosDeLasNegras;
 
-    private PersonajesDeStarWars(Map<String, Personaje> blancas, Map<String, Personaje> negras) {
+    private PersonajesDeStarWars(Map<String, Personaje> blancas, Map<String, Personaje> negras,
+            Map<String, String> sonidosDeLasBlancas, Map<String, String> sonidosDeLasNegras) {
         this.blancas = Map.copyOf(blancas);
         this.negras = Map.copyOf(negras);
+        this.sonidosDeLasBlancas = Map.copyOf(sonidosDeLasBlancas);
+        this.sonidosDeLasNegras = Map.copyOf(sonidosDeLasNegras);
     }
 
     /** La Rebelión (blancas) contra el Imperio (negras). */
@@ -50,7 +56,11 @@ public final class PersonajesDeStarWars {
                 Map.of("rey", luke(), "dama", leia(), "alfil", yoda(),
                         "caballo", chewbacca(), "torre", r2d2(), "peón", pilotoRebelde()),
                 Map.of("rey", palpatine(), "dama", vader(), "alfil", guardiaImperial(),
-                        "caballo", bobaFett(), "torre", estrellaDeLaMuerte(), "peón", stormtrooper()));
+                        "caballo", bobaFett(), "torre", estrellaDeLaMuerte(), "peón", stormtrooper()),
+                Map.of("rey", "luke.wav", "dama", "leia.wav", "alfil", "yoda.wav",
+                        "caballo", "chewbacca.wav", "torre", "r2d2.wav", "peón", "piloto.wav"),
+                Map.of("rey", "palpatine.wav", "dama", "vader.wav", "alfil", "guardia.wav", "caballo", "boba.wav",
+                        "torre", "estrella.wav", "peón", "stormtrooper.wav"));
     }
 
     /** La República (blancas) contra los Separatistas (negras), en la Guerra de los Clones. */
@@ -65,12 +75,21 @@ public final class PersonajesDeStarWars {
                         "dama", PersonajesDeLaGuerraDeLosClones.grievous(),
                         "alfil", PersonajesDeLaGuerraDeLosClones.ventress(),
                         "caballo", PersonajesDeLaGuerraDeLosClones.droideka(),
-                        "torre", PersonajesDeLaGuerraDeLosClones.superDroide(),
-                        "peón", PersonajesDeLaGuerraDeLosClones.droideDeCombate()));
+                        "torre", PersonajesDeLaGuerraDeLosClones.darthMaul(),
+                        "peón", PersonajesDeLaGuerraDeLosClones.droideDeCombate()),
+                Map.of("rey", "yoda.wav", "dama", "anakin.wav", "alfil", "obiwan.wav",
+                        "caballo", "ahsoka.wav", "torre", "atte.wav", "peón", "clon.wav"),
+                Map.of("rey", "dooku.wav", "dama", "grievous.wav", "alfil", "ventress.wav",
+                        "caballo", "droideka.wav", "torre", "maul.wav", "peón", "droide.wav"));
     }
 
     Optional<Personaje> personajeDe(String tipo, modelo.Color bando) {
         return Optional.ofNullable((bando == modelo.Color.BLANCO ? blancas : negras).get(tipo));
+    }
+
+    /** El archivo de sonido del personaje de ese tipo y bando, si tiene uno. */
+    Optional<String> sonidoDe(String tipo, modelo.Color bando) {
+        return Optional.ofNullable((bando == modelo.Color.BLANCO ? sonidosDeLasBlancas : sonidosDeLasNegras).get(tipo));
     }
 
     // ---------------------------------------------------------------- La Rebelión (blancas)

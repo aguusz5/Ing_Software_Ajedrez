@@ -37,10 +37,11 @@ public final class VentanaSwing {
      * El primer tema de la lista es el que se ve al abrir. Si no hay ninguna dificultad, el menú no
      * ofrece jugar contra la computadora.
      */
-    public VentanaSwing(JuegoDeAjedrez juego, List<Tema> temas, List<Dificultad> dificultades) {
-        partida = new PanelDeLaPartida(juego, temas.get(0), this::mostrarMenu);
+    public VentanaSwing(JuegoDeAjedrez juego, List<Tema> temas, List<Dificultad> dificultades,
+            ReproductorDeSonidos sonidos) {
+        partida = new PanelDeLaPartida(juego, temas.get(0), sonidos, this::mostrarMenu);
         menu = new PanelDelMenu(dificultades, temas, this::unoContraUno, this::contraLaComputadora,
-                this::usarTema, this::volverALaPartida, this::salir);
+                this::usarTema, this::volverALaPartida, sonidos::activar, this::salir);
         contenido.add(menu, MENU);
         contenido.add(partida, PARTIDA);
         ventana.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);

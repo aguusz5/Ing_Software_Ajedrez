@@ -3,7 +3,8 @@
 top to bottom direction
 package "ajedrez-gui-swing (adaptador)" #E8F1FA {
   class VentanaSwing {
-    +VentanaSwing(juego : JuegoDeAjedrez, temas : List<Tema>, dificultades : List<Dificultad>)
+    +VentanaSwing(juego : JuegoDeAjedrez, temas : List<Tema>, dificultades : List<Dificultad>,
+      sonidos : ReproductorDeSonidos)
     +mostrar()
   }
   class PanelDelMenu <<pantalla>> {
@@ -37,13 +38,14 @@ package "ajedrez-gui-swing (adaptador)" #E8F1FA {
     +nombreDe(tipo : String, c : modelo.Color) : String
     +dibujoDe(p : Pieza) : DibujoDePieza
     +dibujoDe(p : Potenciador) : DibujoDePieza
+    +sonidoDe(p : Pieza) : Optional<String> {default: vacío}
     +pintarFondo(g : Graphics2D, ancho : int, alto : int)
   }
   class TemaClasico {
     +TemaClasico(glifos : GlifosDePieza)
   }
   class TemaStarWars {
-    +TemaStarWars(glifos : GlifosDePieza, era : Era, imagenDeFondo : Optional<BufferedImage>)
+    +TemaStarWars(glifos : GlifosDePieza, era : Era, imagenDeFondo : Optional<ImagenDeFondo>)
   }
   class Era <<record>> {
     +nombre, epigrafe : String
@@ -52,6 +54,16 @@ package "ajedrez-gui-swing (adaptador)" #E8F1FA {
     +personajes : PersonajesDeStarWars
     +{static} rebelionContraImperio() : Era
     +{static} republicaContraSeparatistas() : Era
+  }
+  class ImagenDeFondo <<record>> {
+    +imagen : BufferedImage
+    +bordeDerecho : double
+    ~pintar(g : Graphics2D, ancho : int, alto : int)
+  }
+  class ReproductorDeSonidos {
+    ~reproducir(nombre : String)
+    ~activar(prendido : boolean)
+    ~detener()
   }
   class Paleta <<record>> {
     +casillaClara, casillaOscura : Color
@@ -87,10 +99,11 @@ package "ajedrez-gui-swing (adaptador)" #E8F1FA {
     +{static} rebelionContraImperio() : PersonajesDeStarWars
     +{static} republicaContraSeparatistas() : PersonajesDeStarWars
     ~personajeDe(tipo : String, bando : modelo.Color) : Optional<Personaje>
+    ~sonidoDe(tipo : String, bando : modelo.Color) : Optional<String>
   }
   class PersonajesDeLaGuerraDeLosClones <<dibujos>> {
     ~{static} anakin() / obiWan() / ahsoka() / atte() / soldadoClon()
-    ~{static} dooku() / grievous() / ventress() / droideka() / superDroide() / droideDeCombate()
+    ~{static} dooku() / grievous() / ventress() / droideka() / darthMaul() / droideDeCombate()
   }
   class Figuras <<ayudas de dibujo>> {
     ~{static} elipse() / rect() / poligono() / linea() / arco() / con() / dentro() / ambos() / desde()
@@ -118,6 +131,8 @@ PanelDeLaPartida --> Tema : el elegido en el menú
 PanelDeLaPartida *-- PanelDelTablero
 PanelDeLaPartida --> JuegoDeAjedrez
 PanelDeLaPartida --> "0..1" ContraLaComputadora : la del modo elegido
+PanelDeLaPartida --> ReproductorDeSonidos : el personaje habla al elegirlo
+VentanaSwing ..> ReproductorDeSonidos : lo prende o apaga desde el menú
 Dificultad --> "2" ContraLaComputadora : una por color
 PanelDelTablero ..> DibujoDePieza
 Tema <|.. TemaClasico
@@ -135,6 +150,7 @@ DibujoDePersonaje --> Personaje
 TemaClasico --> GlifosDePieza
 TemaStarWars --> GlifosDePieza
 TemaStarWars --> Era
+TemaStarWars --> "0..1" ImagenDeFondo : sin imagen, dibuja el espacio
 Era --> PersonajesDeStarWars
 PersonajesDeStarWars --> "12" Personaje : 6 por bando
 PersonajesDeStarWars ..> PersonajesDeLaGuerraDeLosClones : la era de los clones
@@ -162,8 +178,11 @@ note bottom of PersonajesDeStarWars
   Estrella de la Muerte, stormtrooper.
   República (blancas): Yoda, Anakin, Obi-Wan, Ahsoka, AT-TE, clon.
   Separatistas (negras): Dooku, Grievous, Ventress, droideka,
-  súper droide, droide de combate. Todos dibujados con figuras.
-  El fondo de la Rebelión es un póster (gui/fondo-star-wars.jpg):
-  lo lee Principal; sin póster, TemaStarWars dibuja el espacio.
+  Darth Maul, droide de combate. Todos dibujados con figuras.
+  Sonidos (decisión 38): uno por personaje, WAV en gui/sonidos/.
+  Cada era tiene una imagen de fondo (gui/fondo-star-wars.jpg y
+  gui/fondo-guerra-de-los-clones.jpg): las lee Principal y les elige el
+  borde por el que se corta (decisión 39); sin imagen, TemaStarWars
+  dibuja el espacio.
 end note
 @enduml

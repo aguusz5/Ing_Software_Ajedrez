@@ -52,6 +52,7 @@ final class PanelDeLaPartida extends JPanel {
             BorderFactory.createEmptyBorder(GROSOR_BORDE, GROSOR_BORDE, GROSOR_BORDE, GROSOR_BORDE);
 
     private final JuegoDeAjedrez juego;
+    private final ReproductorDeSonidos sonidos;
     private final Runnable alVolverAlMenu;
     private final PanelDelTablero tablero;
     private final JLabel estado = new JLabel(" ", SwingConstants.CENTER);
@@ -69,9 +70,10 @@ final class PanelDeLaPartida extends JPanel {
     private boolean finAnunciado = false;
     private boolean pensando = false; // mientras la computadora elige, el tablero y los botones no responden
 
-    PanelDeLaPartida(JuegoDeAjedrez juego, Tema tema, Runnable alVolverAlMenu) {
+    PanelDeLaPartida(JuegoDeAjedrez juego, Tema tema, ReproductorDeSonidos sonidos, Runnable alVolverAlMenu) {
         super(new BorderLayout());
         this.juego = juego;
+        this.sonidos = sonidos;
         this.alVolverAlMenu = alVolverAlMenu;
         Tablero inicial = juego.tablero();
         this.tablero = new PanelDelTablero(inicial.ancho(), inicial.alto(), this::alHacerClic);
@@ -164,9 +166,10 @@ final class PanelDeLaPartida extends JPanel {
             return; // partida cerrada o turno de la computadora: el tablero queda solo para mirar
         }
         if (origen == null) {
-            if (juego.tablero().piezaEn(posicion).isPresent()) {
+            juego.tablero().piezaEn(posicion).ifPresent(pieza -> {
                 origen = posicion;
-            }
+                tema.sonidoDe(pieza).ifPresent(sonidos::reproducir); // el personaje habla al elegirlo
+            });
         } else if (origen.equals(posicion)) {
             origen = null; // segundo clic sobre la misma casilla: se cancela la selección
         } else {

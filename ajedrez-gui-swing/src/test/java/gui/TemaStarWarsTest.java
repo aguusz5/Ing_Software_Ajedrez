@@ -114,7 +114,8 @@ class TemaStarWarsTest {
         // Arrange
         BufferedImage roja = new BufferedImage(16, 9, BufferedImage.TYPE_INT_RGB);
         pintarDe(roja, java.awt.Color.RED);
-        TemaStarWars conImagen = new TemaStarWars(new GlifosDePieza(), rebelion, Optional.of(roja));
+        TemaStarWars conImagen = new TemaStarWars(new GlifosDePieza(), rebelion,
+                Optional.of(new ImagenDeFondo(roja, 1.0)));
         BufferedImage ventana = new BufferedImage(60, 80, BufferedImage.TYPE_INT_RGB);
 
         // Act
@@ -125,6 +126,27 @@ class TemaStarWarsTest {
             assertEquals(java.awt.Color.RED.getRGB(), ventana.getRGB(esquina[0], esquina[1]),
                     "la esquina " + esquina[0] + "," + esquina[1] + " debería tener la imagen");
         }
+    }
+
+    @Test
+    void pintarFondo_bordeDerechoAntesDelFinal_cortaLoQueSobraALaDerechaYNoALaIzquierda() {
+        // Arrange
+        BufferedImage mitades = new BufferedImage(20, 10, BufferedImage.TYPE_INT_RGB);
+        pintarDe(mitades, java.awt.Color.BLUE);
+        java.awt.Graphics2D pincel = mitades.createGraphics();
+        pincel.setColor(java.awt.Color.RED);
+        pincel.fillRect(17, 0, 3, 10);
+        pincel.dispose();
+        TemaStarWars conImagen = new TemaStarWars(new GlifosDePieza(), rebelion,
+                Optional.of(new ImagenDeFondo(mitades, 0.75)));
+        BufferedImage ventana = new BufferedImage(30, 20, BufferedImage.TYPE_INT_RGB);
+
+        // Act
+        conImagen.pintarFondo(ventana.createGraphics(), ventana.getWidth(), ventana.getHeight());
+
+        // Assert
+        assertEquals(java.awt.Color.BLUE.getRGB(), ventana.getRGB(0, 10), "a la izquierda se ve el principio");
+        assertEquals(java.awt.Color.BLUE.getRGB(), ventana.getRGB(29, 10), "la franja roja quedó afuera");
     }
 
     @Test

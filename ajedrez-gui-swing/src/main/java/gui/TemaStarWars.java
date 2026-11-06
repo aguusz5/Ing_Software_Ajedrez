@@ -7,7 +7,6 @@ import java.awt.RadialGradientPaint;
 import java.awt.RenderingHints;
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.Point2D;
-import java.awt.image.BufferedImage;
 import java.util.Optional;
 
 import modelo.Pieza;
@@ -17,8 +16,8 @@ import modelo.Potenciador;
  * Tema Star Wars, en una era: la Rebelión contra el Imperio o la República contra los Separatistas, en el
  * espacio. Lo que cambia de una era a otra (nombres, bandos, brillos, personajes) llega en la Era. Cada pieza
  * es un personaje con el brillo de su bando y una insignia con el símbolo de la pieza. Una pieza sin personaje (una pieza nueva del núcleo) se dibuja con su símbolo, en los
- * colores del bando: así se ve sin tocar este tema. El fondo es la imagen que llega por constructor (el
- * póster); si no llega, se dibuja el espacio con estrellas. Los potenciadores son cristales kyber verdes.
+ * colores del bando: así se ve sin tocar este tema. El fondo es la imagen que llega por constructor, con su
+ * encuadre; si no llega, se dibuja el espacio con estrellas. Los potenciadores son cristales kyber verdes.
  */
 public final class TemaStarWars implements Tema {
 
@@ -42,9 +41,9 @@ public final class TemaStarWars implements Tema {
 
     private final GlifosDePieza glifos;
     private final Era era;
-    private final Optional<BufferedImage> imagenDeFondo;
+    private final Optional<ImagenDeFondo> imagenDeFondo;
 
-    public TemaStarWars(GlifosDePieza glifos, Era era, Optional<BufferedImage> imagenDeFondo) {
+    public TemaStarWars(GlifosDePieza glifos, Era era, Optional<ImagenDeFondo> imagenDeFondo) {
         this.glifos = glifos;
         this.era = era;
         this.imagenDeFondo = imagenDeFondo;
@@ -89,6 +88,11 @@ public final class TemaStarWars implements Tema {
                 .orElseGet(() -> new DibujoDeGlifo(tipo, glifo, blanca ? Color.WHITE : Color.BLACK, brillo));
     }
 
+    @Override
+    public Optional<String> sonidoDe(Pieza pieza) {
+        return era.personajes().sonidoDe(pieza.tipo().nombre(), pieza.color());
+    }
+
     /** Un cristal kyber que brilla en verde, con el símbolo del movimiento que presta. */
     @Override
     public DibujoDePieza dibujoDe(Potenciador potenciador) {
@@ -103,22 +107,8 @@ public final class TemaStarWars implements Tema {
         if (ancho <= 0 || alto <= 0) {
             return;
         }
-        imagenDeFondo.ifPresentOrElse(imagen -> pintarImagen(g, imagen, ancho, alto),
+        imagenDeFondo.ifPresentOrElse(imagen -> imagen.pintar(g, ancho, alto),
                 () -> pintarEspacio(g, ancho, alto));
-    }
-
-    /**
-     * La imagen cubre todo sin deformarse: se agranda hasta tapar el ancho y el alto, y lo que sobra se
-     * corta. Queda pegada a la derecha, donde el póster tiene los personajes, y centrada en el alto.
-     */
-    private static void pintarImagen(Graphics2D g, BufferedImage imagen, int ancho, int alto) {
-        double escala = Math.max((double) ancho / imagen.getWidth(), (double) alto / imagen.getHeight());
-        int anchoEscalado = (int) Math.ceil(imagen.getWidth() * escala);
-        int altoEscalado = (int) Math.ceil(imagen.getHeight() * escala);
-        Graphics2D fondo = (Graphics2D) g.create();
-        fondo.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
-        fondo.drawImage(imagen, ancho - anchoEscalado, (alto - altoEscalado) / 2, anchoEscalado, altoEscalado, null);
-        fondo.dispose();
     }
 
     /** El espacio: un degradé casi negro, dos nebulosas, estrellas y un planeta en la esquina. */
