@@ -593,3 +593,27 @@ se revierte, no se borra: se marca como reemplazada y se dice por cuál.
     propio.
   - Los dibujos de la ventana reconocen a cada potenciador por su nombre (`GlifosDePieza`). Si se renombra uno
     en el núcleo, la ventana le pone una estrella genérica hasta que se actualice la tabla.
+
+### 37. Las eras de Star Wars son datos (`Era`), no temas nuevos
+
+- **Qué:** el tema Star Wars tiene dos eras, que en el menú son dos temas: "Star Wars" (la Rebelión con
+  blancas contra el Imperio con negras) y "Guerra de los Clones" (la República con blancas contra los
+  Separatistas con negras). Hay una sola clase, `TemaStarWars`, que recibe una `Era`, un record con:
+  - el nombre en el menú y el epígrafe;
+  - cómo se llama cada bando y su brillo (los Separatistas brillan en naranja, para no confundirlos con el
+    Imperio);
+  - los personajes, en `PersonajesDeStarWars`.
+
+  `PersonajesDeStarWars` pasó a ser el elenco de una era, con una fábrica por era. Los 11 dibujos nuevos están
+  en `PersonajesDeLaGuerraDeLosClones`, y Yoda se repite como rey de la República. Las figuras con las que se
+  dibuja (elipses, curvas, reflejos) se separaron en `Figuras`, para que las usen las dos eras. `Principal`
+  arma los dos temas; el póster es de la Rebelión, así que la Guerra de los Clones usa el espacio dibujado.
+- **Por qué:** lo que cambia de una era a otra son datos: nombres, colores y dibujos. La forma de dibujar una
+  pieza (personaje, brillo, insignia, fondo) es la misma. Una subclase o una implementación nueva de `Tema`
+  por era duplicaría todo `TemaStarWars` para cambiar seis valores. Con el record, una era nueva es una
+  fábrica más y sus dibujos, sin tocar el tema ni las pantallas (abierto/cerrado), y `Tema` sigue siendo la
+  única Strategy (decisión 33). No se agregó una interfaz para los elencos porque es la misma clase con otros
+  personajes (decisiones 14 y 21).
+- **Cuándo se rompería:** si una era tuviera que dibujarse distinto, más allá de sus datos (otro fondo con
+  animación, piezas que no son personajes, otra forma de marcar los bandos). Ahí esa era pasa a ser su propia
+  implementación de `Tema`, y lo común se comparte por composición.

@@ -43,7 +43,15 @@ package "ajedrez-gui-swing (adaptador)" #E8F1FA {
     +TemaClasico(glifos : GlifosDePieza)
   }
   class TemaStarWars {
-    +TemaStarWars(glifos : GlifosDePieza, personajes : PersonajesDeStarWars, imagenDeFondo : Optional<BufferedImage>)
+    +TemaStarWars(glifos : GlifosDePieza, era : Era, imagenDeFondo : Optional<BufferedImage>)
+  }
+  class Era <<record>> {
+    +nombre, epigrafe : String
+    +bandoDeLasBlancas, bandoDeLasNegras : String
+    +brilloDeLasBlancas, brilloDeLasNegras : Color
+    +personajes : PersonajesDeStarWars
+    +{static} rebelionContraImperio() : Era
+    +{static} republicaContraSeparatistas() : Era
   }
   class Paleta <<record>> {
     +casillaClara, casillaOscura : Color
@@ -76,7 +84,16 @@ package "ajedrez-gui-swing (adaptador)" #E8F1FA {
     +glifoDe(p : Potenciador) : String
   }
   class PersonajesDeStarWars {
+    +{static} rebelionContraImperio() : PersonajesDeStarWars
+    +{static} republicaContraSeparatistas() : PersonajesDeStarWars
     ~personajeDe(tipo : String, bando : modelo.Color) : Optional<Personaje>
+  }
+  class PersonajesDeLaGuerraDeLosClones <<dibujos>> {
+    ~{static} anakin() / obiWan() / ahsoka() / atte() / soldadoClon()
+    ~{static} dooku() / grievous() / ventress() / droideka() / superDroide() / droideDeCombate()
+  }
+  class Figuras <<ayudas de dibujo>> {
+    ~{static} elipse() / rect() / poligono() / linea() / arco() / con() / dentro() / ambos() / desde()
   }
   class Personaje {
     ~{static} LADO : double
@@ -117,8 +134,12 @@ DibujoPotenciado --> "2" DibujoDePieza : pieza y potenciador
 DibujoDePersonaje --> Personaje
 TemaClasico --> GlifosDePieza
 TemaStarWars --> GlifosDePieza
-TemaStarWars --> PersonajesDeStarWars
-PersonajesDeStarWars --> "12" Personaje
+TemaStarWars --> Era
+Era --> PersonajesDeStarWars
+PersonajesDeStarWars --> "12" Personaje : 6 por bando
+PersonajesDeStarWars ..> PersonajesDeLaGuerraDeLosClones : la era de los clones
+PersonajesDeStarWars ..> Figuras
+PersonajesDeLaGuerraDeLosClones ..> Figuras
 Personaje *-- "1..*" Capa
 legend right
   Color sin prefijo = java.awt.Color (cómo se pinta).
@@ -135,10 +156,14 @@ note top of PanelDelMenu
   que reciben por constructor.
 end note
 note bottom of PersonajesDeStarWars
+  Dos eras, un elenco cada una (decisión 37):
   Rebelión (blancas): Luke, Leia, Yoda, Chewbacca, R2-D2, piloto.
   Imperio (negras): Palpatine, Vader, Guardia Imperial, Boba Fett,
-  Estrella de la Muerte, stormtrooper. Dibujados con figuras.
-  El fondo es un póster (gui/fondo-star-wars.jpg, en los recursos):
-  lo lee Principal; si no está, TemaStarWars dibuja el espacio.
+  Estrella de la Muerte, stormtrooper.
+  República (blancas): Yoda, Anakin, Obi-Wan, Ahsoka, AT-TE, clon.
+  Separatistas (negras): Dooku, Grievous, Ventress, droideka,
+  súper droide, droide de combate. Todos dibujados con figuras.
+  El fondo de la Rebelión es un póster (gui/fondo-star-wars.jpg):
+  lo lee Principal; sin póster, TemaStarWars dibuja el espacio.
 end note
 @enduml

@@ -28,7 +28,7 @@ package "ajedrez-gui-swing" #E8F1FA {
   class TemaStarWars
   class TemaClasico
   class GlifosDePieza
-  class PersonajesDeStarWars
+  class Era
 }
 package "ajedrez-consola" #E8F1FA {
   class AdaptadorConsola
@@ -51,10 +51,10 @@ Principal ..> Computadora : una por dificultad
 Principal ..> ContraLaComputadora : dos por dificultad
 Principal ..> VentanaSwing : con --gui
 Principal ..> Dificultad
-Principal ..> TemaStarWars : le pasa el póster
+Principal ..> TemaStarWars : dos, uno por era (la Rebelión con el póster)
 Principal ..> TemaClasico
 Principal ..> GlifosDePieza
-Principal ..> PersonajesDeStarWars
+Principal ..> Era : rebelionContraImperio(), republicaContraSeparatistas()
 Principal ..> AdaptadorConsola : sin --gui
 Principal ..> TraductorDeNotacion
 Principal ..> DibujanteAscii

@@ -17,8 +17,8 @@ import consola.AdaptadorConsola;
 import consola.DibujanteAscii;
 import consola.TraductorDeNotacion;
 import gui.Dificultad;
+import gui.Era;
 import gui.GlifosDePieza;
-import gui.PersonajesDeStarWars;
 import gui.Tema;
 import gui.TemaClasico;
 import gui.TemaStarWars;
@@ -83,7 +83,9 @@ public final class Principal {
         if (!enConsola) {
             GlifosDePieza glifos = new GlifosDePieza();
             List<Tema> temas = List.of(
-                    new TemaStarWars(glifos, new PersonajesDeStarWars(), cargarImagen(FONDO_STAR_WARS)),
+                    new TemaStarWars(glifos, Era.rebelionContraImperio(), cargarImagen(FONDO_STAR_WARS)),
+                    // El póster es de la Rebelión: la Guerra de los Clones usa el espacio dibujado.
+                    new TemaStarWars(glifos, Era.republicaContraSeparatistas(), Optional.empty()),
                     new TemaClasico(glifos));
             SwingUtilities.invokeLater(() -> new VentanaSwing(juego, temas, dificultades).mostrar());
         } else {

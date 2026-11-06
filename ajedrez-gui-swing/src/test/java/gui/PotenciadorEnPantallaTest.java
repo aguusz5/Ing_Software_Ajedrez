@@ -18,7 +18,7 @@ import modelo.Potenciador;
 class PotenciadorEnPantallaTest {
 
     private final GlifosDePieza glifos = new GlifosDePieza();
-    private final TemaStarWars tema = new TemaStarWars(glifos, new PersonajesDeStarWars(), Optional.empty());
+    private final TemaStarWars tema = new TemaStarWars(glifos, Era.rebelionContraImperio(), Optional.empty());
 
     @Test
     void glifoDe_cadaPotenciadorStarWars_esElSimboloDeLaPiezaCuyoMovimientoPresta() {

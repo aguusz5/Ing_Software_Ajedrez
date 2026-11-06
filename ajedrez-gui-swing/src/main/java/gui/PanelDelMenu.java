@@ -243,8 +243,9 @@ final class PanelDelMenu extends JPanel {
                 <p><b>Reiniciar</b> empieza de nuevo con el mismo modo. <b>Menú</b> vuelve acá sin perder
                 la partida.</p><br>
                 <p><b>Tema:</b> cambia solo cómo se ve. En Star Wars la Rebelión (blancas, brillo azul) juega
-                contra el Imperio (negras, brillo rojo). La insignia de la esquina dice qué pieza es cada
-                personaje, y si dejás el mouse quieto sobre una pieza aparece su nombre.</p>
+                contra el Imperio (negras, brillo rojo); en la Guerra de los Clones, la República (blancas,
+                brillo azul) contra los Separatistas (negras, brillo naranja). La insignia de la esquina dice
+                qué pieza es cada personaje, y si dejás el mouse quieto sobre una pieza aparece su nombre.</p>
                 </body></html>"""), "Cómo se juega", JOptionPane.INFORMATION_MESSAGE);
     }
 

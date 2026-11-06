@@ -24,8 +24,9 @@ class TemaStarWarsTest {
     private static final TipoDePieza CANCILLER =
             new TipoDePieza("canciller", false, 8, List.of((tablero, desde, pieza) -> List.of()));
 
-    private final PersonajesDeStarWars personajes = new PersonajesDeStarWars();
-    private final TemaStarWars tema = new TemaStarWars(new GlifosDePieza(), personajes, Optional.empty());
+    private final Era rebelion = Era.rebelionContraImperio();
+    private final PersonajesDeStarWars personajes = rebelion.personajes();
+    private final TemaStarWars tema = new TemaStarWars(new GlifosDePieza(), rebelion, Optional.empty());
 
     @Test
     void personajeDe_cadaPiezaEstandarDeCadaBando_tienePersonaje() {
@@ -113,7 +114,7 @@ class TemaStarWarsTest {
         // Arrange
         BufferedImage roja = new BufferedImage(16, 9, BufferedImage.TYPE_INT_RGB);
         pintarDe(roja, java.awt.Color.RED);
-        TemaStarWars conImagen = new TemaStarWars(new GlifosDePieza(), personajes, Optional.of(roja));
+        TemaStarWars conImagen = new TemaStarWars(new GlifosDePieza(), rebelion, Optional.of(roja));
         BufferedImage ventana = new BufferedImage(60, 80, BufferedImage.TYPE_INT_RGB);
 
         // Act

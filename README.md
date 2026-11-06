@@ -20,8 +20,9 @@ La ventana arranca en un menú: uno contra uno, o contra la computadora en fáci
 difícil (un minimax que mira 2 o 3 jugadas hacia adelante), con blancas o con negras. Todo corre en la compu,
 sin internet. `--ia` abre la consola con las negras jugadas por la computadora en difícil.
 
-La ventana tiene dos temas, que se eligen en el menú: **Star Wars** (el que se ve al abrir: la Rebelión, con
-blancas, contra el Imperio, con negras, en el espacio) y **Clásico** (tablero de madera y símbolos de ajedrez).
+La ventana tiene tres temas, que se eligen en el menú: **Star Wars** (el que se ve al abrir: la Rebelión, con
+blancas, contra el Imperio, con negras, en el espacio), **Guerra de los Clones** (la República, con blancas,
+contra los Separatistas, con negras) y **Clásico** (tablero de madera y símbolos de ajedrez).
 El tema cambia solo cómo se ve; las reglas son las mismas.
 
 En la ventana hay además **potenciadores** con nombres de Star Wars: la partida empieza con dos al azar en

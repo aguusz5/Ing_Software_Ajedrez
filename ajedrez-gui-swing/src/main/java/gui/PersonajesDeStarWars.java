@@ -1,42 +1,76 @@
 package gui;
 
-import java.awt.BasicStroke;
+import static gui.Figuras.LADO;
+import static gui.Figuras.ambos;
+import static gui.Figuras.arco;
+import static gui.Figuras.capa;
+import static gui.Figuras.con;
+import static gui.Figuras.dentro;
+import static gui.Figuras.desde;
+import static gui.Figuras.elipse;
+import static gui.Figuras.linea;
+import static gui.Figuras.pelaje;
+import static gui.Figuras.poligono;
+import static gui.Figuras.rect;
+import static gui.Figuras.redondeado;
+import static gui.Figuras.rgb;
+import static gui.Figuras.trazo;
+
 import java.awt.Color;
 import java.awt.Paint;
 import java.awt.RadialGradientPaint;
 import java.awt.Shape;
-import java.awt.geom.AffineTransform;
-import java.awt.geom.Area;
 import java.awt.geom.Ellipse2D;
-import java.awt.geom.Line2D;
-import java.awt.geom.Path2D;
 import java.awt.geom.Point2D;
-import java.awt.geom.QuadCurve2D;
-import java.awt.geom.Rectangle2D;
-import java.awt.geom.RoundRectangle2D;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-
 /**
- * Los personajes del tema Star Wars, uno por tipo de pieza y bando: la Rebelión juega con blancas y el
- * Imperio con negras. Se buscan por el nombre del tipo, como los glifos: una pieza que no está en la
- * tabla no tiene personaje, y el tema la dibuja con su símbolo.
+ * Los personajes de una era de Star Wars, uno por tipo de pieza y bando. Se buscan por el nombre del tipo,
+ * como los glifos: una pieza que no está en la tabla no tiene personaje, y el tema la dibuja con su símbolo.
+ * Hay dos elencos: la Rebelión contra el Imperio y la República contra los Separatistas
+ * (PersonajesDeLaGuerraDeLosClones).
  * Los dibujos son figuras simples (elipses, polígonos, curvas) en una caja de 100 x 100, hechos a mano:
  * no hay imágenes bajadas de internet.
  */
 public final class PersonajesDeStarWars {
 
-    private static final Map<String, Personaje> REBELION = Map.of(
-            "rey", luke(), "dama", leia(), "alfil", yoda(),
-            "caballo", chewbacca(), "torre", r2d2(), "peón", pilotoRebelde());
-    private static final Map<String, Personaje> IMPERIO = Map.of(
-            "rey", palpatine(), "dama", vader(), "alfil", guardiaImperial(),
-            "caballo", bobaFett(), "torre", estrellaDeLaMuerte(), "peón", stormtrooper());
+    private final Map<String, Personaje> blancas;
+    private final Map<String, Personaje> negras;
+
+    private PersonajesDeStarWars(Map<String, Personaje> blancas, Map<String, Personaje> negras) {
+        this.blancas = Map.copyOf(blancas);
+        this.negras = Map.copyOf(negras);
+    }
+
+    /** La Rebelión (blancas) contra el Imperio (negras). */
+    public static PersonajesDeStarWars rebelionContraImperio() {
+        return new PersonajesDeStarWars(
+                Map.of("rey", luke(), "dama", leia(), "alfil", yoda(),
+                        "caballo", chewbacca(), "torre", r2d2(), "peón", pilotoRebelde()),
+                Map.of("rey", palpatine(), "dama", vader(), "alfil", guardiaImperial(),
+                        "caballo", bobaFett(), "torre", estrellaDeLaMuerte(), "peón", stormtrooper()));
+    }
+
+    /** La República (blancas) contra los Separatistas (negras), en la Guerra de los Clones. */
+    public static PersonajesDeStarWars republicaContraSeparatistas() {
+        return new PersonajesDeStarWars(
+                Map.of("rey", yoda(), "dama", PersonajesDeLaGuerraDeLosClones.anakin(),
+                        "alfil", PersonajesDeLaGuerraDeLosClones.obiWan(),
+                        "caballo", PersonajesDeLaGuerraDeLosClones.ahsoka(),
+                        "torre", PersonajesDeLaGuerraDeLosClones.atte(),
+                        "peón", PersonajesDeLaGuerraDeLosClones.soldadoClon()),
+                Map.of("rey", PersonajesDeLaGuerraDeLosClones.dooku(),
+                        "dama", PersonajesDeLaGuerraDeLosClones.grievous(),
+                        "alfil", PersonajesDeLaGuerraDeLosClones.ventress(),
+                        "caballo", PersonajesDeLaGuerraDeLosClones.droideka(),
+                        "torre", PersonajesDeLaGuerraDeLosClones.superDroide(),
+                        "peón", PersonajesDeLaGuerraDeLosClones.droideDeCombate()));
+    }
 
     Optional<Personaje> personajeDe(String tipo, modelo.Color bando) {
-        return Optional.ofNullable((bando == modelo.Color.BLANCO ? REBELION : IMPERIO).get(tipo));
+        return Optional.ofNullable((bando == modelo.Color.BLANCO ? blancas : negras).get(tipo));
     }
 
     // ---------------------------------------------------------------- La Rebelión (blancas)
@@ -83,7 +117,8 @@ public final class PersonajesDeStarWars {
                 capa(elipse(46.5, 50.5, 7, 3), rgb(200, 90, 90))));
     }
 
-    private static Personaje yoda() {
+    /** También es de la Guerra de los Clones: ahí es el rey de la República. */
+    static Personaje yoda() {
         Shape oreja = desde(38, 42).curva(18, 33, 1, 25).curva(6, 41, 20, 49).curva(29, 55, 37, 55).cerrar();
         Shape adentroDeLaOreja = desde(34, 45).curva(20, 39, 9, 33).curva(14, 43, 24, 48).curva(30, 51, 34, 51)
                 .cerrar();
@@ -268,127 +303,5 @@ public final class PersonajesDeStarWars {
                 capa(con(con(linea(44, 72, 44, 76, 1.2), linea(50, 70.5, 50, 75, 1.2)), linea(56, 72, 56, 76, 1.2)),
                         rgb(160, 162, 170)),
                 capa(ambos(poligono(24, 70, 30, 68, 32, 80, 26, 82)), rgb(118, 124, 132))));
-    }
-
-    // ---------------------------------------------------------------- Ayudas para dibujar en la caja de 100 x 100
-
-    private static final double LADO = Personaje.LADO;
-
-    private static Personaje.Capa capa(Shape forma, Paint pintura) {
-        return new Personaje.Capa(forma, pintura);
-    }
-
-    private static Color rgb(int rojo, int verde, int azul) {
-        return new Color(rojo, verde, azul);
-    }
-
-    private static Shape elipse(double x, double y, double ancho, double alto) {
-        return new Ellipse2D.Double(x, y, ancho, alto);
-    }
-
-    private static Shape rect(double x, double y, double ancho, double alto) {
-        return new Rectangle2D.Double(x, y, ancho, alto);
-    }
-
-    private static Shape redondeado(double x, double y, double ancho, double alto, double radio) {
-        return new RoundRectangle2D.Double(x, y, ancho, alto, radio * 2, radio * 2);
-    }
-
-    /** Un polígono cerrado: x1, y1, x2, y2, ... */
-    private static Shape poligono(double... puntos) {
-        Path2D poligono = new Path2D.Double();
-        poligono.moveTo(puntos[0], puntos[1]);
-        for (int i = 2; i < puntos.length; i += 2) {
-            poligono.lineTo(puntos[i], puntos[i + 1]);
-        }
-        poligono.closePath();
-        return poligono;
-    }
-
-    /** Una línea con grosor, como forma rellenable. */
-    private static Shape linea(double x1, double y1, double x2, double y2, double grosor) {
-        return trazo(new Line2D.Double(x1, y1, x2, y2), grosor);
-    }
-
-    /** Una curva de (x1, y1) a (x2, y2) que se dobla hacia (cx, cy), con grosor. */
-    private static Shape arco(double x1, double y1, double cx, double cy, double x2, double y2, double grosor) {
-        return trazo(new QuadCurve2D.Double(x1, y1, cx, cy, x2, y2), grosor);
-    }
-
-    private static Shape trazo(Shape camino, double grosor) {
-        return new BasicStroke((float) grosor, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND).createStrokedShape(camino);
-    }
-
-    private static Shape con(Shape una, Shape otra) {
-        Area union = new Area(una);
-        union.add(new Area(otra));
-        return union;
-    }
-
-    /** La parte de la forma que queda dentro del límite. */
-    private static Shape dentro(Shape forma, Shape limite) {
-        Area interseccion = new Area(forma);
-        interseccion.intersect(new Area(limite));
-        return interseccion;
-    }
-
-    /** La forma y su reflejo del otro lado de la cara: dos ojos, dos orejas, dos rodetes. */
-    private static Shape ambos(Shape forma) {
-        AffineTransform espejo = new AffineTransform(-1, 0, 0, 1, LADO, 0);
-        return con(forma, espejo.createTransformedShape(forma));
-    }
-
-    /** Una elipse con el borde en picos, como pelo: para Chewbacca. */
-    private static Shape pelaje(double cx, double cy, double rx, double ry, int puntas, double largo) {
-        Path2D pelo = new Path2D.Double();
-        for (int i = 0; i < puntas * 2; i++) {
-            double angulo = Math.PI * i / puntas;
-            double estiramiento = i % 2 == 0 ? largo : 0;
-            double x = cx + (rx + estiramiento) * Math.cos(angulo);
-            double y = cy + (ry + estiramiento) * Math.sin(angulo);
-            if (i == 0) {
-                pelo.moveTo(x, y);
-            } else {
-                pelo.lineTo(x, y);
-            }
-        }
-        pelo.closePath();
-        return pelo;
-    }
-
-    private static Camino desde(double x, double y) {
-        return new Camino(x, y);
-    }
-
-    /** Un contorno cerrado armado de a tramos: rectas y curvas. */
-    private static final class Camino {
-
-        private final Path2D camino = new Path2D.Double();
-
-        Camino(double x, double y) {
-            camino.moveTo(x, y);
-        }
-
-        Camino a(double x, double y) {
-            camino.lineTo(x, y);
-            return this;
-        }
-
-        /** Curva hasta (x, y) que se dobla hacia (cx, cy). */
-        Camino curva(double cx, double cy, double x, double y) {
-            camino.quadTo(cx, cy, x, y);
-            return this;
-        }
-
-        /** Curva hasta (x, y) con dos puntos de control. */
-        Camino curva(double c1x, double c1y, double c2x, double c2y, double x, double y) {
-            camino.curveTo(c1x, c1y, c2x, c2y, x, y);
-            return this;
-        }
-
-        Shape cerrar() {
-            camino.closePath();
-            return camino;
-        }
     }
 }

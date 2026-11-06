@@ -14,16 +14,14 @@ import modelo.Pieza;
 import modelo.Potenciador;
 
 /**
- * Tema Star Wars: la Rebelión (blancas) contra el Imperio (negras), en el espacio. Cada pieza es un
- * personaje con el brillo de su bando, azul la Rebelión y rojo el Imperio, y una insignia con el símbolo
- * de la pieza. Una pieza sin personaje (una pieza nueva del núcleo) se dibuja con su símbolo, en los
+ * Tema Star Wars, en una era: la Rebelión contra el Imperio o la República contra los Separatistas, en el
+ * espacio. Lo que cambia de una era a otra (nombres, bandos, brillos, personajes) llega en la Era. Cada pieza
+ * es un personaje con el brillo de su bando y una insignia con el símbolo de la pieza. Una pieza sin personaje (una pieza nueva del núcleo) se dibuja con su símbolo, en los
  * colores del bando: así se ve sin tocar este tema. El fondo es la imagen que llega por constructor (el
  * póster); si no llega, se dibuja el espacio con estrellas. Los potenciadores son cristales kyber verdes.
  */
 public final class TemaStarWars implements Tema {
 
-    private static final Color AZUL_REBELDE = new Color(80, 170, 255);
-    private static final Color ROJO_IMPERIAL = new Color(255, 50, 50);
     /** El verde de un cristal kyber (el de un sable de luz Jedi): no es de ningún bando. */
     private static final Color VERDE_KYBER = new Color(90, 255, 140);
     private static final Paleta PALETA = new Paleta(
@@ -43,24 +41,23 @@ public final class TemaStarWars implements Tema {
             Color.WHITE, Color.WHITE, Color.WHITE, new Color(170, 200, 255), new Color(255, 235, 190)};
 
     private final GlifosDePieza glifos;
-    private final PersonajesDeStarWars personajes;
+    private final Era era;
     private final Optional<BufferedImage> imagenDeFondo;
 
-    public TemaStarWars(GlifosDePieza glifos, PersonajesDeStarWars personajes,
-                        Optional<BufferedImage> imagenDeFondo) {
+    public TemaStarWars(GlifosDePieza glifos, Era era, Optional<BufferedImage> imagenDeFondo) {
         this.glifos = glifos;
-        this.personajes = personajes;
+        this.era = era;
         this.imagenDeFondo = imagenDeFondo;
     }
 
     @Override
     public String nombre() {
-        return "Star Wars";
+        return era.nombre();
     }
 
     @Override
     public String epigrafe() {
-        return "Hace mucho tiempo, en una galaxia muy, muy lejana…";
+        return era.epigrafe();
     }
 
     @Override
@@ -70,26 +67,26 @@ public final class TemaStarWars implements Tema {
 
     @Override
     public String bando(modelo.Color color) {
-        return color == modelo.Color.BLANCO ? "Rebelión" : "Imperio";
+        return color == modelo.Color.BLANCO ? era.bandoDeLasBlancas() : era.bandoDeLasNegras();
     }
 
     /** "Darth Vader (dama)": el personaje y, entre paréntesis, la pieza, para saber cómo se mueve. */
     @Override
     public String nombreDe(String tipo, modelo.Color color) {
-        return personajes.personajeDe(tipo, color).map(personaje -> personaje.nombre() + " (" + tipo + ")")
+        return era.personajes().personajeDe(tipo, color).map(personaje -> personaje.nombre() + " (" + tipo + ")")
                 .orElse(tipo);
     }
 
     @Override
     public DibujoDePieza dibujoDe(Pieza pieza) {
         String tipo = pieza.tipo().nombre();
-        boolean rebelde = pieza.color() == modelo.Color.BLANCO;
-        Color brillo = rebelde ? AZUL_REBELDE : ROJO_IMPERIAL;
+        boolean blanca = pieza.color() == modelo.Color.BLANCO;
+        Color brillo = blanca ? era.brilloDeLasBlancas() : era.brilloDeLasNegras();
         String glifo = glifos.glifoDe(pieza);
-        return personajes.personajeDe(tipo, pieza.color())
+        return era.personajes().personajeDe(tipo, pieza.color())
                 .<DibujoDePieza>map(personaje -> new DibujoDePersonaje(nombreDe(tipo, pieza.color()), personaje,
                         brillo, new DibujoDeGlifo(tipo, glifo, Color.WHITE, brillo.darker().darker())))
-                .orElseGet(() -> new DibujoDeGlifo(tipo, glifo, rebelde ? Color.WHITE : Color.BLACK, brillo));
+                .orElseGet(() -> new DibujoDeGlifo(tipo, glifo, blanca ? Color.WHITE : Color.BLACK, brillo));
     }
 
     /** Un cristal kyber que brilla en verde, con el símbolo del movimiento que presta. */
