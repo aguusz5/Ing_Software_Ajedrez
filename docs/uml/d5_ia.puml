@@ -52,8 +52,8 @@ AsesorMinimax ..> Jugada : prueba cada una con aplicarEn()
 Computadora --> "asesor" AsesorDeJugadas
 Computadora --> "respaldo" AsesorDeJugadas
 Computadora ..> JugadaDeLaComputadora : devuelve
-AsesorAleatorio ..|> AsesorDeJugadas
-AsesorMinimax ..|> AsesorDeJugadas
+AsesorDeJugadas <|.. AsesorAleatorio
+AsesorDeJugadas <|.. AsesorMinimax
 AsesorMinimax --> GeneradorDeJugadasLegales
 AsesorMinimax --> DetectorDeJaque
 AsesorDeJugadas ..> JugadaLegal

@@ -1,39 +1,10 @@
-@startuml d4_adaptadores
+@startuml d4_ventana
 !include common.iuml
 top to bottom direction
-package "ajedrez-nucleo :: juego (el puerto y quien lo implementa)" #EAF6EA {
-  interface JuegoDeAjedrez <<puerto de entrada>>
-  class Partida
-  class AparicionDePotenciadores
-}
-package "ajedrez-nucleo :: ia" #EAF6EA {
-  class Computadora
-  class ContraLaComputadora
-}
-package "ajedrez-consola (adaptador)" #E8F1FA {
-  class AdaptadorConsola {
-    +AdaptadorConsola(juego, traductor, dibujante, entrada : Scanner, salida : PrintStream, rival : Optional<ContraLaComputadora>)
-    +ejecutar()
-  }
-  class TraductorDeNotacion {
-    +leer(texto : String, t : Tablero) : Posicion
-    +escribir(p : Posicion) : String
-  }
-  class DibujanteAscii {
-    +dibujar(t : Tablero) : String
-  }
-}
 package "ajedrez-gui-swing (adaptador)" #E8F1FA {
   class VentanaSwing {
     +VentanaSwing(juego : JuegoDeAjedrez, temas : List<Tema>, dificultades : List<Dificultad>)
     +mostrar()
-  }
-  class Dificultad <<record>> {
-    +nombre : String
-    +descripcion : String
-    +siElegisBlancas : ContraLaComputadora
-    +siElegisNegras : ContraLaComputadora
-    +paraJugarCon(colorDelJugador : modelo.Color) : ContraLaComputadora
   }
   class PanelDelMenu <<pantalla>> {
     ~usarTema(t : Tema)
@@ -44,6 +15,13 @@ package "ajedrez-gui-swing (adaptador)" #E8F1FA {
     ~usarTema(t : Tema)
     ~empezarUnoContraUno(conPotenciadores : boolean)
     ~empezarContraLaComputadora(rival : ContraLaComputadora, conPotenciadores : boolean)
+  }
+  class Dificultad <<record>> {
+    +nombre : String
+    +descripcion : String
+    +siElegisBlancas : ContraLaComputadora
+    +siElegisNegras : ContraLaComputadora
+    +paraJugarCon(colorDelJugador : modelo.Color) : ContraLaComputadora
   }
   class PanelDelTablero {
     ~setInvertido(invertido : boolean)
@@ -93,6 +71,10 @@ package "ajedrez-gui-swing (adaptador)" #E8F1FA {
     +nombre : String
     +brillo : Color
   }
+  class GlifosDePieza {
+    +glifoDe(p : Pieza) : String
+    +glifoDe(p : Potenciador) : String
+  }
   class PersonajesDeStarWars {
     ~personajeDe(tipo : String, bando : modelo.Color) : Optional<Personaje>
   }
@@ -106,70 +88,46 @@ package "ajedrez-gui-swing (adaptador)" #E8F1FA {
     +forma : Shape
     +pintura : Paint
   }
-  class GlifosDePieza {
-    +glifoDe(p : Pieza) : String
-    +glifoDe(p : Potenciador) : String
-  }
 }
-package "ajedrez-app (raíz de composición)" #FFF4E0 {
-  class Principal {
-    +{static} main(args : String[])
-  }
+package "ajedrez-nucleo (lo que usa la ventana)" #EAF6EA {
+  interface JuegoDeAjedrez <<puerto de entrada>>
+  class ContraLaComputadora
 }
-Partida ..|> JuegoDeAjedrez
-AdaptadorConsola --> JuegoDeAjedrez
-AdaptadorConsola --> TraductorDeNotacion
-AdaptadorConsola --> DibujanteAscii
 VentanaSwing *-- PanelDelMenu
 VentanaSwing *-- PanelDeLaPartida
 PanelDelMenu --> "*" Dificultad : las ofrece
-PanelDeLaPartida --> JuegoDeAjedrez
-PanelDeLaPartida --> Tema : el elegido en el menú
 PanelDelMenu --> "*" Tema : los ofrece
-PanelDeLaPartida --> "0..1" ContraLaComputadora : la del modo elegido
+PanelDeLaPartida --> Tema : el elegido en el menú
 PanelDeLaPartida *-- PanelDelTablero
+PanelDeLaPartida --> JuegoDeAjedrez
+PanelDeLaPartida --> "0..1" ContraLaComputadora : la del modo elegido
+Dificultad --> "2" ContraLaComputadora : una por color
 PanelDelTablero ..> DibujoDePieza
-TemaClasico ..|> Tema
-TemaStarWars ..|> Tema
+Tema <|.. TemaClasico
+Tema <|.. TemaStarWars
 Tema ..> Paleta
 Tema ..> DibujoDePieza : crea
-DibujoDeGlifo ..|> DibujoDePieza
-DibujoDePersonaje ..|> DibujoDePieza
-DibujoDePotenciador ..|> DibujoDePieza
+DibujoDePieza <|.. DibujoDeGlifo
+DibujoDePieza <|.. DibujoDePersonaje
+DibujoDePieza <|.. DibujoDePotenciador
+DibujoDePieza <|.. DibujoPotenciado
+DibujoDePersonaje -left-> DibujoDeGlifo : insignia
 DibujoDePotenciador --> DibujoDeGlifo : insignia
-DibujoPotenciado ..|> DibujoDePieza
 DibujoPotenciado --> "2" DibujoDePieza : pieza y potenciador
 DibujoDePersonaje --> Personaje
-DibujoDePersonaje --> DibujoDeGlifo : insignia
 TemaClasico --> GlifosDePieza
 TemaStarWars --> GlifosDePieza
 TemaStarWars --> PersonajesDeStarWars
 PersonajesDeStarWars --> "12" Personaje
 Personaje *-- "1..*" Capa
-Dificultad --> "2" ContraLaComputadora : una por color
-ContraLaComputadora --> Computadora
-AdaptadorConsola --> "0..1" ContraLaComputadora
-Principal ..> Partida : new + inyecta
-Principal ..> AparicionDePotenciadores : new (catálogo Star Wars)
-Principal ..> Computadora : new (una por dificultad)
-Principal ..> ContraLaComputadora : new (dos por dificultad)
-Principal ..> Dificultad : new
-Principal ..> AdaptadorConsola : new + inyecta
-Principal ..> TraductorDeNotacion : new
-Principal ..> DibujanteAscii : new
-Principal ..> VentanaSwing : new + inyecta
-Principal ..> TemaStarWars : new + le pasa el póster
-Principal ..> TemaClasico : new
-Principal ..> GlifosDePieza : new
-Principal ..> PersonajesDeStarWars : new
 legend right
   Color sin prefijo = java.awt.Color (cómo se pinta).
   modelo.Color = el color de las piezas (BLANCO / NEGRO).
+  Todo lo que tiene comportamiento intercambiable (el juego, los temas,
+  las dificultades) lo crea Principal (d7_composicion).
+  PanelDelTablero acomoda las casillas a mano: el lado más grande que
+  entra a lo ancho y a lo alto. Siempre cuadradas y centradas.
 endlegend
-note bottom of PanelDelTablero
-  Acomoda las casillas a mano: el lado más grande que entra
-  a lo ancho y a lo alto. Siempre cuadradas y centradas.
-end note
 note top of PanelDelMenu
   Las pantallas las crea VentanaSwing, y el tablero, PanelDeLaPartida.
   Ninguno conoce a quien lo creó: avisan lo que se eligió o se

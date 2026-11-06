@@ -1,0 +1,68 @@
+@startuml d7_composicion
+!include common.iuml
+left to right direction
+package "ajedrez-app (raíz de composición)" #FFF4E0 {
+  class Principal {
+    +{static} main(args : String[])
+  }
+}
+package "ajedrez-nucleo" #EAF6EA {
+  class TableroEstandar
+  class DetectorDeJaque
+  class ReglaPiezaPropia
+  class ReglaEnroqueSeguro
+  class ReglaNoDejarReyEnJaque
+  class ValidadorDeJugadas
+  class GeneradorDeJugadasLegales
+  class Partida
+  class AparicionDePotenciadores
+  class PotenciadoresStarWars <<catálogo estático>>
+  class AsesorAleatorio
+  class AsesorMinimax
+  class Computadora
+  class ContraLaComputadora
+}
+package "ajedrez-gui-swing" #E8F1FA {
+  class VentanaSwing
+  class Dificultad
+  class TemaStarWars
+  class TemaClasico
+  class GlifosDePieza
+  class PersonajesDeStarWars
+}
+package "ajedrez-consola" #E8F1FA {
+  class AdaptadorConsola
+  class TraductorDeNotacion
+  class DibujanteAscii
+}
+Principal ..> TableroEstandar
+Principal ..> DetectorDeJaque
+Principal ..> ReglaPiezaPropia
+Principal ..> ReglaEnroqueSeguro
+Principal ..> ReglaNoDejarReyEnJaque
+Principal ..> ValidadorDeJugadas
+Principal ..> GeneradorDeJugadasLegales
+Principal ..> Partida
+Principal ..> AparicionDePotenciadores : catálogo Star Wars
+Principal ..> PotenciadoresStarWars : todos()
+Principal ..> AsesorAleatorio
+Principal ..> AsesorMinimax
+Principal ..> Computadora : una por dificultad
+Principal ..> ContraLaComputadora : dos por dificultad
+Principal ..> VentanaSwing : con --gui
+Principal ..> Dificultad
+Principal ..> TemaStarWars : le pasa el póster
+Principal ..> TemaClasico
+Principal ..> GlifosDePieza
+Principal ..> PersonajesDeStarWars
+Principal ..> AdaptadorConsola : sin --gui
+Principal ..> TraductorDeNotacion
+Principal ..> DibujanteAscii
+note left of Principal
+  El único lugar que hace new de clases con
+  colaboradores (decisión 4): crea cada objeto y le
+  pasa los suyos por constructor. Cómo se conectan
+  se ve en las asociaciones de d2 a d6.
+  Todas las flechas de este diagrama son "new".
+end note
+@enduml

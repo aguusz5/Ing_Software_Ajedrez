@@ -127,7 +127,7 @@ Todo está en [docs/](docs/):
 |---|---|
 | Hasta dónde llegamos (se actualiza con cada avance) | [docs/estado.html](docs/estado.html) |
 | Decisiones de diseño (qué / por qué / cuándo se rompería) | [docs/decisiones.md](docs/decisiones.md) |
-| Diagramas de clases | [docs/uml/](docs/uml/) |
+| Diagramas de clases (se ven con la extensión PlantUML de VS Code; con `brew install graphviz` se dibujan más ordenados) | [docs/uml/](docs/uml/) |
 | Resumen visual y explicación de núcleo/adaptadores | [docs/explicaciones/](docs/explicaciones/) |
 | Consigna y roadmap | [docs/referencia/](docs/referencia/) |
 

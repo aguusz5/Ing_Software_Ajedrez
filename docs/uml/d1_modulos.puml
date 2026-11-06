@@ -24,8 +24,8 @@ AdaptadorConsola --> IN : usa
 VentanaSwing --> IN : usa
 AdaptadorConsola --> IA : usa
 VentanaSwing --> IA : usa
-G ..|> IN
-IA --> IN : ContraLaComputadora juega\npor el puerto
+IN <|.. G
+IN <-- IA : ContraLaComputadora juega\npor el puerto
 IA --> G : el minimax usa el generador\ny el detector de jaque
 note bottom of core
   Las flechas de dependencia apuntan SIEMPRE hacia el núcleo.
