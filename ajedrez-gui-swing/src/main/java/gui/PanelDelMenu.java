@@ -30,8 +30,8 @@ import javax.swing.border.TitledBorder;
 
 /**
  * La pantalla de inicio: jugar uno contra uno o contra la computadora (eligiendo dificultad y color),
- * volver a la partida en curso, elegir el tema, si se juega con potenciadores y si hay sonido, ver cómo se
- * juega o salir.
+ * volver a la partida en curso, elegir el tema, si se juega con potenciadores, si hay sonido y si hay música,
+ * ver cómo se juega o salir.
  * No juega: avisa qué se eligió y la ventana arma la partida o cambia el tema.
  */
 final class PanelDelMenu extends JPanel {
@@ -54,13 +54,15 @@ final class PanelDelMenu extends JPanel {
     /** Vale para las dos modalidades. Arranca marcada: es el modo pensado para el tema Star Wars. */
     private final JCheckBox potenciadores = comun(new JCheckBox("Con potenciadores", true));
     private final JCheckBox sonido = comun(new JCheckBox("Con sonido", true));
+    private final JCheckBox musica = comun(new JCheckBox("Con música", true));
     private final TitledBorder bordeDeLaComputadora = BorderFactory.createTitledBorder("Contra la computadora");
     private Tema tema; // cambia cuando se elige otro
 
     /** El primer tema de la lista es el que se ve al abrir. */
     PanelDelMenu(List<Dificultad> dificultades, List<Tema> temas, Runnable alElegirUnoContraUno,
                  BiConsumer<Dificultad, modelo.Color> alElegirContraLaComputadora, Consumer<Tema> alElegirTema,
-                 Runnable alVolverALaPartida, Consumer<Boolean> alCambiarElSonido, Runnable alSalir) {
+                 Runnable alVolverALaPartida, Consumer<Boolean> alCambiarElSonido,
+                 Consumer<Boolean> alCambiarLaMusica, Runnable alSalir) {
         super(new GridBagLayout()); // centra la columna en la ventana, sea del tamaño que sea
         columna.setLayout(new BoxLayout(columna, BoxLayout.Y_AXIS));
         columna.setOpaque(false);
@@ -90,7 +92,9 @@ final class PanelDelMenu extends JPanel {
         potenciadores.setToolTipText("Cristales que le dan a una pieza un movimiento extra por un turno");
         sonido.setToolTipText("Los personajes hablan cuando los elegís");
         sonido.addActionListener(evento -> alCambiarElSonido.accept(sonido.isSelected()));
-        columna.add(filaDeCasillas(potenciadores, sonido));
+        musica.setToolTipText("Música de Star Wars de fondo, más baja que las voces");
+        musica.addActionListener(evento -> alCambiarLaMusica.accept(musica.isSelected()));
+        columna.add(filaDeCasillas(potenciadores, sonido, musica));
         columna.add(Box.createVerticalStrut(12));
 
         JButton comoSeJuega = boton("Cómo se juega");
@@ -253,6 +257,9 @@ final class PanelDelMenu extends JPanel {
                 turno movés otra pieza, se pierde. Un peón que llega al final así también corona.</p><br>
                 <p><b>Sonido:</b> en Star Wars y la Guerra de los Clones, cada personaje habla cuando lo
                 elegís. Se apaga con la casilla <b>Con sonido</b> del menú.</p><br>
+                <p><b>Música:</b> de fondo suenan temas de Star Wars, más bajos que las voces, en cualquier
+                tema. Se pausa con la casilla <b>Con música</b> del menú y, al volver a marcarla, sigue desde
+                donde quedó.</p><br>
                 <p><b>Deshacer y Rehacer:</b> contra la computadora vuelven hasta tu turno.</p><br>
                 <p><b>Terminar partida:</b> gana el que tiene más puntos (peón 1, caballo y alfil 3, torre 5,
                 dama 9). <b>Rendirse</b> aparece cuando estás en jaque.</p><br>

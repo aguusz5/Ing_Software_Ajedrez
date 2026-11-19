@@ -16,7 +16,8 @@ import juego.JuegoDeAjedrez;
  * sin perderla. La ventana solo cambia de pantalla: jugar lo hace PanelDeLaPartida, por el puerto
  * JuegoDeAjedrez. Las pantallas son partes de la vista, así que las crea la ventana; lo que tiene
  * comportamiento propio (el juego, los temas, las dificultades) llega por constructor desde Principal.
- * Cuando en el menú se elige otro tema, la ventana se lo pasa a las dos pantallas.
+ * Cuando en el menú se elige otro tema, la ventana se lo pasa a las dos pantallas. La música de fondo
+ * empieza cuando se muestra la ventana y suena en las dos pantallas.
  */
 public final class VentanaSwing {
 
@@ -31,6 +32,7 @@ public final class VentanaSwing {
     private final JPanel contenido = new JPanel(pantallas);
     private final PanelDelMenu menu;
     private final PanelDeLaPartida partida;
+    private final ReproductorDeMusica musica;
     private String tituloDeLaPartida = TITULO;
 
     /**
@@ -38,10 +40,11 @@ public final class VentanaSwing {
      * ofrece jugar contra la computadora.
      */
     public VentanaSwing(JuegoDeAjedrez juego, List<Tema> temas, List<Dificultad> dificultades,
-            ReproductorDeSonidos sonidos) {
+            ReproductorDeSonidos sonidos, ReproductorDeMusica musica) {
+        this.musica = musica;
         partida = new PanelDeLaPartida(juego, temas.get(0), sonidos, this::mostrarMenu);
         menu = new PanelDelMenu(dificultades, temas, this::unoContraUno, this::contraLaComputadora,
-                this::usarTema, this::volverALaPartida, sonidos::activar, this::salir);
+                this::usarTema, this::volverALaPartida, sonidos::activar, musica::activar, this::salir);
         contenido.add(menu, MENU);
         contenido.add(partida, PARTIDA);
         ventana.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -54,6 +57,7 @@ public final class VentanaSwing {
 
     public void mostrar() {
         ventana.setVisible(true);
+        musica.empezar();
     }
 
     private void unoContraUno() {

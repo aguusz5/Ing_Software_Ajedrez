@@ -278,7 +278,8 @@ se revierte, no se borra: se marca como reemplazada y se dice por cuál.
 
 ### 24. Deshacer guarda fotos de la partida (Memento), no la inversa de cada jugada
 
-- **Qué:** `Partida` guarda un record privado `Foto(tablero, turno, estado)` en dos pilas, pasado y futuro.
+- **Qué:** `Partida` guarda un record privado `Foto(tablero, turno, estado, jugadasHechas)` en dos pilas, pasado
+  y futuro (`jugadasHechas` se sumó con los potenciadores, que aparecen cada tantas jugadas).
   Antes de cada cambio apila la foto actual en el pasado y vacía el futuro. `deshacer` pasa la foto actual
   al futuro y restaura la última del pasado; `rehacer`, al revés. Si no hay nada, devuelven `false`.
   Además de las jugadas, `terminar()` y `rendirse()` también guardan foto: deshacerlos reabre la partida
@@ -644,7 +645,8 @@ se revierte, no se borra: se marca como reemplazada y se dice por cuál.
   los archivos una vez es más simple que sumar una dependencia.
 - **Cuándo se rompería:** si los sonidos dejaran de ser un archivo por personaje (frases al azar, sonidos al
   capturar o al dar jaque, música de fondo). Ahí el tema devolvería algo más rico que un nombre de archivo, por
-  ejemplo un evento de la partida y qué suena con él.
+  ejemplo un evento de la partida y qué suena con él. La música de fondo llegó después y no pasó por el tema
+  ni por este reproductor: la explica la decisión 40. Las voces siguen igual, en WAV.
 - **Silenciar:** el menú tiene una casilla "Con sonido" (marcada de entrada), al lado de la de los potenciadores.
   A diferencia de esa, no espera a la próxima partida: el menú avisa el cambio con un callback y
   `VentanaSwing` se lo pasa al reproductor (`activar(boolean)`), que deja de sonar en el momento. Apagarlo
@@ -671,3 +673,38 @@ se revierte, no se borra: se marca como reemplazada y se dice por cuál.
   ve del 14% al 86% de la batalla, y los clones de la izquierda quedan cortados; desde unos 1900 x 1000 se ven
   enteros. Si hiciera falta un corte que no sea solo a los costados (un punto de foco también en el alto),
   `bordeDerecho` pasaría a ser un punto.
+
+### 40. La música de fondo va en MP3, la lee JLayer y la toca su propio reproductor (`ReproductorDeMusica`)
+
+- **Qué:** mientras la ventana está abierta suenan de fondo 8 temas de Star Wars (la Marcha Imperial, la Sala
+  del Trono, la Cantina, Duel of the Fates, Across the Stars, el tema del ejército de clones y dos marchas), una
+  atrás de la otra, en un orden al azar que cambia en cada vuelta. Suenan en todos los temas, también en el
+  Clásico. Tiene tres partes:
+  - `ReproductorDeMusica` toca los MP3 de `gui/musica/`. Los decodifica la biblioteca JLayer (`jlayer`
+    1.0.1.4), de a un cuadro por vez, y los manda a una `SourceDataLine` de `javax.sound.sampled`, en un hilo
+    aparte (daemon) para no trabar la ventana. Cada muestra se multiplica por `VOLUMEN` (0.3, unos 10 dB
+    menos), así la música queda debajo de las voces. Si no hay salida de audio o falta un archivo, no suena;
+    si en una vuelta entera no sonó ninguna, el hilo termina en vez de girar en vacío.
+  - `Principal` arma el reproductor con la lista de canciones y un `Random`, y se lo pasa a `VentanaSwing`, que
+    lo arranca al mostrarse.
+  - El menú tiene una casilla "Con música", aparte de "Con sonido". Desmarcarla pausa la música (la salida se
+    frena sin tirar lo que tenía) y marcarla la retoma desde donde quedó.
+
+  Los MP3 se arman una vez desde los originales de `Audios/`: mono, 44.1 kHz, 80 kbps, sin los silencios de las
+  puntas y todos al mismo volumen (-18 LUFS, normalizados en dos pasadas para no comprimir la dinámica). Al
+  Sala del Trono, que es una grabación en vivo, se le cortaron los aplausos del final. Son 35 minutos y
+  ocupan 21 MB. La suite completa de la RTVE (34 minutos) quedó afuera por su tamaño.
+- **Por qué:** con música, el criterio de la decisión 38 (convertir a WAV en vez de sumar una biblioteca) da
+  vuelta. Las voces duran unos 3 segundos y en WAV pesan poco; 35 minutos de música en WAV ocuparían unos 90 MB
+  en el repo y en el jar, contra 21 MB en MP3. Recortar cada canción a un pedazo que se repite achicaba el WAV,
+  pero cambiaba las canciones. JLayer es chica (unos 100 KB), no tiene dependencias propias (su pom trae JUnit
+  3 en scope compile y se excluye) y la usa solo el módulo de la ventana: el núcleo sigue sin dependencias
+  (decisión 1). La música no pasa por `ReproductorDeSonidos` porque ese corta lo que suena cada vez que
+  habla un personaje. Tampoco se le pregunta al `Tema`, porque suena igual en todos los temas. Bajar el volumen
+  en el código y no en los archivos deja los MP3 a un volumen normal y el balance con las voces en un solo
+  número. No es una interfaz porque tiene una sola implementación (decisión 21).
+- **Cuándo se rompería:** si cada tema o cada era tuviera su propia música. Ahí la lista de canciones pasaría a
+  ser parte del tema, como los sonidos de los personajes (`Tema.musica()`), y el reproductor cambiaría de
+  lista al elegir otro tema. También, si la música tuviera que reaccionar a la partida (otra canción en un
+  jaque o al final), o si los MP3 crecieran tanto que el repo se volviera pesado. En ese caso convendría bajarlos
+  aparte en vez de guardarlos en `gui/musica/`.

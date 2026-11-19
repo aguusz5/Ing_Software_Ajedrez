@@ -4,7 +4,7 @@ top to bottom direction
 package "ajedrez-gui-swing (adaptador)" #E8F1FA {
   class VentanaSwing {
     +VentanaSwing(juego : JuegoDeAjedrez, temas : List<Tema>, dificultades : List<Dificultad>,
-      sonidos : ReproductorDeSonidos)
+      sonidos : ReproductorDeSonidos, musica : ReproductorDeMusica)
     +mostrar()
   }
   class PanelDelMenu <<pantalla>> {
@@ -65,6 +65,14 @@ package "ajedrez-gui-swing (adaptador)" #E8F1FA {
     ~activar(prendido : boolean)
     ~detener()
   }
+  class ReproductorDeMusica {
+    ~{static} VOLUMEN : double = 0.3
+    +ReproductorDeMusica(canciones : List<String>, azar : Random)
+    ~empezar()
+    ~activar(prendida : boolean)
+    ~activa() : boolean
+    ~{static} aBytes(muestras : short[], cantidad : int, volumen : double) : byte[]
+  }
   class Paleta <<record>> {
     +casillaClara, casillaOscura : Color
     +texto, titulo, epigrafe, marco : Color
@@ -119,6 +127,10 @@ package "ajedrez-gui-swing (adaptador)" #E8F1FA {
     +pintura : Paint
   }
 }
+package "JLayer (biblioteca externa, decisión 40)" #F4F4F4 {
+  class Bitstream
+  class Decoder
+}
 package "ajedrez-nucleo (lo que usa la ventana)" #EAF6EA {
   interface JuegoDeAjedrez <<puerto de entrada>>
   class ContraLaComputadora
@@ -133,6 +145,9 @@ PanelDeLaPartida --> JuegoDeAjedrez
 PanelDeLaPartida --> "0..1" ContraLaComputadora : la del modo elegido
 PanelDeLaPartida --> ReproductorDeSonidos : el personaje habla al elegirlo
 VentanaSwing ..> ReproductorDeSonidos : lo prende o apaga desde el menú
+VentanaSwing --> ReproductorDeMusica : la empieza al mostrarse;\nel menú la prende o apaga
+ReproductorDeMusica ..> Bitstream : lee los cuadros del MP3
+ReproductorDeMusica ..> Decoder : los pasa a muestras
 Dificultad --> "2" ContraLaComputadora : una por color
 PanelDelTablero ..> DibujoDePieza
 Tema <|.. TemaClasico
@@ -180,6 +195,8 @@ note bottom of PersonajesDeStarWars
   Separatistas (negras): Dooku, Grievous, Ventress, droideka,
   Darth Maul, droide de combate. Todos dibujados con figuras.
   Sonidos (decisión 38): uno por personaje, WAV en gui/sonidos/.
+  Música de fondo (decisión 40): 8 MP3 en gui/musica/, iguales en
+  todos los temas; los toca ReproductorDeMusica, aparte de las voces.
   Cada era tiene una imagen de fondo (gui/fondo-star-wars.jpg y
   gui/fondo-guerra-de-los-clones.jpg): las lee Principal y les elige el
   borde por el que se corta (decisión 39); sin imagen, TemaStarWars

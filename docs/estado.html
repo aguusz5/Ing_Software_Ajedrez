@@ -183,7 +183,7 @@
   <header class="cabecera">
     <div class="eyebrow">TPO Ajedrez · Ingeniería de Software</div>
     <h1>Dónde estamos</h1>
-    <p class="sello"><span>Última actualización</span> <time datetime="2026-11-06">6 de noviembre de 2026</time></p>
+    <p class="sello"><span>Última actualización</span> <time datetime="2026-11-19">19 de noviembre de 2026</time></p>
     <p class="bajada">El alcance obligatorio está completo y probado: las seis piezas, turnos, captura,
       validación y jaque, jugables por consola y por ventana. Por calendario el roadmap nos ubica en la
       fase 3, así que vamos adelantados: ya están los opcionales 0 a 7 y el menú de inicio.</p>
@@ -316,7 +316,7 @@
           <tr>
             <th scope="row">Núcleo probado sin levantar nada</th>
             <td><span class="estado hecho">Cumple</span></td>
-            <td class="detalle">176 tests del núcleo con tableros armados a mano. Sin consola ni ventana. Todos los tests tienen su Arrange, como enseña la cátedra.</td>
+            <td class="detalle">202 tests del núcleo con tableros armados a mano. Sin consola ni ventana. Todos los tests tienen su Arrange, como enseña la cátedra.</td>
           </tr>
           <tr>
             <th scope="row">Clases nuevas sin modificar las existentes</th>
@@ -326,7 +326,7 @@
           <tr>
             <th scope="row">UML fiel al código</th>
             <td><span class="estado hecho">Cumple</span></td>
-            <td class="detalle">Revisado el 03/11: todas las clases, los métodos públicos y las asociaciones coinciden con el código, y los cinco diagramas compilan con PlantUML. Convención: se dibujan las asociaciones (campos), las dependencias de uso interno y los tipos que se devuelven; los tipos de los parámetros se leen en la firma.</td>
+            <td class="detalle">Revisado el 03/11: todas las clases, los métodos públicos y las asociaciones coinciden con el código, y los cinco diagramas compilan con PlantUML. Revisado de nuevo el 19/11, con los siete diagramas: todas las clases del código están dibujadas y lo que listan los diagramas existe en el código; se corrigieron las etiquetas de arranque de <code>d7_composicion</code>, que todavía decían <code>--gui</code>. Convención: se dibujan las asociaciones (campos), las dependencias de uso interno y los tipos que se devuelven; los tipos de los parámetros se leen en la firma.</td>
           </tr>
         </tbody>
       </table>
@@ -354,12 +354,12 @@
           <tr>
             <th scope="row">Tests unitarios del núcleo</th>
             <td><span class="estado parcial">En curso</span></td>
-            <td class="detalle">204 tests en verde: 163 del núcleo, 31 de la consola y 10 de la ventana.</td>
+            <td class="detalle">269 tests en verde: 202 del núcleo, 31 de la consola y 36 de la ventana.</td>
           </tr>
           <tr>
             <th scope="row">Documento de justificación</th>
             <td><span class="estado parcial">En curso</span></td>
-            <td class="detalle">La base está en <code>decisiones.md</code>, con 25 decisiones en formato qué / por qué / cuándo se rompería. Falta redactar el documento.</td>
+            <td class="detalle">La base está en <code>decisiones.md</code>, con 40 decisiones en formato qué / por qué / cuándo se rompería. Falta redactar el documento: la consigna lo pide <em>breve</em>, y <code>decisiones.md</code> tiene unas 8.800 palabras.</td>
           </tr>
           <tr>
             <th scope="row">Presentación (PPTX)</th>
@@ -446,6 +446,11 @@
             <td class="detalle">Agregado por el grupo, fuera del roadmap. Al elegir una pieza, su personaje habla. Las 24 piezas de las dos eras tienen sonido. Por ejemplo, Palpatine ("Unlimited power!"), Luke ("I'm a Jedi, like my father before me"), Yoda ("Do. Or do not. There is no try."), Grievous ("General Kenobi, you are a bold one"), el droide de combate ("Roger, roger") y la Estrella de la Muerte (la alarma); los guardias imperiales disparan el bláster y Ahsoka y Ventress encienden sus dos sables. El tema decide qué suena (<code>Tema.sonidoDe</code>) y <code>ReproductorDeSonidos</code> reproduce WAV cortos de <code>gui/sonidos/</code>; sin salida de audio, no suena y no rompe. Se apagan con la casilla "Con sonido" del menú, en el momento, aunque haya una partida empezada. Decisión 38. Falta probarlo a mano.</td>
           </tr>
           <tr>
+            <th scope="row">Música de fondo</th>
+            <td><span class="estado hecho">Hecho</span></td>
+            <td class="detalle">Agregado por el grupo, fuera del roadmap. Mientras la ventana está abierta suenan de fondo 8 temas de Star Wars (la Marcha Imperial, la Sala del Trono, la Cantina, Duel of the Fates, Across the Stars, el tema del ejército de clones y dos marchas), en un orden al azar y en todos los temas, más bajos que las voces de los personajes. Son MP3 en <code>gui/musica/</code> (35 minutos, 21 MB), todos al mismo volumen; los lee la biblioteca JLayer, que usa solo la ventana, y los toca <code>ReproductorDeMusica</code> en un hilo aparte. La casilla "Con música" del menú la pausa y la retoma desde donde quedó. Sin salida de audio, no suena y no rompe. Decisión 40. Falta probarlo a mano.</td>
+          </tr>
+          <tr>
             <th scope="row">Potenciadores Star Wars en la ventana</th>
             <td><span class="estado hecho">Hecho</span></td>
             <td class="detalle">Agregado por el grupo, fuera del roadmap. La partida empieza con 2 potenciadores en casillas vacías al azar, y cada 6 jugadas aparece otro si hay lugar (nunca más de 2 a la vez). La pieza que cae ahí lo toma y en el próximo turno de su color se mueve además como dice el potenciador; si en ese turno mueve otra pieza, lo pierde. Son cuatro: Salto al hiperespacio (salta como el caballo), Empuje de la Fuerza (un paso en cualquier dirección), Propulsores (hasta 2 en recta) y Sable de luz (hasta 2 en diagonal). Los peones también los toman, y si el movimiento prestado los deja en la última fila, coronan. Un potenciador es una <code>ReglaDeMovimiento</code> más que la pieza lleva encima, así que el jaque, el resaltado, deshacer y la IA funcionan sin cambios. En la ventana se ven como cristales kyber verdes (dorados en el tema Clásico) y la barra avisa quién tomó uno y cuál hay que usar. Son opcionales: en el menú, la casilla "Con potenciadores" (marcada de entrada) decide si la partida los usa; sin marcar, y en la consola, es el ajedrez de siempre. Decisión 36. Falta probarlo a mano en la ventana.</td>
@@ -474,6 +479,7 @@
       <li>Probar el enroque en la ventana: con el rey sin mover, las casillas del enroque se pintan de azul, o de naranja si el rey cruzaría una casilla atacada.</li>
       <li>Probar la ventana a mano (botón "Jugar en la ventana" de VS Code): el menú, las tres dificultades, jugar con negras (el tablero se da vuelta y la computadora mueve primero), Reiniciar, Menú y Volver a la partida, y agrandar y achicar la ventana.</li>
       <li>Probar los sonidos a mano: en las dos eras, elegir cada pieza y escuchar que suene la de su personaje, que corte el anterior al elegir otra y que en el tema Clásico no suene nada.</li>
+      <li>Probar la música a mano: que arranque al abrir la ventana, que las voces se escuchen encima, que el volumen no moleste, que la casilla "Con música" la pause y la retome desde donde quedó, y que al terminar una canción siga otra.</li>
       <li>Probar la Guerra de los Clones a mano: elegirla en el menú, que se distingan República (azul) y Separatistas (naranja) en casillas claras y oscuras, y que la fila de temas del menú entre entera con la fuente de macOS.</li>
       <li>Probar el tema Star Wars a mano: elegirlo y volver al clásico desde el menú (también con una partida empezada), que se distingan los dos bandos en casillas claras y oscuras, el diálogo de promoción con los nombres de los personajes y el nombre al dejar el mouse sobre una pieza.</li>
       <li>Probar los potenciadores a mano en la ventana: que la casilla "Con potenciadores" del menú los active o desactive (también contra la computadora, y que Reiniciar respete lo elegido), que haya 2 antes de la primera jugada, que un peón tome uno y aparezca otro cada 6 jugadas, que la pieza que toma uno muestre la insignia y pueda usarlo en su próximo turno (el destino extra se pinta de azul), que lo pierda si mueve otra pieza, que la computadora también los tome, y que Deshacer y Rehacer los devuelvan a su casilla.</li>
@@ -501,6 +507,13 @@
   <section aria-labelledby="t-historial">
     <h2 id="t-historial">Historial</h2>
     <ol class="historial" reversed>
+      <li>
+        <time datetime="2026-11-19">19/11/2026</time>
+        <ul>
+          <li>Música de fondo: 8 temas de Star Wars en MP3 (<code>gui/musica/</code>), mezclados al azar y en todos los temas, a unos 10 dB menos que las voces. Convertidos una vez desde <code>Audios/</code>: mono, 80 kbps, sin silencios en las puntas, todos a -18 LUFS, y a la Sala del Trono (en vivo) se le cortaron los aplausos. <code>ReproductorDeMusica</code> los decodifica con JLayer, la primera biblioteca externa del proyecto (solo en <code>ajedrez-gui-swing</code>; el núcleo sigue sin dependencias), y los toca en un hilo aparte. Lo crea <code>Principal</code> con la lista de canciones y lo recibe <code>VentanaSwing</code>, que lo arranca al mostrarse. Casilla "Con música" en el menú, aparte de "Con sonido", y un párrafo en "Cómo se juega". Decisión 40 (y una nota en la 38). UML <code>d1_modulos</code>, <code>d4_ventana</code> y <code>d7_composicion</code>. 269 tests en verde (7 nuevos).</li>
+          <li>Revisión completa contra la consigna antes de la entrega: alcance obligatorio, requisitos de arquitectura, reglas del proyecto, tests y UML. Se corrigieron el ejemplo de pieza nueva del README (al constructor de <code>TipoDePieza</code> le faltaba el valor), las etiquetas <code>--gui</code> de <code>d7_composicion</code> y los números viejos de esta página. Siguen pendientes el documento de justificación y la PPTX.</li>
+        </ul>
+      </li>
       <li>
         <time datetime="2026-11-06">06/11/2026</time>
         <ul>

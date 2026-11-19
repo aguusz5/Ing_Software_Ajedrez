@@ -18,6 +18,19 @@
             <artifactId>ajedrez-nucleo</artifactId>
             <version>${project.version}</version>
         </dependency>
+        <!-- Lee los MP3 de la música de fondo: Java solo trae WAV (decisión 40). Su pom arrastra JUnit 3 en
+             scope compile; se excluye para que no termine adentro del jar. -->
+        <dependency>
+            <groupId>com.googlecode.soundlibs</groupId>
+            <artifactId>jlayer</artifactId>
+            <version>1.0.1.4</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>junit</groupId>
+                    <artifactId>junit</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter</artifactId>

@@ -30,6 +30,7 @@ package "ajedrez-gui-swing" #E8F1FA {
   class GlifosDePieza
   class Era
   class ReproductorDeSonidos
+  class ReproductorDeMusica
   class ImagenDeFondo
 }
 package "ajedrez-consola" #E8F1FA {
@@ -51,15 +52,16 @@ Principal ..> AsesorAleatorio
 Principal ..> AsesorMinimax
 Principal ..> Computadora : una por dificultad
 Principal ..> ContraLaComputadora : dos por dificultad
-Principal ..> VentanaSwing : con --gui
+Principal ..> VentanaSwing : sin argumentos
 Principal ..> Dificultad
 Principal ..> TemaStarWars : dos, uno por era, cada uno con su fondo
 Principal ..> TemaClasico
 Principal ..> GlifosDePieza
 Principal ..> Era : rebelionContraImperio(), republicaContraSeparatistas()
 Principal ..> ReproductorDeSonidos : uno, para la ventana
+Principal ..> ReproductorDeMusica : uno, con las 8 canciones y un Random
 Principal ..> ImagenDeFondo : una por era, con su borde derecho
-Principal ..> AdaptadorConsola : sin --gui
+Principal ..> AdaptadorConsola : con --consola o --ia
 Principal ..> TraductorDeNotacion
 Principal ..> DibujanteAscii
 note left of Principal

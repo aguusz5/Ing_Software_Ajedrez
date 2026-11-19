@@ -20,6 +20,7 @@ import gui.Dificultad;
 import gui.Era;
 import gui.GlifosDePieza;
 import gui.ImagenDeFondo;
+import gui.ReproductorDeMusica;
 import gui.ReproductorDeSonidos;
 import gui.Tema;
 import gui.TemaClasico;
@@ -59,6 +60,11 @@ public final class Principal {
     /** El póster de fondo del tema Star Wars, en los recursos del módulo de la ventana (paquete gui). */
     private static final String FONDO_STAR_WARS = "fondo-star-wars.jpg";
     private static final String FONDO_GUERRA_DE_LOS_CLONES = "fondo-guerra-de-los-clones.jpg";
+    /** La música de fondo, en los recursos de la ventana (gui/musica/). Suena en todos los temas, mezclada. */
+    private static final List<String> CANCIONES = List.of(
+            "marcha-imperial.mp3", "sala-del-trono.mp3", "banda-de-la-cantina.mp3", "duelo-de-los-destinos.mp3",
+            "a-traves-de-las-estrellas.mp3", "ejercito-de-clones.mp3", "marcha-del-templo-jedi.mp3",
+            "marcha-de-los-droides.mp3");
     /**
      * La partida empieza con 2 potenciadores y después aparece uno cada 3 jugadas de cada color, si hay lugar:
      * nunca hay más de 2 esperando, para que no protagonicen.
@@ -93,7 +99,8 @@ public final class Principal {
                             cargarFondo(FONDO_GUERRA_DE_LOS_CLONES, 0.86)),
                     new TemaClasico(glifos));
             ReproductorDeSonidos sonidos = new ReproductorDeSonidos();
-            SwingUtilities.invokeLater(() -> new VentanaSwing(juego, temas, dificultades, sonidos).mostrar());
+            ReproductorDeMusica musica = new ReproductorDeMusica(CANCIONES, new Random());
+            SwingUtilities.invokeLater(() -> new VentanaSwing(juego, temas, dificultades, sonidos, musica).mostrar());
         } else {
             // En la consola la persona juega con blancas y la computadora, si se pidió, con negras.
             Optional<ContraLaComputadora> rival = opciones.contains("--ia")

@@ -11,6 +11,9 @@ package "ajedrez-consola\n(adaptador)" as con #E8F1FA {
 package "ajedrez-gui-swing\n(adaptador)" as gui #E8F1FA {
   [VentanaSwing]
 }
+package "JLayer\n(biblioteca externa)" as jlayer #F4F4F4 {
+  [Bitstream + Decoder\n(leen MP3)] as MP3
+}
 package "ajedrez-nucleo  (NÚCLEO — Java puro, sin dependencias)" as core #EAF6EA {
   interface "JuegoDeAjedrez\n(puerto de entrada)" as IN
   [Partida + reglas + movimiento\n+ modelo + configuracion] as G
@@ -24,6 +27,7 @@ AdaptadorConsola --> IN : usa
 VentanaSwing --> IN : usa
 AdaptadorConsola --> IA : usa
 VentanaSwing --> IA : usa
+VentanaSwing ..> MP3 : la música de fondo\n(ReproductorDeMusica, decisión 40)
 IN <|.. G
 IN <-- IA : ContraLaComputadora juega\npor el puerto
 IA --> G : el minimax usa el generador\ny el detector de jaque
@@ -40,5 +44,7 @@ note bottom of core
   Strategy interna, no un puerto: sería el primer puerto de salida
   si se suma un asesor con infraestructura, como Stockfish (decisión 35).
   Los adaptadores usan el puerto y ContraLaComputadora (decisión 34).
+  La única biblioteca de afuera es JLayer, y la usa solo la ventana
+  para la música de fondo: el núcleo no se entera (decisión 40).
 end note
 @enduml

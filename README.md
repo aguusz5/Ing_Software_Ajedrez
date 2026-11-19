@@ -31,6 +31,11 @@ potenciador, pero solo en el próximo turno de su color (por ejemplo, una torre 
 activan o desactivan en el menú con la casilla "Con potenciadores"; sin ella, y en la consola, es el ajedrez de
 siempre. Ver la decisión 36.
 
+La ventana también suena: en los temas de Star Wars cada personaje habla cuando lo elegís, y de fondo suenan
+temas de Star Wars, en cualquier tema y más bajos que las voces. Se apagan con las casillas "Con sonido" y
+"Con música" del menú. Los MP3 de la música los lee JLayer, la única biblioteca externa del proyecto, que usa
+solo la ventana (decisiones 38 y 40).
+
 ## La arquitectura en un dibujo
 
 ```
@@ -58,7 +63,7 @@ respuesta. **Ninguna regla del ajedrez vive en un adaptador.**
 | Módulo › paquete | Qué hace | Clases principales |
 |---|---|---|
 | núcleo › `modelo` | Las "cosas" del juego | `Tablero` (inmutable), `Pieza`, `TipoDePieza`, `Posicion`, `Direccion`, `Color` |
-| núcleo › `movimiento` | Cómo se mueve cada pieza | `ReglaDeMovimiento` y sus 4 implementaciones, `Jugada`, `JugadaSimple` |
+| núcleo › `movimiento` | Cómo se mueve cada pieza | `ReglaDeMovimiento` y sus 5 implementaciones (también el enroque), `Jugada`, `JugadaSimple` |
 | núcleo › `configuracion` | Arma el ajedrez clásico | `TiposDePiezaEstandar` (las 6 piezas), `TableroEstandar` (posición inicial) |
 | núcleo › `reglas` | Qué jugadas se permiten | `ValidadorDeJugadas`, `ReglaPiezaPropia`, `ReglaNoDejarReyEnJaque`, `DetectorDeJaque` |
 | núcleo › `juego` | La puerta de entrada al núcleo | `JuegoDeAjedrez` (puerto), `Partida`, `ResultadoJugada`, `JugadaLegal` |
@@ -81,7 +86,8 @@ No existe `class Torre` ni `class Dama`. Cada pieza es un `TipoDePieza` con un n
 | Caballo | saltar en L |
 | Peón | avanzar (dos casillas si todavía no se movió) + capturar en diagonal |
 
-Una pieza nueva no toca código existente: es un `new TipoDePieza("canciller", false, List.of(regla1, regla2))`.
+Una pieza nueva no toca código existente: es un `new TipoDePieza("canciller", false, 8, List.of(regla1, regla2))`
+(nombre, si es el rey, cuántos puntos vale y sus reglas). Así está en `ExtensibilidadTest`.
 
 ## Qué pasa cuando alguien juega `e2 e4`
 
