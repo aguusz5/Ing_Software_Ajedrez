@@ -132,9 +132,10 @@ Todo está en [docs/](docs/):
 
 | Qué | Dónde |
 |---|---|
+| Documento de justificación que se entrega (Word): el proyecto, la arquitectura y las 40 decisiones | [docs/TPO_Ajedrez_Justificacion_de_decisiones.docx](docs/TPO_Ajedrez_Justificacion_de_decisiones.docx) |
 | Hasta dónde llegamos (se actualiza con cada avance) | [docs/estado.html](docs/estado.html) |
 | Decisiones de diseño (qué / por qué / cuándo se rompería) | [docs/decisiones.md](docs/decisiones.md) |
-| Diagramas de clases (se ven con la extensión PlantUML de VS Code; con `brew install graphviz` se dibujan más ordenados) | [docs/uml/](docs/uml/) |
+| Diagramas de clases del núcleo (cuatro PNG; cada uno guarda su código PlantUML) | [docs/uml/](docs/uml/) |
 | Resumen visual y explicación de núcleo/adaptadores | [docs/explicaciones/](docs/explicaciones/) |
 | Consigna y roadmap | [docs/referencia/](docs/referencia/) |
 

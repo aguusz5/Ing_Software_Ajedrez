@@ -33,7 +33,8 @@ mvn package && java -jar ajedrez-app/target/ajedrez.jar [--consola] [--ia]   # s
 - Todo en español: módulos, paquetes, clases, métodos, variables, comentarios y documentación.
 - Tests: JUnit 5, nombre `sujeto_condicion_resultadoEsperado`, bloques `// Arrange`, `// Act`,
   `// Assert` comentados (`// Act & Assert` si el test es de una línea).
-- Si cambia una firma pública, se actualiza `docs/uml/*.puml` en el MISMO commit.
+- Si cambia una firma pública, se regenera el diagrama de `docs/uml/` que corresponda en el MISMO commit
+  (son PNG: `plantuml -metadata <archivo>.png` recupera su código PlantUML para editarlo).
 - Si se toma una decisión de diseño, se agrega una entrada a `docs/decisiones.md`
   (qué / por qué / cuándo se rompería).
 - Nunca pushear con tests en rojo: el CI (`.github/workflows/ci.yml`) corre `mvn test` en cada push.

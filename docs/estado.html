@@ -248,8 +248,8 @@
           <tr>
             <th scope="row">F6 · Cierre y defensa</th>
             <td class="fechas">13/11 – 20/11</td>
-            <td><span class="estado pendiente">Sin empezar</span></td>
-            <td class="detalle">Documento de justificación, PPTX y simulacro individual.</td>
+            <td><span class="estado parcial">En curso</span></td>
+            <td class="detalle">El documento de justificación está hecho. Faltan la PPTX y el simulacro individual.</td>
           </tr>
         </tbody>
       </table>
@@ -326,7 +326,7 @@
           <tr>
             <th scope="row">UML fiel al código</th>
             <td><span class="estado hecho">Cumple</span></td>
-            <td class="detalle">Revisado el 03/11: todas las clases, los métodos públicos y las asociaciones coinciden con el código, y los cinco diagramas compilan con PlantUML. Revisado de nuevo el 19/11, con los siete diagramas: todas las clases del código están dibujadas y lo que listan los diagramas existe en el código; se corrigieron las etiquetas de arranque de <code>d7_composicion</code>, que todavía decían <code>--gui</code>. Convención: se dibujan las asociaciones (campos), las dependencias de uso interno y los tipos que se devuelven; los tipos de los parámetros se leen en la firma.</td>
+            <td class="detalle">Revisado el 03/11: todas las clases, los métodos públicos y las asociaciones coinciden con el código, y los cinco diagramas compilan con PlantUML. Revisado de nuevo el 19/11, con los siete diagramas: todas las clases del código están dibujadas y lo que listan los diagramas existe en el código; se corrigieron las etiquetas de arranque de <code>d7_composicion</code>, que todavía decían <code>--gui</code>. Convención: se dibujan las asociaciones (campos), las dependencias de uso interno y los tipos que se devuelven; los tipos de los parámetros se leen en la firma. Revisado otra vez el 19/11, ya con los cuatro diagramas del núcleo: un script comparó cada método, constructor y atributo contra el código y cada campo con su flecha; se sumaron los atributos privados, las dependencias de creación y uso que faltaban, <code>deUnPeon</code> y la asociación de <code>AparicionDePotenciadores</code> con su catálogo.</td>
           </tr>
         </tbody>
       </table>
@@ -348,8 +348,8 @@
           </tr>
           <tr>
             <th scope="row">Diagrama de clases (UML)</th>
-            <td><span class="estado parcial">En curso</span></td>
-            <td class="detalle">Siete diagramas en <code>docs/uml/</code>, al día con el código: uno de módulos (<code>d1</code>) y seis de clases, uno por parte del sistema (modelo, juego, ventana, IA, consola y composición). Se actualizan con cada firma pública que cambie.</td>
+            <td><span class="estado hecho">Hecho</span></td>
+            <td class="detalle">Cuatro diagramas en PNG en <code>docs/uml/</code>, centrados en el núcleo, como pidió el profesor: módulos (<code>d1_modulos</code>), modelo (<code>d2_modelo</code>), juego y reglas (<code>d3_juego</code>) e IA (<code>d4_ia</code>). Cada imagen trae su leyenda y guarda adentro su código PlantUML (<code>plantuml -metadata</code> lo recupera).</td>
           </tr>
           <tr>
             <th scope="row">Tests unitarios del núcleo</th>
@@ -358,8 +358,8 @@
           </tr>
           <tr>
             <th scope="row">Documento de justificación</th>
-            <td><span class="estado parcial">En curso</span></td>
-            <td class="detalle">La base está en <code>decisiones.md</code>, con 40 decisiones en formato qué / por qué / cuándo se rompería. Falta redactar el documento: la consigna lo pide <em>breve</em>, y <code>decisiones.md</code> tiene unas 8.800 palabras.</td>
+            <td><span class="estado hecho">Hecho</span></td>
+            <td class="detalle"><a href="TPO_Ajedrez_Justificacion_de_decisiones.docx"><code>TPO_Ajedrez_Justificacion_de_decisiones.docx</code></a>, 18 páginas: qué construimos, la arquitectura, las 40 decisiones condensadas en qué / por qué / cuándo se rompería (con las de no usar algo juntas al final), tests, UML y límites. Verificado contra el código. Falta completar en la portada los nombres y legajos de los integrantes y el docente.</td>
           </tr>
           <tr>
             <th scope="row">Presentación (PPTX)</th>
@@ -492,8 +492,9 @@
   <section aria-labelledby="t-mapa">
     <h2 id="t-mapa">Dónde está cada cosa</h2>
     <dl class="mapa">
+      <div><dt><a href="TPO_Ajedrez_Justificacion_de_decisiones.docx">TPO_Ajedrez_Justificacion_de_decisiones.docx</a></dt><dd>El documento de justificación que se entrega: el proyecto, la arquitectura y las 40 decisiones, en Word.</dd></div>
       <div><dt><a href="decisiones.md">decisiones.md</a></dt><dd>Decisiones de diseño: qué, por qué y cuándo se rompería.</dd></div>
-      <div><dt><a href="uml/">uml/</a></dt><dd>Los siete diagramas en PlantUML. Se ven con la extensión PlantUML de VS Code; con Graphviz instalado (<code>brew install graphviz</code>) se dibujan más ordenados.</dd></div>
+      <div><dt><a href="uml/">uml/</a></dt><dd>Los cuatro diagramas del núcleo, en PNG. Cada imagen guarda su código PlantUML: <code>plantuml -metadata d2_modelo.png</code> lo recupera para editarlo.</dd></div>
       <div><dt><a href="plan-opcionales.html">plan-opcionales.html</a></dt><dd>El plan de los opcionales: orden, responsables y cómo encarar cada uno.</dd></div>
       <div><dt><a href="explicaciones/opcionales-implementados.html">explicaciones/opcionales-implementados.html</a></dt><dd>Qué cambió con cada opcional hecho y en qué se apartó del plan.</dd></div>
       <div><dt><a href="explicaciones/resumen.html">explicaciones/resumen.html</a></dt><dd>Resumen visual de cómo está armado el ajedrez.</dd></div>
@@ -510,6 +511,8 @@
       <li>
         <time datetime="2026-11-19">19/11/2026</time>
         <ul>
+          <li>UML solo del núcleo, en imágenes: se borraron los diagramas de la ventana (<code>d4_ventana</code>), de la consola (<code>d6_consola</code>) y de la composición (<code>d7_composicion</code>), y el de la IA pasó a ser <code>d4_ia</code>. Los cuatro que quedan se revisaron contra el código y se entregan en PNG (con título y leyenda); los <code>.puml</code> se reemplazaron por las imágenes, que guardan su código adentro. Se sumaron los atributos privados, las dependencias de creación y uso, <code>JugadaConPromocion.deUnPeon</code>, la asociación de <code>AparicionDePotenciadores</code> con su catálogo y las de <code>Foto</code>, y las notas citan las decisiones como D1–D40, igual que el documento. En el documento: integrantes, legajos y docente en la portada, y la sección 5.2 con los cuatro diagramas.</li>
+          <li>Documento de justificación en Word (<code>docs/TPO_Ajedrez_Justificacion_de_decisiones.docx</code>, 18 páginas): portada con lugar para los cinco integrantes, qué construimos (alcance obligatorio, opcionales y agregados del grupo), la arquitectura, las 40 decisiones de <code>decisiones.md</code> condensadas y agrupadas por tema, tests, UML, cómo trabajamos y límites conocidos. Cada afirmación se verificó contra el código; donde <code>decisiones.md</code> quedó viejo, el documento dice lo que hace el código hoy. Como se entregan solo el código, este documento y el UML, el documento no menciona los demás documentos del repositorio (<code>decisiones.md</code>, README, esta página, <code>explicaciones/</code>, <code>referencia/</code>, <code>CLAUDE.md</code>).</li>
           <li>Música de fondo: 8 temas de Star Wars en MP3 (<code>gui/musica/</code>), mezclados al azar y en todos los temas, a unos 10 dB menos que las voces. Convertidos una vez desde <code>Audios/</code>: mono, 80 kbps, sin silencios en las puntas, todos a -18 LUFS, y a la Sala del Trono (en vivo) se le cortaron los aplausos. <code>ReproductorDeMusica</code> los decodifica con JLayer, la primera biblioteca externa del proyecto (solo en <code>ajedrez-gui-swing</code>; el núcleo sigue sin dependencias), y los toca en un hilo aparte. Lo crea <code>Principal</code> con la lista de canciones y lo recibe <code>VentanaSwing</code>, que lo arranca al mostrarse. Casilla "Con música" en el menú, aparte de "Con sonido", y un párrafo en "Cómo se juega". Decisión 40 (y una nota en la 38). UML <code>d1_modulos</code>, <code>d4_ventana</code> y <code>d7_composicion</code>. 269 tests en verde (7 nuevos).</li>
           <li>Revisión completa contra la consigna antes de la entrega: alcance obligatorio, requisitos de arquitectura, reglas del proyecto, tests y UML. Se corrigieron el ejemplo de pieza nueva del README (al constructor de <code>TipoDePieza</code> le faltaba el valor), las etiquetas <code>--gui</code> de <code>d7_composicion</code> y los números viejos de esta página. Siguen pendientes el documento de justificación y la PPTX.</li>
         </ul>
